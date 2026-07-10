@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="2ebfae3d-3434-4c36-bc89-910882e50b04.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6d1744b6-c742-419d-aa88-d981c7b052aa.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("54d40caf-9a6e-49d4-b2b1-b815b34fbb7a.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a70d0bfe-17c1-449e-b08b-d06033fae4a0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("edfd3cd7-e2be-43aa-b6a2-ac7b98a636ea.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("4a7e3d4e-c8c0-4ff9-ad8e-beb019692e53.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("e67ed148-78fb-4010-8fa2-bdea7966030d.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c0ffa41d-9a21-40d5-8797-4b33646111a1.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6e1a897c-a1a5-460b-af0e-efece6f8c19a.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("0ed64798-d1ec-4502-bc7a-7cffe943572d.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("2d3a33c0-eff0-46e9-9870-b1371a08ab90.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("dacc98d0-d8a4-4eb0-a6fd-3f70170a0179.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a47c0b4f-25bd-4807-a088-95d608d4c095.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("074c8e27-593e-4d37-aa40-5aa59c3654c6.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("98774cd2-aa01-4b3b-837d-d64cfa158f57.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0e603f21-053d-4e16-baa4-7d8ac8f45f93.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("8893071d-003b-4400-bd19-d51ae1f0a387.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b56207e0-9b6a-43e0-8670-32d201dd9a9f.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("94d6e27c-a4b6-40b2-b1b6-37597609720a.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("4263d5bb-12df-4081-b8d9-e05b68217fbc.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("537b1516-eabe-49c6-b474-879453b75c29.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("39e3482f-1ef2-43b8-b48e-864710cfd5b0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("8b2ff2e6-5f50-42d3-8575-a9729e9dca2b.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("d5470eef-4393-4754-b4f7-85b8ebe46fd6.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("39e3482f-1ef2-43b8-b48e-864710cfd5b0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("8b2ff2e6-5f50-42d3-8575-a9729e9dca2b.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d5470eef-4393-4754-b4f7-85b8ebe46fd6.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("39e3482f-1ef2-43b8-b48e-864710cfd5b0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("8b2ff2e6-5f50-42d3-8575-a9729e9dca2b.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("d5470eef-4393-4754-b4f7-85b8ebe46fd6.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("39e3482f-1ef2-43b8-b48e-864710cfd5b0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("8b2ff2e6-5f50-42d3-8575-a9729e9dca2b.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("d5470eef-4393-4754-b4f7-85b8ebe46fd6.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<script src="41f63ccc-e54d-4b0e-afe6-28e68fcf9357.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Space Grotesk","PingFang SC","Microsoft YaHei",sans-serif;background:#eef1f5;}
+  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-0.4px;}
+  .eb{font-size:10.5px;letter-spacing:1.6px;font-weight:600;text-transform:uppercase;color:#9aa6b6;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes pnIn{from{opacity:0;transform:scale(.97) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  @keyframes feedup{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+  .feedwrap:hover .feedrun{animation-play-state:paused;}
+  .tabh{transition:color .15s;}
+  .tabh:hover{color:#16202e!important;}
+  .kpi{transition:box-shadow .15s,transform .15s;}
+  .kpi:hover{box-shadow:0 6px 18px rgba(16,32,64,.1);transform:translateY(-1px);}
+  .rowhover:hover{background:#f7f9fc!important;}
+  .abn:hover{background:#fff!important;border-color:#f3c0bc!important;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,140,170,.3);border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div style="{{ rootStyle }}">
+
+  <!-- ============ 分拣区实时看板 ============ -->
+  <div style="flex:0 0 auto;z-index:30;background:#fff;border-bottom:1px solid #e6ebf1;box-shadow:0 1px 3px rgba(16,32,64,.04);">
+    <div style="display:flex;align-items:center;gap:22px;padding:11px 26px;">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent,#2f5fe0),#5b8bff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;">概览</div>
+        <div style="font-size:15px;font-weight:600;letter-spacing:.2px;">数据实时</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;margin-left:6px;">
+        <span class="tabh" style="padding:8px 15px;border-radius:8px;font-size:13.5px;color:#7c899a;cursor:pointer;">概览</span>
+        <span class="tabh" style="padding:8px 15px;border-radius:8px;font-size:13.5px;color:#7c899a;cursor:pointer;">卸车区</span>
+        <span style="padding:8px 15px;border-radius:8px;font-size:13.5px;font-weight:600;color:#fff;background:var(--accent,#2f5fe0);box-shadow:0 2px 8px rgba(47,95,224,.3);cursor:pointer;">分拣区</span>
+        <span class="tabh" style="padding:8px 15px;border-radius:8px;font-size:13.5px;color:#7c899a;cursor:pointer;">装车区</span>
+        <span class="tabh" style="padding:8px 15px;border-radius:8px;font-size:13.5px;color:#7c899a;cursor:pointer;">异常区</span>
+      </div>
+      <div style="flex:1;"></div>
+      
+      <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#16a34a;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.6s infinite;"></span>
+        数据实时 <span class="num" id="lv-clock" style="color:#9aa6b6;">14:32:08</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 26px;border-top:1px solid #f0f3f7;background:#fafbfd;">
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;font-size:13px;cursor:pointer;">ATL H <span style="color:#9aa6b6;">?</span></div>
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;font-size:12.5px;color:#64718a;">集货截单 <b class="num" style="color:#16202e;font-weight:500;">06-16 06:00 ~ 06-17 06:00</b></div>
+      <div style="display:inline-flex;border:1px solid #d6dde6;border-radius:9px;overflow:hidden;background:#fff;">
+        <span onclick="{{ onToday }}" style="{{ todayStyle }}">今日</span>
+        <span onclick="{{ onTomorrow }}" style="{{ tomorrowStyle }}">明日</span>
+      </div>
+      <div style="display:flex;gap:7px;color:#64718a;font-size:12px;">
+        <span style="padding:7px 10px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;">查询 散货 <b class="num" style="color:#16202e;font-weight:500;">0D 20:00</b></span>
+        <span style="padding:7px 10px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;">散货截单 <b class="num" style="color:#16202e;font-weight:500;">1D 03:00</b></span>
+      </div>
+      <div style="flex:1;"></div>
+      <span style="font-size:12px;color:#9aa6b6;">分拣区</span>
+      <div style="display:inline-flex;border:1px solid #d6dde6;border-radius:9px;overflow:hidden;font-size:12.5px;background:#fff;">
+        <span style="padding:7px 12px;background:var(--accent-soft,#eaf0ff);color:var(--accent,#2f5fe0);font-weight:500;">全部</span>
+        <span style="padding:7px 12px;color:#9aa6b6;cursor:pointer;">分拣区</span>
+        <span style="padding:7px 12px;color:#9aa6b6;cursor:pointer;">全部</span>
+        <span style="padding:7px 12px;color:#9aa6b6;cursor:pointer;">差错率</span>
+      </div>
+      <button style="background:var(--accent,#2f5fe0);color:#fff;border:none;border-radius:9px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">查询</button>
+    </div>
+  </div>
+
+  <!-- ============================ 概览 ============================ -->
+  <sc-if value="{{ isDesk }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:16px 26px 44px;display:flex;flex-direction:column;gap:15px;">
+
+    <!-- KPI -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
+      <div class="kpi" onclick="{{ openBacklog }}" style="border-radius:13px;padding:14px 17px;background:#fff;border:1px solid #f3d2cf;box-shadow:0 1px 2px rgba(16,32,64,.04);cursor:pointer;">
+        <div style="font-size:12px;color:#c0362f;font-weight:600;">应分拣</div><div style="margin-top:8px;"><span class="num" title="指标设定 实际达标 散货截单 时间前分拣趋势要分拣 没有分拣分拣完表格预计到达 收起 取消 截单历史留仓-待分拣 实时速率 回流分拣 中转 实际超时 分拣量 当前散货 散货 时间来货票数" style="font-size:26px;font-weight:700;color:#e5484d;">6,795</span> <span style="font-size:11px;color:#bd7d7d;">票</span></div><div style="font-size:10.5px;color:#bd7d7d;margin-top:5px;">历史留仓 484</div>
+      </div>
+      <div class="kpi" onclick="{{ openSorted }}" style="border-radius:13px;padding:14px 17px;background:#fff;border:1px solid #e8edf3;box-shadow:0 1px 2px rgba(16,32,64,.04);cursor:pointer;">
+        <div style="font-size:12px;color:#64718a;font-weight:600;">已分拣</div><div style="margin-top:8px;"><span class="num" title="指标设定 内 昨日 已经 分拣机 取消 截单 取消 回流率实际 产生 分拣区 组织 当前 组织 扫描 超时 卸车区 辖区前 开始时间结束时间 范围大 待分拣扫描 查询 预约 等待出站票数" style="font-size:26px;font-weight:700;">45,823</span> <span style="font-size:11px;color:#9aa6b6;">票</span></div><div style="font-size:10.5px;color:#9aa6b6;margin-top:5px;">1,203 待分拣 待分拣 100%</div>
+      </div>
+      <div class="kpi" onclick="{{ openBacklog }}" style="border-radius:13px;padding:14px 17px;background:linear-gradient(135deg,var(--accent-soft,#eaf0ff),#fff);border:1px solid #d3e0ff;box-shadow:0 1px 2px rgba(16,32,64,.04);cursor:pointer;">
+        <div style="font-size:12px;color:var(--accent,#2f5fe0);font-weight:600;">应分拣</div><div style="margin-top:8px;"><span class="num" title="指标设定 实际 已经 集货截单 要分拣分拣 没有分拣差错率 取单 截单历史留仓-应分拣 截单 装车区区-待分拣" style="font-size:26px;font-weight:700;color:var(--accent,#2f5fe0);">10,000</span> <span style="font-size:11px;color:#7da0e0;">票</span></div><div style="font-size:10.5px;color:#7da0e0;margin-top:5px;">前分拣趋势 当前积压</div>
+      </div>
+      <div class="kpi" style="border-radius:13px;padding:14px 17px;background:#fff;border:1px solid #e8edf3;box-shadow:0 1px 2px rgba(16,32,64,.04);">
+        <div style="font-size:12px;color:#64718a;font-weight:600;">分拣速度</div><div style="margin-top:8px;"><span class="num" style="font-size:26px;font-weight:700;">5,600</span> <span style="font-size:11px;color:#9aa6b6;">票/时</span></div><div style="font-size:10.5px;color:#9aa6b6;margin-top:5px;">分拣趋势 平稳</div>
+      </div>
+      <div class="kpi" style="border-radius:13px;padding:14px 17px;background:#fff;border:1px solid #e8edf3;box-shadow:0 1px 2px rgba(16,32,64,.04);">
+        <div style="font-size:12px;color:#64718a;font-weight:600;">现场散货</div><div style="margin-top:8px;"><span class="num" style="font-size:26px;font-weight:700;color:#16a34a;">88</span> <span style="font-size:11px;color:#9aa6b6;">%</span></div><div style="font-size:10.5px;color:#9aa6b6;margin-top:5px;">分拣率 / 达标</div>
+      </div>
+      <div class="kpi" style="border-radius:13px;padding:14px 17px;background:#fff;border:1px solid #e8edf3;box-shadow:0 1px 2px rgba(16,32,64,.04);">
+        <div style="font-size:12px;color:#64718a;font-weight:600;">表格</div><div style="margin-top:8px;"><span class="num" style="font-size:26px;font-weight:700;color:#e0921a;">2.3</span> <span style="font-size:11px;color:#9aa6b6;">%</span></div><div style="font-size:10.5px;color:#9aa6b6;margin-top:5px;">收起</div>
+      </div>
+    </div>
+
+    <!-- 分拣量(回流率) + 异常聚焦 -->
+    <div style="display:grid;grid-template-columns:2fr 1.1fr;gap:15px;">
+      <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:15px 20px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:4px;height:18px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">SORTING TREND · 分拣区</div><div style="font-size:17px;font-weight:700;margin-top:1px;">分拣票数趋势</div></div></div>
+          <div style="display:inline-flex;border:1px solid #d6dde6;border-radius:8px;overflow:hidden;font-size:12.5px;background:#fff;">
+            <span onclick="{{ onTrendHour }}" style="{{ trendHourStyle }}">小时</span>
+            <span onclick="{{ onTrendCum }}" style="{{ trendCumStyle }}">累计</span>
+          </div>
+        </div>
+        <div id="trend" style="width:100%;height:300px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:6px;padding-top:10px;border-top:1px solid #eef2f6;">
+          <div style="text-align:center;padding:7px;border-radius:9px;background:#fff8eb;border:1px solid #fae3bf;"><div style="font-size:11px;color:#a8780f;">峰值时间</div><div class="num" style="font-size:17px;font-weight:700;color:#d97706;margin-top:1px;">8,100</div><div style="font-size:10px;color:#bda66e;">11:00</div></div>
+          <div style="text-align:center;padding:7px;border-radius:9px;background:#f6f8fc;border:1px solid #eef2f6;"><div style="font-size:11px;color:#64718a;">峰值时间</div><div class="num" style="font-size:17px;font-weight:700;margin-top:1px;">2,000</div><div style="font-size:10px;color:#9aa6b6;">06:00</div></div>
+          <div style="text-align:center;padding:7px;border-radius:9px;background:#f6f8fc;border:1px solid #eef2f6;"><div style="font-size:11px;color:#64718a;">峰值时间</div><div class="num" style="font-size:17px;font-weight:700;margin-top:1px;">5,990</div><div style="font-size:10px;color:#9aa6b6;">全天</div></div>
+          <div style="text-align:center;padding:7px;border-radius:9px;background:var(--accent-soft,#eaf0ff);border:1px solid #d3e0ff;"><div style="font-size:11px;color:var(--accent,#2f5fe0);">当前时段</div><div class="num" id="lv-cur" style="font-size:17px;font-weight:700;color:var(--accent,#2f5fe0);margin-top:1px;">5,600</div><div style="font-size:10px;color:#7da0e0;">实时速率</div></div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(180deg,#fff7f6,#fff);border:1px solid #f6cdc8;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:15px 18px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:4px;height:18px;border-radius:2px;background:#e5484d;"></span><div><div class="eb" style="color:#d08b86;">现场散货 · ABNORMAL</div><div style="font-size:17px;font-weight:700;margin-top:1px;color:#b5302a;">异常区</div></div></div>
+          <div style="text-align:center;background:#e5484d;color:#fff;border-radius:10px;padding:4px 11px;"><div class="num" style="font-size:20px;font-weight:700;line-height:1;">5</div><div style="font-size:9px;letter-spacing:.5px;">账单</div></div>
+        </div>
+        <div style="flex:1;margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+          <div class="abn" onclick="{{ openAbnormal }}" style="display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #f0d6d3;cursor:pointer;"><span style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#e5484d;margin-top:4px;box-shadow:0 0 0 3px rgba(229,72,77,.14);"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#16202e;">24h 未分拣 78% · 已超时</div><div style="font-size:11.5px;color:#8a96a8;margin-top:2px;">约 1,494 票 24h 未分拣</div></div></div>
+          <div class="abn" onclick="{{ openAbnormal }}" style="display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #f0d6d3;cursor:pointer;"><span style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#e5484d;margin-top:4px;box-shadow:0 0 0 3px rgba(229,72,77,.14);"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#16202e;">分拣机 回流率 15.2%</div><div style="font-size:11.5px;color:#8a96a8;margin-top:2px;">峰值 5% 高架</div></div></div>
+          <div class="abn" onclick="{{ openAbnormal }}" style="display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #f4e2c4;cursor:pointer;"><span style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#e0921a;margin-top:4px;box-shadow:0 0 0 3px rgba(224,146,26,.14);"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#16202e;">历史积压 484 票</div><div style="font-size:11.5px;color:#8a96a8;margin-top:2px;">32 未匹配到货 · 等待处理</div></div></div>
+          <div class="abn" onclick="{{ openAbnormal }}" style="display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #f4e2c4;cursor:pointer;"><span style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#e0921a;margin-top:4px;box-shadow:0 0 0 3px rgba(224,146,26,.14);"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#16202e;">18h 分拣率 92% · 临界时间</div><div style="font-size:11.5px;color:#8a96a8;margin-top:2px;">昨日 建议在峰值前安排</div></div></div>
+          <div class="abn" onclick="{{ openAbnormal }}" style="display:flex;gap:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #f4e2c4;cursor:pointer;"><span style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#e0921a;margin-top:4px;box-shadow:0 0 0 3px rgba(224,146,26,.14);"></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#16202e;">未匹配到货峰 480 票/时</div><div style="font-size:11.5px;color:#8a96a8;margin-top:2px;">11:00 备注 延迟 卸车区</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分拣机 + 人工 + 时效 -->
+    <div style="display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:15px;">
+      <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:15px 18px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:9px;"><span style="width:4px;height:16px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">MACHINE / MANUAL · 分拣机/人工</div><div style="font-size:15px;font-weight:600;margin-top:1px;">分拣机 人工</div></div></div>
+        <div id="comp" style="width:100%;height:180px;margin-top:4px;"></div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#64718a;"><span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--accent,#2f5fe0);margin-right:6px;"></span>分拣机</span><span><b class="num" style="font-size:14px;color:#16202e;">40,000</b> 分拣机 80%</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#64718a;"><span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#e0921a;margin-right:6px;"></span>人工</span><span><b class="num" style="font-size:14px;color:#16202e;">10,000</b> 人工 20%</span></div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:15px 18px;">
+        <div style="display:flex;align-items:center;gap:9px;"><span style="width:4px;height:16px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">SORTER STATUS · 柱+线</div><div style="font-size:15px;font-weight:600;margin-top:1px;">分拣机状态</div></div></div>
+        <div id="machine" style="width:100%;height:240px;"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:15px 18px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;"><span style="width:4px;height:16px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">TIMELINESS</div><div style="font-size:15px;font-weight:600;margin-top:1px;">分拣时效</div></div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px;">
+          <div><div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12.5px;color:#64718a;">12h 分拣区</span><span><span class="num" style="font-size:19px;font-weight:700;color:#16a34a;">85</span><span style="font-size:11px;color:#9aa6b6;">% 达标</span></span></div><div style="height:8px;border-radius:5px;background:#eef2f6;overflow:hidden;"><div style="width:85%;height:100%;background:#16a34a;border-radius:5px;"></div></div></div>
+          <div><div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12.5px;color:#64718a;">18h 分拣区</span><span><span class="num" style="font-size:19px;font-weight:700;color:#e0921a;">92</span><span style="font-size:11px;color:#9aa6b6;">% · 临界</span></span></div><div style="height:8px;border-radius:5px;background:#eef2f6;overflow:hidden;"><div style="width:92%;height:100%;background:#e0921a;border-radius:5px;"></div></div></div>
+          <div><div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12.5px;color:#64718a;">24h 未分拣</span><span><span class="num" style="font-size:19px;font-weight:700;color:#e5484d;">78</span><span style="font-size:11px;color:#9aa6b6;">% · 超时</span></span></div><div style="height:8px;border-radius:5px;background:#eef2f6;overflow:hidden;"><div style="width:78%;height:100%;background:#e5484d;border-radius:5px;"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分拣量 -->
+    <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+      <div class="eb" style="margin-bottom:14px;">SUPPLY PIPELINE · 备货链</div>
+      <div style="display:flex;align-items:center;gap:0;">
+        <div onclick="{{ openEta }}" style="flex:1;cursor:pointer;"><div style="font-size:12.5px;color:#64718a;">预计到达</div><div style="margin-top:5px;"><span class="num" style="font-size:24px;font-weight:700;">56,592</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div><div style="font-size:11.5px;color:#9aa6b6;margin-top:2px;">155 袋 8 车</div><div style="height:4px;border-radius:3px;background:#e8edf3;margin-top:9px;overflow:hidden;"><div style="width:95%;height:100%;background:#c3d0e8;"></div></div></div>
+        <div style="flex:0 0 90px;text-align:center;color:#c2cbd6;font-size:12px;">卸车区<div style="font-size:18px;line-height:1;margin-top:2px;">待分拣</div></div>
+        <div onclick="{{ openUnload }}" style="flex:1;cursor:pointer;"><div style="font-size:12.5px;color:#64718a;">已到未卸</div><div style="margin-top:5px;"><span class="num" style="font-size:24px;font-weight:700;">59,753</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div><div style="font-size:11.5px;color:#9aa6b6;margin-top:2px;">1,829 袋 17 车</div><div style="height:4px;border-radius:3px;background:#e8edf3;margin-top:9px;overflow:hidden;"><div style="width:100%;height:100%;background:#9fb4dd;"></div></div></div>
+        <div style="flex:0 0 90px;text-align:center;color:#c2cbd6;font-size:12px;">分拣区<div style="font-size:18px;line-height:1;margin-top:2px;">待分拣</div></div>
+        <div onclick="{{ openBacklog }}" style="flex:1;cursor:pointer;padding:10px 14px;margin:-10px -2px;border-radius:11px;background:var(--accent-soft,#eaf0ff);border:1px solid #d3e0ff;"><div style="font-size:12.5px;color:var(--accent,#2f5fe0);font-weight:600;">应分拣</div><div style="margin-top:5px;"><span class="num" style="font-size:26px;font-weight:700;color:var(--accent,#2f5fe0);">10,000</span><span style="font-size:11px;color:#7da0e0;"> 票</span></div><div style="font-size:11.5px;color:#7da0e0;margin-top:2px;">当前装车区</div><div style="height:4px;border-radius:3px;background:#d3e0ff;margin-top:9px;overflow:hidden;"><div style="width:17%;height:100%;background:var(--accent,#2f5fe0);"></div></div></div>
+      </div>
+    </div>
+
+    <!-- 已分拣 目的流向 -->
+    <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:9px;"><span style="width:4px;height:16px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">SORTEDESTINATION 目的流向</div><div style="font-size:16px;font-weight:600;margin-top:1px;">已分拣 × 目的流向</div></div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="display:inline-flex;border:1px solid #d6dde6;border-radius:8px;overflow:hidden;font-size:12px;background:#fff;"><span onclick="{{ onSortHour }}" style="{{ sortHourStyle }}">小时</span><span onclick="{{ onSortCum }}" style="{{ sortCumStyle }}">累计</span></div>
+          <div style="display:inline-flex;border:1px solid #d6dde6;border-radius:8px;overflow:hidden;font-size:12px;background:#fff;"><span onclick="{{ onViewTable }}" style="{{ viewTableStyle }}">表格</span><span onclick="{{ onViewChart }}" style="{{ viewChartStyle }}">图表</span></div>
+          <button onclick="{{ openSorted }}" style="background:#f3f6fa;border:1px solid #e3e8ee;color:var(--accent,#2f5fe0);border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;">展开 / 全部 ?</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <span onclick="{{ onCatAll }}" style="{{ chipAll }}">全部 待分拣 45,823</span>
+        <span onclick="{{ onCatHub }}" style="{{ chipHub }}">hub 待分拣 28</span>
+        <span onclick="{{ onCatStation }}" style="{{ chipStation }}">站点 45,795</span>
+        <span onclick="{{ onCatRoute }}" style="{{ chipRoute }}">路区 0</span>
+        <span onclick="{{ onCatChannel }}" style="{{ chipChannel }}">待分拣环比昨日 3,210</span>
+      </div>
+      <sc-if value="{{ isTable }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow-x:auto;">
+          <sc-for list="{{ sortedRows }}" as="r" hint-placeholder-count="4">
+                </sc-for><table style="width:100%;border-collapse:collapse;font-size:12.5px;font-family:'IBM Plex Mono',monospace;">
+            <thead><tr>
+              <th style="padding:9px 12px;text-align:left;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">目的组织</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">合计票</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">合计袋</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">11:00</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">12:00</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">13:00</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">14:00</th>
+              <th style="padding:9px 12px;text-align:right;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:'Space Grotesk',sans-serif;">15:00</th>
+            </tr></thead>
+            <tbody>
+              <tr class="rowhover">
+                  <td style="padding:9px 12px;text-align:left;border-bottom:1px solid #f0f3f7;font-weight:600;">{{ r.name }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;font-weight:700;">{{ r.total }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#64718a;">{{ r.bags }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#3c4757;">{{ r.c1 }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#3c4757;">{{ r.c2 }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#3c4757;">{{ r.c3 }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#3c4757;">{{ r.c4 }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#3c4757;">{{ r.c5 }}</td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isChart }}" hint-placeholder-val="{{ false }}">
+        <div id="sorted" style="width:100%;height:280px;"></div>
+      </sc-if>
+    </div>
+
+    <!-- 回流原因 回流原因 -->
+    <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 20px;">
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:9px;"><span style="width:4px;height:16px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">REFLOW REASON · 回流原因</div><div style="font-size:16px;font-weight:600;margin-top:1px;">回流原因分布</div></div></div>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:14px;">
+          <span style="font-size:11.5px;color:#64718a;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--accent,#2f5fe0);margin-right:5px;"></span>袋</span>
+          <span style="font-size:11.5px;color:#64718a;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#f97316;margin-right:5px;"></span>未匹配到货</span>
+        </div>
+      </div>
+      <div id="reflow" style="width:100%;height:300px;"></div>
+    </div>
+
+    <!-- 历史留仓 -->
+    <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:9px;"><span style="width:4px;height:16px;border-radius:2px;background:var(--accent,#2f5fe0);"></span><div><div class="eb">HISTORICAL HOLD</div><div style="font-size:16px;font-weight:600;margin-top:1px;">历史留仓待分拣</div></div></div>
+        <div style="display:flex;gap:8px;"><button onclick="{{ onToggleHist }}" style="background:#f3f6fa;border:1px solid #e3e8ee;color:#64718a;border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;">{{ histBtnText }}</button><button onclick="{{ openHistory }}" style="background:#f3f6fa;border:1px solid #e3e8ee;color:var(--accent,#2f5fe0);border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;">查看明细 ?</button></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div onclick="{{ openHistory }}" style="padding:14px 16px;border-radius:11px;background:#fff6f5;border:1px solid #f7d6d3;cursor:pointer;"><div style="font-size:12.5px;color:#64718a;">应分拣</div><div style="margin-top:6px;"><span class="num" style="font-size:24px;font-weight:700;color:#e5484d;">484</span><span style="font-size:11px;color:#9aa6b6;"> 票 待分拣 32 待分拣</span></div></div>
+        <div onclick="{{ openHistory }}" style="padding:14px 16px;border-radius:11px;background:#f7f9fc;border:1px solid #eef2f6;cursor:pointer;"><div style="font-size:12.5px;color:#64718a;">已分拣</div><div style="margin-top:6px;"><span class="num" style="font-size:24px;font-weight:700;">88</span><span style="font-size:11px;color:#9aa6b6;"> 票 待分拣 6 待分拣</span></div></div>
+        <div onclick="{{ openHistory }}" style="padding:14px 16px;border-radius:11px;background:#f7f9fc;border:1px solid #eef2f6;cursor:pointer;"><div style="font-size:12.5px;color:#64718a;">中转</div><div style="margin-top:6px;"><span class="num" style="font-size:24px;font-weight:700;">94</span><span style="font-size:11px;color:#9aa6b6;"> 待分拣</span></div></div>
+      </div>
+      <sc-if value="{{ histExpanded }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;">
+          <div style="border:1px solid #eef2f6;border-radius:11px;overflow:hidden;"><div style="padding:10px 14px;font-size:13px;font-weight:600;background:#fafbfd;border-bottom:1px solid #eef2f6;">1 待分拣 <span class="num" style="color:#e5484d;">484</span></div><div style="padding:12px 14px;font-size:12px;color:#64718a;line-height:2;">中转 14袋/210票 | 揽收 10袋/158票 | 清关 5袋/82票 | 客户自送 3袋/34票 | hub 9袋/135票 | 站点·路区 22/330票 服务渠道 1/19票</div></div>
+          <div style="border:1px solid #eef2f6;border-radius:11px;overflow:hidden;"><div style="padding:10px 14px;font-size:13px;font-weight:600;background:#fafbfd;border-bottom:1px solid #eef2f6;">2 已分拣 <span class="num">88</span></div><div style="padding:12px 14px;font-size:12px;color:#64718a;line-height:2;">待装车 4袋/52票 | 已装未发 2袋/28票 | 已装已发 0袋/8票 | hub 2袋/32票 | 站点 3袋/41票 | 路区 1袋/10票 | 服务渠道 0袋/5票</div></div>
+          <div style="border:1px solid #eef2f6;border-radius:11px;overflow:hidden;"><div style="padding:10px 14px;font-size:13px;font-weight:600;background:#fafbfd;border-bottom:1px solid #eef2f6;">3 箱中转 <span class="num">94</span></div><div style="padding:12px 14px;font-size:12px;color:#64718a;line-height:2;">待装车 52袋 | 已装未发 28袋 | 已装已发 14袋</div></div>
+        </div>
+      </sc-if>
+    </div>
+
+  </div>
+  </sc-if>
+
+  <!-- ============ 分拣区 ============ -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ onBackdrop }}" style="position:fixed;inset:0;background:rgba(12,20,32,.4);backdrop-filter:blur(3px);z-index:80;display:flex;align-items:center;justify-content:center;padding:30px;">
+    <div onclick="{{ stop }}" style="width:880px;max-width:94vw;max-height:86vh;background:#fff;border:1px solid #e8edf3;border-radius:16px;box-shadow:0 30px 80px rgba(12,20,32,.28);display:flex;flex-direction:column;overflow:hidden;animation:pnIn .22s ease;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #eef2f6;">
+        <span style="font-size:15.5px;font-weight:600;">{{ drawerTitle }}</span>
+        <button onclick="{{ closeDrawer }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #e3e8ee;background:#f7f9fc;color:#64718a;cursor:pointer;font-size:15px;">?</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:20px 24px;">{{ drawerBody }}</div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+
+
+  <!-- 三级弹框：运单明细下钻 -->
+  <div id="drill-lightbox" style="display:none;position:fixed;inset:0;background:rgba(12,20,32,.5);backdrop-filter:blur(4px);z-index:90;align-items:center;justify-content:center;padding:30px;" onclick="document.getElementById('drill-lightbox').style.display='none'">
+    <div style="width:700px;max-width:94vw;max-height:80vh;background:#fff;border:1px solid #e8edf3;border-radius:16px;box-shadow:0 30px 80px rgba(12,20,32,.28);display:flex;flex-direction:column;overflow:hidden;animation:pnIn .22s ease;" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #eef2f6;">
+        <span style="font-size:15.5px;font-weight:600;">运单明细</span>
+        <button onclick="document.getElementById('drill-lightbox').style.display='none'" style="width:30px;height:30px;border-radius:8px;border:1px solid #e3e8ee;background:#f7f9fc;color:#64718a;cursor:pointer;font-size:15px;line-height:1;">✕</button>
+      </div>
+      <div id="drill-lightbox-body" style="flex:1;overflow-y:auto;padding:20px 24px;"></div>
+    </div>
+  </div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2f5fe0&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;袋&quot;,&quot;options&quot;:[&quot;#2f5fe0&quot;,&quot;#4f46e5&quot;,&quot;#0e9f8e&quot;,&quot;#c2410c&quot;]},&quot;defaultTrendView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;hour&quot;,&quot;options&quot;:[&quot;hour&quot;,&quot;cum&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;待分拣为&quot;},&quot;expandHistory&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;待分拣为&quot;}}">
+class Component extends DCLogic {
+  state = { mode:'desk', day:'today', trendMode:'hour', sortMode:'hour', view:'table', cat:'all', histExpanded:false, drawer:null };
+
+  T = { text:'#16202e', muted:'#64718a', faint:'#9aa6b6', line:'#e8edf3', line2:'#eef2f6', card:'#fff',
+        primary:'#2f5fe0', amber:'#e0921a', red:'#e5484d', green:'#16a34a', purple:'#7c5cdb', teal:'#0e9f8e',
+        cyan:'#19a7c7', orange:'#f97316', gray:'#aeb8c6', grid:'#eef2f6', axis:'#cbd3dd' };
+
+  hours = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+  trendHour = {
+    sort:   [2000,4800,6200,7100,6600,8100,7900,6400,5600,5200],
+    machine:[1600,3850,4950,5700,5300,6500,6300,5100,4500,4150],
+    manual: [400,950,1250,1400,1300,1600,1600,1300,1100,1050],
+    week:   [1800,4300,5600,6400,6000,7300,7100,5800,5100,4700],
+    yest:   [2100,4600,6000,6900,6300,7700,7500,6100,5300,4900],
+    in:     [3200,5400,6500,6800,6200,7000,5800,4500,4200,3500],
+    out:    [0,1500,3200,4800,5500,6200,6800,6400,5800,5200]
+  };
+  trendCum = {
+    sort:   [2900,13500,31200,56000,85700,121500,160900,203800,250300,300300],
+    week:   [0,5800,17700,35400,56700,82800,112500,144800,180600,218700],
+    yest:   [3100,13300,30500,55700,85900,120700,160900,204700,251900,301100],
+    in:     [3200,14400,32900,58500,89000,125200,165000,208500,255500,306000],
+    machine:[2100,10700,24900,44700,68400,97000,128500,162800,200000,240000],
+    manual: [800,2800,6300,11300,17300,24500,32400,41000,50300,60300],
+    out:    [0,1500,4700,10200,18400,29400,43900,62100,84100,110100]
+  };
+  rate = [2000,4800,6200,7100,6600,8100,7900,6400,5600,5200];
+
+  h24 = ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'];
+  mVol =[8000,16000,22000,17000,22000,21500,19500,17000,17000,17000,15000,25000,24500,18000,24000,22000,22500,11000,20000,22000,17000,24000,23000,16000];
+  mRe  =[3.2,2.8,2.1,1.8,3.5,2.9,2.4,1.9,2.2,4.8,3.1,1.7,2.3,5.2,2.8,2.0,1.5,3.6,1.9,2.7,3.8,15.2,4.1,2.5];
+  rNo  =[120,180,210,180,220,195,165,140,130,155,170,148,160,190,205,175,150,135,125,140,155,165,145,130];
+  rUn  =[80,140,160,155,170,480,385,210,155,130,145,125,138,155,165,148,135,120,110,125,140,150,130,115];
+
+  sortedData = {
+    all:[{name:'合计',total:'45,823',bags:'1,203',h:null},{name:'ATL01',total:'34,529',bags:'181',h:[1735,3234,3433,2900,1800]},{name:'ATL03',total:'11,581',bags:'30',h:[709,1183,1284,980,720]},{name:'CBT',total:'3,210',bags:'8',h:[210,320,410,360,300]},{name:'PDK H',total:'28',bags:'2',h:[0,6,5,2,0]}],
+    hub:[{name:'合计',total:'28',bags:'2',h:null},{name:'PDK H',total:'28',bags:'2',h:[0,6,5,2,0]}],
+    station:[{name:'合计',total:'45,795',bags:'181',h:null},{name:'ATL01',total:'34,529',bags:'181',h:[1735,3234,3433,2900,1800]},{name:'ATL03',total:'11,266',bags:'30',h:[709,1183,1284,980,720]}],
+    route:[{name:'合计',total:'0',bags:'0',h:null}],
+    channel:[{name:'合计',total:'3,210',bags:'8',h:null},{name:'CBT',total:'3,210',bags:'8',h:[210,320,410,360,300]}]
+  };
+
+  accent(){ return this.props.accentColor || this.T.primary; }
+  fmt(n){ return (typeof n==='number'?n:parseInt(n,10)||0).toLocaleString(); }
+
+  componentDidMount(){
+    if(this.props.defaultTrendView) this.setState({trendMode:this.props.defaultTrendView});
+    if(this.props.expandHistory) this.setState({histExpanded:true});
+    this._tryCharts();
+    this._rs=()=>this._resizeAll(); window.addEventListener('resize',this._rs);
+  }
+componentDidUpdate(){ this._tryCharts(); }
+  componentWillUnmount(){ window.removeEventListener('resize',this._rs); if(this._live) clearInterval(this._live); if(this._fixTimer) clearInterval(this._fixTimer); if(this._ro){ this._ro.disconnect(); this._ro=null; } }
+
+  _tick(){
+    if(!Number.isFinite(this._done)) this._done=45823;
+    if(!Number.isFinite(this._total)) this._total=55823;
+    if(this._done<this._total) this._done += Math.floor(6+Math.random()*22);
+    if(this._done>this._total) this._done=this._total;
+    const rate = 5600 + Math.floor((Math.random()-0.5)*420);
+    const prog = this._done/this._total*100;
+    const pending = Math.max(0, 10000-(this._done-45823));
+    const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    set('lv-rate', rate.toLocaleString()); set('lv-cur', rate.toLocaleString());
+    set('lv-sorted', this._done.toLocaleString()); set('lv-prog', prog.toFixed(1));
+    set('lv-pending', pending.toLocaleString());
+    const bar=document.getElementById('lv-bar'); if(bar) bar.style.width=prog.toFixed(1)+'%';
+    const c=document.getElementById('lv-clock'); if(c) c.textContent=new Date().toTimeString().slice(0,8);
+  }
+
+  _chartIds(){ return ['trend','comp','sorted','machine','reflow']; }
+  _tryCharts(){ if(!window.echarts){ setTimeout(()=>this._tryCharts(),60); return; } this.buildCharts(); this._fixSizes(true); this._observe(); this._startFixLoop(); }
+  _inst(id){ const el=document.getElementById(id); if(!el) return null; let i=window.echarts.getInstanceByDom(el); if(!i) i=window.echarts.init(el); return i; }
+  _resizeAll(){ this._fixSizes(true); }
+  _fixSizes(force){ this._chartIds().forEach(id=>{ const el=document.getElementById(id); if(!el) return; const i=window.echarts.getInstanceByDom(el); if(!i) return; if(force || (el.clientWidth>0 && Math.abs(i.getWidth()-el.clientWidth)>2)) i.resize(); }); }
+  _startFixLoop(){ if(this._fixTimer) return; let n=0; this._fixTimer=setInterval(()=>{ this._fixSizes(); if(++n>=40){ clearInterval(this._fixTimer); this._fixTimer=null; } },350); }
+  _observe(){ if(this._ro || !window.ResizeObserver) return; this._ro=new ResizeObserver(()=>this._fixSizes(true));
+    this._chartIds().forEach(id=>{ const el=document.getElementById(id); if(el) this._ro.observe(el); }); }
+
+  buildCharts(){ this._trend(); this._comp(); this._machine(); this._reflow(); if(this.state.view==='chart') this._sorted(); }
+
+  _trend(){ const c=this._inst('trend'); if(!c) return; const T=this.T,a=this.accent();
+    const hourMode=this.state.trendMode==='hour';
+    const D=hourMode?this.trendHour:this.trendCum;
+    const defs=[['分拣票数',D.sort,a,2.8,'solid'],['分拣机分拣',D.machine,T.purple,2,'solid'],['人工分拣',D.manual,T.orange,2,'solid'],['同维度上周',D.week,T.amber,1.8,'dashed'],['环比昨日',D.yest,T.gray,1.6,'solid'],['来货票数',D.in,T.teal,1.6,'solid'],['出站票数',D.out,T.cyan,1.6,'solid']];
+    c.setOption({tooltip:{trigger:'axis'},
+      legend:{top:0,type:'scroll',textStyle:{fontSize:11.5,color:T.muted},itemWidth:16,itemHeight:3,
+        selected:{'分拣票数':true,'分拣机分拣':true,'人工分拣':true,'同维度上周':true,'环比昨日':false,'来货票数':false,'出站票数':false}},
+      grid:{left:50,right:16,top:34,bottom:26},
+      xAxis:{type:'category',data:this.hours,boundaryGap:false,axisLine:{lineStyle:{color:T.axis}},axisTick:{show:false},axisLabel:{color:T.muted,fontSize:11}},
+      yAxis:{type:'value',axisLabel:{color:T.muted,fontSize:10,formatter:v=>v>=1000?(v/1000)+'k':v},splitLine:{lineStyle:{color:T.grid,type:'dashed'}}},
+      series:defs.map((d,i)=>({name:d[0],type:'line',data:d[1],smooth:true,symbol:'circle',symbolSize:i===0?6:0,showSymbol:i===0,
+        lineStyle:{color:d[2],width:d[3],type:d[4]},itemStyle:{color:d[2]},
+        markPoint:(i===0&&hourMode)?{symbol:'pin',symbolSize:52,z:10,data:[{type:'max'},{type:'min'}],itemStyle:{color:T.amber,borderColor:'#fff',borderWidth:1.5},label:{fontSize:10.5,color:'#1a1206',fontWeight:700,formatter:p=>(p.data.type==='max'?'待分拣 ':'待分拣 ')+Number(p.value).toLocaleString()}}:undefined,
+        areaStyle:i===0?{color:new window.echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(47,95,224,.16)'},{offset:1,color:'rgba(47,95,224,0)'}])}:undefined}))
+    },true); }
+
+  _comp(){ const c=this._inst('comp'); if(!c) return; const T=this.T,a=this.accent();
+    c.setOption({tooltip:{trigger:'item',formatter:'{b}: {c} 票 ({d}%)'},
+      series:[{type:'pie',radius:['58%','82%'],center:['50%','50%'],avoidLabelOverlap:false,
+        label:{show:true,position:'center',formatter:'袋\n80%',fontSize:14,fontWeight:'bold',color:T.text,lineHeight:17},
+        labelLine:{show:false},
+        data:[{value:40000,name:'分拣机',itemStyle:{color:a}},{value:10000,name:'人工',itemStyle:{color:T.amber}}]}]},true); }
+
+  _machine(){ const c=this._inst('machine'); if(!c) return; const T=this.T,a=this.accent();
+    c.setOption({tooltip:{trigger:'axis'},
+      legend:{top:0,type:'scroll',textStyle:{fontSize:11,color:T.muted},itemWidth:14,itemHeight:3,selected:{'分拣量':true,'回流率':true}},
+      grid:{left:44,right:40,top:30,bottom:24},
+      xAxis:{type:'category',data:this.h24,axisLine:{lineStyle:{color:T.axis}},axisTick:{show:false},axisLabel:{color:T.muted,fontSize:9}},
+      yAxis:[{type:'value',axisLabel:{color:T.muted,fontSize:10,formatter:v=>v>=1000?(v/1000)+'k':v},splitLine:{lineStyle:{color:T.grid,type:'dashed'}}},
+        {type:'value',min:0,max:35,axisLabel:{color:T.muted,fontSize:10,formatter:'{value}%'},splitLine:{show:false}}],
+      series:[
+        {name:'分拣量',type:'bar',data:this.mVol,itemStyle:{color:a,borderRadius:[2,2,0,0]},barMaxWidth:11},
+        {name:'分拣量',type:'line',yAxisIndex:1,data:this.mRe,smooth:true,symbol:'none',lineStyle:{color:T.amber,width:1.8},itemStyle:{color:T.amber},areaStyle:{color:'rgba(224,146,26,.06)'}}
+      ]},true); }
+
+  _reflow(){ const c=this._inst('reflow'); if(!c) return; const T=this.T,a=this.accent();
+    c.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},legend:{show:false},
+      grid:{left:42,right:16,top:14,bottom:26},
+      xAxis:{type:'category',data:this.h24,axisLine:{lineStyle:{color:T.axis}},axisTick:{show:false},axisLabel:{color:T.muted,fontSize:9.5}},
+      yAxis:{type:'value',axisLabel:{color:T.muted,fontSize:10},splitLine:{lineStyle:{color:T.grid,type:'dashed'}}},
+      series:[
+        {name:'袋',type:'bar',stack:'r',data:this.rNo,itemStyle:{color:a},barMaxWidth:13},
+        {name:'未匹配到货',type:'bar',stack:'r',data:this.rUn,itemStyle:{color:T.orange,borderRadius:[2,2,0,0]},barMaxWidth:13}
+      ]},true); }
+
+  _sorted(){ const c=this._inst('sorted'); if(!c) return; const T=this.T,a=this.accent();
+    const rows=(this.sortedData[this.state.cat]||this.sortedData.all).filter(r=>r.h);
+    const palette=[a,T.orange,T.green,T.purple,T.cyan];
+    c.setOption({tooltip:{trigger:'axis'},legend:{top:0,textStyle:{fontSize:11.5,color:T.muted},itemWidth:14,itemHeight:3},
+      grid:{left:48,right:16,top:34,bottom:26},
+      xAxis:{type:'category',data:['11:00','12:00','13:00','14:00','15:00'],boundaryGap:false,axisLine:{lineStyle:{color:T.axis}},axisTick:{show:false},axisLabel:{color:T.muted,fontSize:11}},
+      yAxis:{type:'value',axisLabel:{color:T.muted,fontSize:10,formatter:v=>v>=1000?(v/1000)+'k':v},splitLine:{lineStyle:{color:T.grid,type:'dashed'}}},
+      series:rows.map((r,i)=>{ let d=r.h.slice(); if(this.state.sortMode==='cum'){let s=0;d=d.map(v=>s+=v);} return {name:r.name,type:'line',data:d,smooth:true,symbol:'circle',symbolSize:4,lineStyle:{color:palette[i%palette.length],width:2},itemStyle:{color:palette[i%palette.length]}};})
+    },true); }
+
+  th_table(head,rows,opts){ const T=this.T; opts=opts||{};
+    let h='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;font-family:\'IBM Plex Mono\',monospace;">';
+    h+='<thead><tr>'+head.map((c,i)=>'<th style="padding:8px 11px;text-align:'+(i===0?'left':'right')+';color:'+T.muted+';font-weight:600;border-bottom:2px solid '+T.line2+';background:#fafbfd;font-family:\'Space Grotesk\',sans-serif;white-space:nowrap;">'+c+'</th>').join('')+'</tr></thead><tbody>';
+    rows.forEach((r,ri)=>{ const tot=ri===0&&opts.totalFirst; const clk=opts.clickable&&!tot;
+      h+='<tr'+(clk?' style="cursor:pointer;" onclick="window.openDrill(event,r[0],r[1])"':'')+'>'+r.map((c,i)=>{ const dg=(opts.danger&&opts.danger(r))?('color:'+T.red+';'):''; return '<td style="padding:8px 11px;text-align:'+(i===0?'left':'right')+';border-bottom:1px solid '+T.line2+';'+(tot?'font-weight:700;':(i===0?'font-weight:600;':''))+dg+'white-space:nowrap;">'+c+'</td>';}).join('')+'</tr>'; });
+    return h+'</tbody></table></div>';
+  }
+  buildDrawerHtml(drawerType){ if(drawerType==='backlog') return this.th_stats([['应分拣','6,795',this.T.red],['今日已入库-应分拣','6,311'],['历史留仓-应分拣','484']])
+      +'<input type="radio" name="backlog-tab" id="btab1" style="display:none" checked>'
+      +'<input type="radio" name="backlog-tab" id="btab2" style="display:none">'
+      +'<div style="display:flex;gap:8px;margin:12px 0 6px;">'
+      +'<label for="btab1" style="padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12.5px;background:#f3f6fa;color:#64718a;">时间分布</label>'
+      +'<label for="btab2" style="padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12.5px;background:#f3f6fa;color:#64718a;">目的流向</label>'
+      +'</div>'
+      +'<style>'
+      +'#btab1:checked ~ label[for="btab1"],#btab2:checked ~ label[for="btab2"]{background:#2f5fe0;color:#fff;}'
+      +'#btab1:checked ~ .backlog-time{display:block;}'
+      +'#btab2:checked ~ .backlog-dest{display:block;}'
+      +'</style>'
+      +'<div class="backlog-time" style="display:none;">'+this.sec('? 积压时间分布')+this.th_table(['时间分布','运单数'],[['合计','6,795'],['<24H','6,651'],['48H','120'],['72H','20'],['>72H','4']],{totalFirst:true,danger:r=>r[0]==='>72H',clickable:true'})+'</div>'
+      +'<div class="backlog-dest" style="display:none;">'+this.sec('?? 目服务渠道')+this.th_table(['目袋组','运单数'],[['C NO.H','2,420'],['DFW H','1,560'],['IAH H','1,205'],['SFO H','980']],{clickable:true})+'</div>';
+    if(drawerType==='sorted') return this.th_stats([['已分拣','45,823'],['袋数','1,203'],['目的组织','5']])
+      +this.sec('?? 目环比昨日 小时')+this.th_table(['目袋组','合计票','袋','11时','12时','13时'],[['合计','45,823','1,203','待分拣','待分拣','待分拣'],['ATL01','34,529','181','1,735','3,234','3,433'],['ATL03','11,581','30','709','1,183','1,284'],['CBT','3,210','8','210','320','410'],['PDK H','28','2','待分拣','6','5']],{totalFirst:true});
+    if(drawerType==='eta') return this.th_stats([['预计到达','8',this.T.primary],['袋','155'],['票待分拣','56,592'],['目的组织','6']])
+      +this.sec('?? 目已到达明细')+this.th_table(['目服务渠道','路区','袋','袋','票待分拣','占比'],[['合计','','8','155','56,592','100%'],['站点 SDF','袋','2','58','21,300','37.6%'],['站点 待分拣 BNA','袋','2','46','16,200','28.6%'],['站点 待分拣 CLT','支待分拣','1','21','8,900','15.7%'],['站点 待分拣 RDU','支待分拣','1','16','6,492','11.5%'],['hub 待分拣 ATL','袋','1','8','3,200','5.7%']],{totalFirst:true});
+    if(drawerType==='unload') return this.th_stats([['已到未卸','17',this.T.red],['袋','1,829'],['票待分拣','59,753']])
+      +this.sec('? 袋滞留时长分布')+this.th_table(['时间分布','车辆','袋数','运单数'],[['合计','17','1,829','59,753'],['0-0.5H','1','80','2,800'],['1-3H','2','180','6,200'],['3-6H','3','300','9,800'],['6-12H','5','520','18,000'],['>12H','6','749','22,953']],{totalFirst:true,danger:r=>r[0]==='>12H'});
+    if(drawerType==='history') return this.th_stats([['历史留仓留仓票','484'],['总袋数','32',this.T.red],['中转','32',this.T.red],['已分拣','6']])
+      +this.sec('? 滞留时长分布')+this.th_table(['入库时间','留仓票','待执行','占比'],[['合计','484','32','100%'],['06-15 06-07','120','8','24.8%'],['06-15 07-08','95','6','19.6%'],['06-15 05-06','72','5','14.9%'],['06-15 08-09','68','4','14.0%'],['06-14 袋前','129','9','26.7%']],{totalFirst:true})
+      +this.sec('?? 目的组织')+this.th_table(['目目的的组织','留仓票','待执行','占比'],[['合计','484','32','100%'],['站点','330','22','68.2%'],['hub','135','9','27.9%'],['环比昨日','19','1','3.9%']],{totalFirst:true}); return ''; }
+
+  drawerTitleFor(t){ return ({abnormal:'异常聚焦  · 现场散货',backlog:'应分拣 · 积压明细',sorted:'已分拣  · 目的车辆明细',eta:'预计到达 · 到达明细',unload:'已到未卸 · 明细',history:'历史留仓  · 明细'})[t]||'明细'; }
+
+  seg(active){ const a=this.accent(); return active?('padding:7px 13px;cursor:pointer;background:'+a+';color:#fff;'):('padding:7px 13px;cursor:pointer;color:'+this.T.faint+';background:transparent;'); }
+  segS(active){ const a=this.accent(); return active?('padding:6px 12px;cursor:pointer;background:'+a+';color:#fff;'):('padding:6px 12px;cursor:pointer;color:'+this.T.faint+';background:transparent;'); }
+  chip(cat){ const on=this.state.cat===cat,a=this.accent(); return 'padding:7px 14px;border-radius:20px;font-size:12.5px;cursor:pointer;font-family:"IBM Plex Mono",monospace;'+(on?('background:'+a+';color:#fff;border:1px solid '+a+';'):'background:#f3f6fa;color:#64718a;border:1px solid #e3e8ee;'); }
+
+  renderVals(){
+    const s=this.state,a=this.accent();
+    const open=t=>()=>this.setState({drawer:t});
+    const soft = (this.props.accentColor? 'color-mix(in srgb,'+a+' 12%,#fff)' : '#eaf0ff');
+    const vars='--accent:'+a+';--accent-soft:'+soft+';';
+    const rootStyle = 'min-height:100vh;display:flex;flex-direction:column;'+'background:#eef1f5;color:#16202e;'+vars;
+    const rows=(this.sortedData[s.cat]||this.sortedData.all).map(r=>{
+      let c=['待分拣','待分拣','待分拣','待分拣','待分拣'];
+      if(r.h){ let d=r.h.slice(); if(s.sortMode==='cum'){let sum=0;d=d.map(v=>sum+=v);} c=d.map(v=>this.fmt(v)); }
+      return {name:r.name,total:r.total,bags:r.bags,c1:c[0],c2:c[1],c3:c[2],c4:c[3],c5:c[4]};
+    });
+    return {
+      rootStyle,
+      isDesk:true,
+      onToday:()=>this.setState({day:'today'}), onTomorrow:()=>this.setState({day:'tomorrow'}),
+      todayStyle:this.seg(s.day==='today'), tomorrowStyle:this.seg(s.day==='tomorrow'),
+      onTrendHour:()=>this.setState({trendMode:'hour'}), onTrendCum:()=>this.setState({trendMode:'cum'}),
+      trendHourStyle:this.segS(s.trendMode==='hour'), trendCumStyle:this.segS(s.trendMode==='cum'),
+      onSortHour:()=>this.setState({sortMode:'hour'}), onSortCum:()=>this.setState({sortMode:'cum'}),
+      sortHourStyle:this.segS(s.sortMode==='hour'), sortCumStyle:this.segS(s.sortMode==='cum'),
+      onViewTable:()=>this.setState({view:'table'}), onViewChart:()=>this.setState({view:'chart'}),
+      viewTableStyle:this.segS(s.view==='table'), viewChartStyle:this.segS(s.view==='chart'),
+      isTable:s.view==='table', isChart:s.view==='chart',
+      onCatAll:()=>this.setState({cat:'all'}), onCatHub:()=>this.setState({cat:'hub'}), onCatStation:()=>this.setState({cat:'station'}), onCatRoute:()=>this.setState({cat:'route'}), onCatChannel:()=>this.setState({cat:'channel'}),
+      chipAll:this.chip('all'), chipHub:this.chip('hub'), chipStation:this.chip('station'), chipRoute:this.chip('route'), chipChannel:this.chip('channel'),
+      sortedRows:rows,
+      histExpanded:s.histExpanded, onToggleHist:()=>this.setState({histExpanded:!s.histExpanded}), histBtnText:s.histExpanded?'袋':'展开全部',
+      openAbnormal:open('abnormal'), openBacklog:open('backlog'), openSorted:open('sorted'), openEta:open('eta'), openUnload:open('unload'), openHistory:open('history'),
+      drawerOpen:!!s.drawer, drawerTitle:s.drawer?this.drawerTitleFor(s.drawer):'',
+      drawerBody:s.drawer?React.createElement('div',{dangerouslySetInnerHTML:{__html:this.buildDrawerHtml(s.drawer)}}):null,
+      closeDrawer:()=>this.setState({drawer:null}), onBackdrop:()=>this.setState({drawer:null}), stop:e=>e.stopPropagation()
+    };
+  }
+}
+</script>
+
+
+
+<script>
+window.openDrill = function(e, name, count) {
+  e.stopPropagation();
+  var lb = document.getElementById('drill-lightbox');
+  var body = document.getElementById('drill-lightbox-body');
+  if (!lb || !body) return;
+  var n = name || '';
+  var c = count || '';
+  body.innerHTML = '<div style="margin-bottom:16px;">' +
+    '<h4 style="font-size:13px;font-weight:700;margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid #eef2f6;">运单明细 - ' + n + '</h4>' +
+    '<div style="font-size:12px;color:#9aa6b6;margin-bottom:10px;">共 ' + c + ' 票</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:12.5px;font-family:\'IBM Plex Mono\',monospace;">' +
+    '<thead><tr>' +
+    '<th style="padding:8px 11px;text-align:left;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:\'Space Grotesk\',sans-serif;">运单号</th>' +
+    '<th style="padding:8px 11px;text-align:left;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:\'Space Grotesk\',sans-serif;">目的地</th>' +
+    '<th style="padding:8px 11px;text-align:left;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:\'Space Grotesk\',sans-serif;">状态</th>' +
+    '<th style="padding:8px 11px;text-align:left;color:#64718a;font-weight:600;border-bottom:2px solid #eef2f6;background:#fafbfd;font-family:\'Space Grotesk\',sans-serif;">入库时间</th>' +
+    '</tr></thead>' +
+    '<tbody>' +
+    '<tr><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">' + n + '-001</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">ATL01</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">已分拣</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">06-16 08:30</td></tr>' +
+    '<tr><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">' + n + '-002</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">ATL03</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">已分拣</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">06-16 09:15</td></tr>' +
+    '<tr><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">' + n + '-003</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">DFW H</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">待分拣</td><td style="padding:8px 11px;border-bottom:1px solid #f0f3f7;">06-16 10:00</td></tr>' +
+    '</tbody></table></div>';
+  lb.style.display = 'flex';
+};
+</script>
+</body></html>

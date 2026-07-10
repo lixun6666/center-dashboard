@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中心看板 · 卸车区（独立版）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{--gofo-primary:#fc4c02;--gofo-primary-hover:#f76121;--gofo-primary-active:#e84702;--gofo-primary-light:#fff1e6;--gofo-header-bg:#001529;--gofo-page-bg:#f0f2f5;--gofo-accent:#fc4c02;--gofo-accent-soft:#fff1e6;}
+  body{font-family:"Roboto","PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#16202e;}
+  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-0.4px;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes pnIn{from{opacity:0;transform:scale(.97) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  @keyframes feedup{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+  .feedwrap:hover .feedrun{animation-play-state:paused;}
+  .tabh{transition:color .15s;}
+  .tabh:hover{color:#fff!important;}
+  .kpi{transition:box-shadow .15s,transform .15s;}
+  .kpi:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .rowhover:hover{background:#fafafa!important;}
+  .abn:hover{background:#fff!important;border-color:#f3c0bc!important;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,140,170,.3);border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  /* 预警条 */
+  .alert-bar{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff5f4,#fff);border:1px solid #f6cdc8;border-left:4px solid #e5484d;border-radius:8px;padding:14px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .alert-bar .ico{font-size:20px;}
+  .alert-bar .tx{flex:1;font-size:14px;color:#5b1a16;}
+  .alert-bar .tx b{color:#cf1322;}
+  .alert-bar .act{background:#e5484d;color:#fff;border:none;border-radius:2px;padding:8px 16px;cursor:pointer;font-size:13px;white-space:nowrap;font-weight:600;font-family:inherit;}
+  /* 链节点 */
+  .chain-node{flex:1;border-radius:8px;padding:14px 17px;border:1px solid #f0f0f0;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .chain-node:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .chain-node.core{border-color:#f3d2cf;background:#fff;}
+  .chain-node.done{border-color:#d6efe3;background:linear-gradient(135deg,#f4fbf8,#fff);}
+  .chain-arrow{flex:0 0 60px;text-align:center;color:#c2cbd6;font-size:12px;}
+  .chain-arrow .ar{font-size:20px;line-height:1;margin-top:2px;}
+  /* 辅助卡 */
+  .aux-card{border-radius:8px;padding:14px 17px;background:#fff;border:1px solid #f0f0f0;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .aux-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .aux-card .al{font-size:12px;color:#64718a;font-weight:600;}
+  .aux-card .av{font-size:24px;font-weight:700;margin-top:6px;}
+  .aux-card .as{font-size:11px;color:#9aa6b6;margin-top:5px;line-height:1.4;}
+  /* seg */
+  .seg{display:inline-flex;border:1px solid #d6dde6;border-radius:9px;overflow:hidden;font-size:12.5px;background:#fff;}
+  .seg span{padding:7px 12px;cursor:pointer;color:#64718a;}
+  .seg .on{background:var(--gofo-accent-soft,#fff1e6);color:var(--gofo-accent,#fc4c02);font-weight:500;}
+  .seg .disabled{color:#c0c4cc;cursor:not-allowed;pointer-events:none;}
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+  th,td{padding:9px 12px;text-align:right;border-bottom:1px solid #f0f0f0;white-space:nowrap;}
+  th:first-child,td:first-child{text-align:left;}
+  thead th{color:#64718a;font-weight:600;border-bottom:2px solid #f0f0f0;background:#fafbfd;font-family:'Roboto',sans-serif;}
+  .tot{font-weight:700;}
+  .key-col{font-weight:700;color:#16202e;}
+  .scroll{overflow-x:auto;}
+  .numlink{color:#e5484d;cursor:pointer;}
+  .numlink:hover{text-decoration:underline;}
+  .mtlink{color:var(--gofo-accent,#fc4c02);cursor:pointer;}
+  .dd{color:var(--gofo-accent,#fc4c02);cursor:pointer;}
+  /* 徽标 */
+  .lbadge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:8px;font-weight:600;}
+  .lb-trunk{background:#fff1e6;color:#fc4c02;}
+  .lb-branch{background:#eef7f0;color:#3a9d5d;}
+  .stsplit{font-size:11px;color:#9aa6b6;margin-top:3px;}
+  /* 下钻 */
+  .dbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+  .dexport{background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dquery{background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dreset{background:#fff;color:#64718a;border:1px solid #d6dde6;border-radius:2px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dreset:hover{background:#f5f6f8;}
+  .dfilters{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
+  .dfilters .fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#64718a;}
+  .dfilters select,.dfilters input{border:1px solid #d6dde6;border-radius:2px;padding:6px 10px;font-size:12px;min-width:170px;background:#fff;color:#64718a;font-family:inherit;}
+  .dpager{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;font-size:12px;color:#64718a;}
+  .dpager select,.dpager input{border:1px solid #d6dde6;border-radius:6px;padding:4px 6px;font-size:12px;color:#64718a;font-family:inherit;background:#fff;}
+  .dpager input{width:46px;text-align:center;}
+  .dpager button{border:1px solid #d6dde6;background:#fff;color:#64718a;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;font-size:12px;}
+  .dpager button:disabled{opacity:.45;cursor:default;}
+  .dpager .pg-no.on{background:#fc4c02;color:#fff;border-color:#fc4c02;}
+  .dpager .pg-step{border:none;background:transparent;color:#9aa6b6;font-size:16px;padding:0 4px;}
+  .dpager .pg-step:disabled{color:#d6dde6;}
+  /* 抽屉层级 */
+  .drawer-stack{position:fixed;inset:0;pointer-events:none;z-index:1000;}
+  .drawer-layer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:30px;pointer-events:auto;}
+  .drawer-layer.on{display:flex;}
+  .drawer-layer .drawer-backdrop{position:absolute;inset:0;background:rgba(12,20,32,.4);backdrop-filter:blur(3px);}
+  .drawer-layer.level-2 .drawer-backdrop{background:rgba(12,20,32,.28);backdrop-filter:blur(2px);}
+  .drawer-layer.level-3 .drawer-backdrop{background:rgba(12,20,32,.16);backdrop-filter:blur(1px);}
+  .drawer-panel{position:relative;width:880px;max-width:94vw;max-height:86vh;background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 30px 80px rgba(12,20,32,.28);overflow:hidden;animation:pnIn .22s ease;display:flex;flex-direction:column;}
+  .drawer-layer.level-2 .drawer-panel{width:820px;max-width:90vw;max-height:82vh;box-shadow:0 20px 60px rgba(12,20,32,.22);}
+  .drawer-layer.level-3 .drawer-panel{width:760px;max-width:86vw;max-height:78vh;box-shadow:0 14px 40px rgba(12,20,32,.16);}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #f0f0f0;flex:0 0 auto;}
+  .drawer-head h3{font-size:15.5px;margin:0;font-weight:600;}
+  .drawer-head .drawer-close{width:30px;height:30px;border-radius:2px;border:1px solid #e3e8ee;background:#f7f9fc;cursor:pointer;font-size:15px;color:#64718a;}
+  .drawer-head .drawer-close:hover{background:#f0f0f0;color:#16202e;}
+  .drawer-body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .drawer-body .drawer-stats{display:flex;gap:16px;margin-bottom:16px;}
+  .drawer-body .drawer-stat{flex:1;background:#fafbfd;border:1px solid #f0f0f0;border-radius:8px;padding:12px 16px;text-align:center;}
+  .drawer-body .drawer-stat .l{font-size:12px;color:#9aa6b6;margin-bottom:4px;}
+  .drawer-body .drawer-stat .v{font-size:20px;font-weight:800;color:#16202e;}
+  .drawer-body .drawer-stat .v .u{font-size:12px;color:#9aa6b6;font-weight:normal;}
+  .drawer-body .drawer-section{margin-bottom:20px;}
+  .drawer-body .drawer-section h4{font-size:13px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;}
+  .drawer-body .drawer-sub{font-size:12px;color:#9aa6b6;margin-bottom:6px;}
+  /* lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:none;align-items:center;justify-content:center;}
+  .lightbox.on{display:flex;}
+  .lightbox .lbinner{background:#fff;border-radius:8px;padding:14px;text-align:center;}
+  .lightbox .lbimg{width:440px;max-width:80vw;height:300px;border-radius:2px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#9aa6b6;font-size:14px;border:1px solid #f0f0f0;}
+  .lightbox .lbcap{margin-top:10px;font-size:13px;color:#16202e;}
+  .lightbox .lbclose{margin-top:10px;border:1px solid #d6dde6;background:#fff;border-radius:2px;padding:6px 16px;cursor:pointer;font-size:12px;color:#64718a;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部导航 ============ -->
+<div style="z-index:30;background:#001529;border-bottom:1px solid #002140;box-shadow:0 1px 3px rgba(0,0,0,.15);">
+  <div style="display:flex;align-items:center;gap:22px;padding:11px 26px;">
+    <div style="display:flex;align-items:center;gap:11px;">
+      <div style="width:30px;height:30px;border-radius:2px;background:linear-gradient(135deg,#fc4c02,#f76121);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;">卸</div>
+      <div style="font-size:15px;font-weight:600;letter-spacing:.2px;color:#fff;">中心实时看板</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;margin-left:6px;">
+      <span class="tabh" style="padding:8px 15px;border-radius:2px;font-size:13.5px;color:rgba(255,255,255,.65);cursor:pointer;">概况</span>
+      <span style="padding:8px 15px;border-radius:2px;font-size:13.5px;font-weight:600;color:#fff;background:#fc4c02;box-shadow:0 2px 8px rgba(252,76,2,.3);cursor:pointer;">卸车区</span>
+      <span class="tabh" style="padding:8px 15px;border-radius:2px;font-size:13.5px;color:rgba(255,255,255,.65);cursor:pointer;">分拣区</span>
+      <span class="tabh" style="padding:8px 15px;border-radius:2px;font-size:13.5px;color:rgba(255,255,255,.65);cursor:pointer;">装车区</span>
+      <span class="tabh" style="padding:8px 15px;border-radius:2px;font-size:13.5px;color:rgba(255,255,255,.65);cursor:pointer;">异常区</span>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#16a34a;">
+      <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.6s infinite;"></span>
+      <span style="color:rgba(255,255,255,.65);">数据实时</span> <span class="num" style="color:rgba(255,255,255,.5);">14:32:08</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;padding:10px 26px;border-top:1px solid #002140;background:#001f33;">
+    <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:2px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);font-size:13px;cursor:pointer;color:rgba(255,255,255,.85);">ATL H <span style="color:rgba(255,255,255,.45);">▾</span></div>
+    <div style="display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:2px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);font-size:12.5px;color:rgba(255,255,255,.65);">操作日 <b class="num" style="color:#fff;font-weight:500;">06-16 06:00 ~ 06-17 06:00</b></div>
+    <div style="display:inline-flex;border:1px solid rgba(255,255,255,.2);border-radius:2px;overflow:hidden;background:transparent;">
+      <span style="padding:7px 13px;cursor:pointer;background:#fc4c02;color:#fff;">今日</span>
+      <span style="padding:7px 13px;cursor:pointer;color:rgba(255,255,255,.5);background:transparent;">明日</span>
+    </div>
+    <div style="display:flex;gap:7px;color:#64718a;font-size:12px;">
+      <span style="padding:7px 10px;border-radius:2px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.65);">集货截单 <b class="num" style="color:#fff;font-weight:500;">0D 20:00</b></span>
+      <span style="padding:7px 10px;border-radius:2px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.65);">散货截单 <b class="num" style="color:#fff;font-weight:500;">1D 03:00</b></span>
+    </div>
+    <div style="flex:1;"></div>
+    <span style="font-size:12px;color:rgba(255,255,255,.65);">卸车班次</span>
+    <div class="seg">
+      <span class="on">全天</span>
+      <span class="disabled">班次1</span>
+      <span class="disabled">班次2</span>
+      <span class="disabled">班次3</span>
+    </div>
+    <button style="background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">查询</button>
+  </div>
+</div>
+
+<!-- ============ 内容区 ============ -->
+<div style="padding:16px 26px 44px;display:flex;flex-direction:column;gap:15px;">
+
+  <!-- FR-2 到车—卸车进度（链式） -->
+  <div style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:16px 22px;">
+    <div style="display:flex;align-items:stretch;gap:0;">
+      <div class="chain-node" data-drawer="eta" style="border-color:#f0f0f0;background:#fff;">
+        <div style="font-size:12px;color:#16202e;font-weight:600;">预计到车</div>
+        <div style="margin-top:8px;"><span class="num dd" style="font-size:32px;font-weight:700;color:#16202e;">8</span><span style="font-size:11px;color:#64718a;"> 辆</span></div>
+        <div style="font-size:10.5px;color:#64718a;margin-top:5px;">155 袋 · 56,592 票 <span style="color:#fc4c02;">→</span></div>
+      </div>
+      <div class="chain-arrow">到车<div class="ar">→</div></div>
+      <div class="chain-node core" data-drawer="unload">
+        <div style="font-size:12px;color:#c0362f;font-weight:600;">已到未卸</div>
+        <div style="margin-top:8px;"><span class="num dd" style="font-size:26px;font-weight:700;color:#e5484d;">17</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div>
+        <div style="font-size:10.5px;color:#bd7d7d;margin-top:5px;">1,829 袋 · 59,753 票</div>
+      </div>
+      <div class="chain-arrow">卸车<div class="ar">→</div></div>
+      <div class="chain-node done" data-drawer="unloaded">
+        <div style="font-size:12px;color:#64718a;font-weight:600;">已卸</div>
+        <div style="margin-top:8px;"><span class="num dd" style="font-size:26px;font-weight:700;color:#b0b5bc;">0</span><span style="font-size:11px;color:#b0b5bc;"> 辆</span></div>
+        <div style="font-size:10.5px;color:#b0b5bc;margin-top:5px;">0 袋 · 0 票</div>
+      </div>
+    </div>
+    <!-- 辅助卡 -->
+    <div style="margin-top:12px;">
+      <span class="dd" id="aux-toggle" style="font-size:12px;">展开辅助卡（上游未发车 / 在途 / 异常未到 / 截单后到）▾</span>
+    </div>
+    <div id="aux-cards" style="margin-top:10px;display:none;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div class="aux-card" data-drawer="upstream">
+        <div class="al">上游未发车</div>
+        <div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div>
+        <div class="as">0 袋 · 0 票</div>
+      </div>
+      <div class="aux-card" data-drawer="transit">
+        <div class="al">在途</div>
+        <div class="av"><span class="num dd">7</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div>
+        <div class="as">276 袋 · 48,877 票</div>
+      </div>
+      <div class="aux-card" data-drawer="abnormal">
+        <div class="al">异常未到 <span class="warnflag">超时跟进</span></div>
+        <div class="av" style="color:#e5484d;"><span class="num dd">2</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div>
+        <div class="as">166 袋 · 4,064 票</div>
+      </div>
+      <div class="aux-card" data-drawer="latest">
+        <div class="al">截单后到</div>
+        <div class="av"><span class="num dd">3</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div>
+        <div class="as">49 袋 · 17,403 票</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FR-3 预计到车 + 异常显示区 -->
+  <div style="display:flex;gap:15px;align-items:stretch;">
+    <!-- 预计到车 -->
+    <div style="flex:1;background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:16px 22px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span style="width:4px;height:18px;border-radius:2px;background:#fc4c02;"></span>
+          <div style="font-size:17px;font-weight:700;">预计到车</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <div class="seg" id="seg-eta-line"><span class="on" data-line="all">全部</span><span data-line="trunk">干线</span><span data-line="branch">支线</span></div>
+          <div class="seg" id="seg-eta-mode"><span class="on" data-mode="hour">单小时</span><span data-mode="cum">累计</span></div>
+          <div class="seg" id="seg-eta-metric"><span class="on" data-metric="bag">袋数</span><span data-metric="bill">票数</span></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span class="dd" data-drawer="flow" style="font-size:12px;font-weight:600;">🔎 查询目的流向明细 ›</span>
+        <span class="dd" data-drawer="etaveh" style="font-size:12px;">查看车辆明细 ›</span>
+      </div>
+      <div id="chart-eta" style="width:100%;height:280px;"></div>
+    </div>
+    <!-- 异常显示区 -->
+    <div style="flex:0 0 340px;background:#fff;border:1px solid #f6cdc8;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:16px 22px;display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+        <span style="width:4px;height:18px;border-radius:2px;background:#e5484d;"></span>
+        <div style="font-size:17px;font-weight:700;">异常显示区</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+        <!-- 超时未卸预警 -->
+        <div style="background:linear-gradient(135deg,#fff5f4,#fff);border:1px solid #f6cdc8;border-left:4px solid #e5484d;border-radius:10px;padding:14px 16px;">
+          <div style="font-size:13px;font-weight:700;color:#cf1322;margin-bottom:6px;">⚠️ 超时未卸预警</div>
+          <div style="font-size:12px;color:#5b1a16;line-height:1.6;margin-bottom:10px;">有 <b>16 辆</b>车到达后滞留 <b>&gt;1H</b> 仍未卸完——压车风险，建议优先调人卸车。</div>
+          <button class="act" data-drawer="overtime" style="background:#e5484d;color:#fff;border:none;border-radius:9px;padding:8px 16px;cursor:pointer;font-size:13px;white-space:nowrap;font-weight:600;font-family:inherit;">查看已到未卸 ›</button>
+        </div>
+        <!-- 预留其他异常 -->
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed #f0f0f0;border-radius:10px;padding:14px;color:#c0c4cc;font-size:12px;">其他异常预留</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 卸车进度 -->
+  <div style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:16px 22px;">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+      <span style="width:4px;height:18px;border-radius:2px;background:#fc4c02;"></span>
+      <div style="font-size:17px;font-weight:700;">卸车进度</div>
+    </div>
+    <div style="display:flex;gap:15px;flex-wrap:wrap;">
+      <div style="flex:1 1 360px;min-width:320px;">
+        <div style="font-size:13px;font-weight:600;color:#64718a;margin-bottom:8px;">等待卸车 · 时长分布 <span class="dd" data-drawer="wait" style="font-size:11px;font-weight:normal;">查看明细 ›</span></div>
+        <div id="chart-wait" style="width:100%;height:240px;"></div>
+      </div>
+      <div style="flex:1 1 280px;min-width:260px;">
+        <div style="font-size:13px;font-weight:600;color:#64718a;margin-bottom:8px;">卸车及时率 <span class="dd" data-drawer="timely" style="font-size:11px;font-weight:normal;">查看明细 ›</span></div>
+        <div id="chart-timely" style="width:100%;height:160px;"></div>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <div class="aux-card" data-drawer="timelyveh" style="flex:1;text-align:center;"><div class="al" style="color:#16a34a;">及时卸车（≤1H）</div><div class="av" style="color:#16a34a;"><span class="num">1</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
+          <div class="aux-card" data-drawer="lateveh" style="flex:1;text-align:center;"><div class="al" style="color:#e5484d;">不及时卸车（&gt;1H）</div><div class="av" style="color:#e5484d;"><span class="num">16</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 颜色规范图例 -->
+  <div style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:12px;color:#9aa6b6;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16202e;margin-right:4px;"></span>正常</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16a34a;margin-right:4px;"></span>达标</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e0921a;margin-right:4px;"></span>接近达标</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fc4c02;margin-right:4px;"></span>定量清零</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e5484d;margin-right:4px;"></span>重点关注</span>
+      <span><span style="color:#fc4c02;text-decoration:underline;">下划线</span>＝可下钻</span>
+    </div>
+    <span style="font-size:12px;color:#9aa6b6;">独立版 · 依据《PRD-卸车区优化》· 仅供讨论</span>
+  </div>
+
+</div>
+
+<!-- 多级抽屉叠层容器 -->
+<div class="drawer-stack" id="drawer-stack"></div>
+
+<!-- 照片预览 lightbox -->
+<div class="lightbox" id="lightbox">
+  <div class="lbinner">
+    <div class="lbimg" id="lb-img">📷 照片预览（示例占位）</div>
+    <div class="lbcap" id="lb-cap"></div>
+    <button class="lbclose" id="lb-close">关闭</button>
+  </div>
+</div>
+
+<script>
+// 预计到车
+(function(){
+  var chart = echarts.init(document.getElementById('chart-eta'));
+  var hours = ['14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00'];
+  var dataset={
+    today:{
+      bill:[10200,15800,12500,11092,7000,3800,5200,2600,1800,0,1200,0,0,0,800,3200,6800,9100,7200,5400,3100,1800,900,0],
+      bag:[280,420,360,300,190,105,140,72,50,0,32,0,0,0,22,88,185,250,195,145,85,48,24,0],
+      vehicle:[2,3,3,2,2,1,2,1,1,0,1,0,0,0,1,2,2,3,2,2,1,1,1,0]
+    },
+    tomorrow:{
+      bill:[3800,8200,9100,12400,8600,7200,3400,6800,2900,2100,0,1500,0,0,2100,4500,7800,10200,8600,6200,2800,1200,600,0],
+      bag:[105,228,250,340,235,198,95,188,80,58,0,42,0,0,58,122,212,278,235,168,76,33,16,0],
+      vehicle:[1,2,2,3,2,2,1,2,1,1,0,1,0,0,1,2,3,3,2,2,1,1,1,0]
+    }
+  };
+  var meta={bill:{name:'预计到车票数',unit:'票'},bag:{name:'预计到车袋数',unit:'袋'}};
+  var ratio=[0.78,0.80,0.76,0.74,0.70,0.82,0.68,0.85,0.72,0.50,0.66,0.50,0.50,0.50,0.72,0.78,0.80,0.76,0.74,0.70,0.82,0.68,0.85,0.72];
+  function cum(a){var s=0;return a.map(function(v){s+=v;return s;});}
+  var state={day:'today',mode:'hour',metric:'bag',line:'all'};
+  function lineSeries(data){return {name:'车辆数',type:'line',yAxisIndex:1,data:data,smooth:true,lineStyle:{color:'#fc4c02',width:2,type:'dashed'},itemStyle:{color:'#fc4c02'},symbol:'circle',symbolSize:5};}
+  function build(){
+    var total=dataset[state.day][state.metric].slice();
+    var vehAll=dataset[state.day].vehicle.slice();
+    var trunk=total.map(function(v,i){return Math.round(v*ratio[i]);});
+    var branch=total.map(function(v,i){return v-Math.round(v*ratio[i]);});
+    var vehT=vehAll.map(function(v,i){return Math.round(v*ratio[i]);});
+    var vehB=vehAll.map(function(v,i){return v-Math.round(v*ratio[i]);});
+    if(state.mode==='cum'){ trunk=cum(trunk);branch=cum(branch);vehAll=cum(vehAll);vehT=cum(vehT);vehB=cum(vehB); }
+    var m=meta[state.metric];
+    var series=[];
+    if(state.line==='trunk'){
+      series.push({name:'干线（'+m.unit+'）',type:'bar',yAxisIndex:0,data:trunk,itemStyle:{color:'#fc4c02'},barWidth:'48%'});
+      series.push(lineSeries(vehT));
+    } else if(state.line==='branch'){
+      series.push({name:'支线（'+m.unit+'）',type:'bar',yAxisIndex:0,data:branch,itemStyle:{color:'#ffb899'},barWidth:'48%'});
+      series.push(lineSeries(vehB));
+    } else {
+      series.push({name:'干线（'+m.unit+'）',type:'bar',stack:'load',yAxisIndex:0,data:trunk,itemStyle:{color:'#fc4c02'},barWidth:'48%'});
+      series.push({name:'支线（'+m.unit+'）',type:'bar',stack:'load',yAxisIndex:0,data:branch,itemStyle:{color:'#ffb899'},barWidth:'48%'});
+      series.push(lineSeries(vehAll));
+    }
+    return {
+      tooltip:{trigger:'axis'},
+      legend:{top:0,textStyle:{fontSize:12,color:'#9aa6b6'},itemWidth:16,itemHeight:3},
+      grid:{left:55,right:50,top:35,bottom:30},
+      xAxis:{type:'category',data:hours,boundaryGap:true,axisLine:{lineStyle:{color:'#d6dde6'}},axisTick:{show:false},axisLabel:{color:'#9aa6b6',fontSize:11}},
+      yAxis:[
+        {type:'value',name:m.unit,nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:10,formatter:function(v){return v>=1000?(v/1000)+'k':v;}},splitLine:{lineStyle:{color:'#f0f0f0',type:'dashed'}}},
+        {type:'value',name:'辆',nameTextStyle:{color:'#fc4c02',fontSize:11},axisLabel:{color:'#fc4c02',fontSize:10},splitLine:{show:false}}
+      ],
+      series:series
+    };
+  }
+  chart.setOption(build());
+  function bindSeg(id,key){
+    document.querySelectorAll('#'+id+' span').forEach(function(s){
+      s.addEventListener('click',function(){
+        document.querySelectorAll('#'+id+' span').forEach(function(x){x.classList.remove('on');});
+        this.classList.add('on');
+        state[key]=this.getAttribute('data-'+key);
+        chart.setOption(build(),true);
+      });
+    });
+  }
+  bindSeg('seg-eta-mode','mode');bindSeg('seg-eta-metric','metric');bindSeg('seg-eta-line','line');
+  chart.on('click',function(p){
+    var i=p.dataIndex, d=dataset[state.day];
+    var bag=d.bag.slice(), bill=d.bill.slice(), veh=d.vehicle.slice();
+    if(state.line==='trunk'){
+      bag=bag.map(function(v,k){return Math.round(v*ratio[k]);});
+      bill=bill.map(function(v,k){return Math.round(v*ratio[k]);});
+      veh=veh.map(function(v,k){return Math.round(v*ratio[k]);});
+    } else if(state.line==='branch'){
+      bag=bag.map(function(v,k){return v-Math.round(v*ratio[k]);});
+      bill=bill.map(function(v,k){return v-Math.round(v*ratio[k]);});
+      veh=veh.map(function(v,k){return v-Math.round(v*ratio[k]);});
+    }
+    if(state.mode==='cum'){ bag=cum(bag); bill=cum(bill); veh=cum(veh); }
+    if(window.kbOpenDrawer){ window.kbOpenDrawer('flowtime',{hour:hours[i],bag:bag[i],bill:bill[i],veh:veh[i],mode:state.mode,line:state.line}); }
+  });
+  chart.getZr().on('mousemove',function(e){ chart.getZr().setCursorStyle('pointer'); });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 等待卸车时长分布
+(function(){
+  var el=document.getElementById('chart-wait'); if(!el) return;
+  var chart = echarts.init(el);
+  var buckets = ['0-0.5H','0.5-1H','1-3H','3-6H','6-12H','>12H'];
+  var data = [1,0,2,3,5,6];
+  function color(i){ return i<=1?'#16a34a':(i===5?'#e5484d':'#e0921a'); }
+  chart.setOption({
+    tooltip:{trigger:'axis',formatter:function(p){return p[0].axisValue+'：'+p[0].data+' 辆';}},
+    grid:{left:45,right:25,top:20,bottom:28},
+    xAxis:{type:'category',data:buckets,axisLine:{lineStyle:{color:'#d6dde6'}},axisLabel:{color:'#9aa6b6',fontSize:11}},
+    yAxis:{type:'value',name:'辆',nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:11},splitLine:{lineStyle:{color:'#f0f0f0',type:'dashed'}}},
+    series:[{type:'bar',data:data.map(function(v,i){return {value:v,itemStyle:{color:color(i)}};}),barWidth:'46%',label:{show:true,position:'top',color:'#64718a',fontSize:11}}]
+  });
+  chart.on('click',function(p){
+    if(window.kbOpenDrawer){ window.kbOpenDrawer('waitveh',{bucket:p.name}); }
+  });
+  chart.getZr().on('mousemove',function(){ chart.getZr().setCursorStyle('pointer'); });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 卸车及时率
+(function(){
+  var el=document.getElementById('chart-timely'); if(!el) return;
+  var chart = echarts.init(el);
+  var ontime=1, late=16, rate=Math.round(ontime/(ontime+late)*1000)/10;
+  chart.setOption({
+    tooltip:{trigger:'item',formatter:'{b}：{c} 辆 ({d}%)'},
+    series:[{
+      type:'pie',radius:['58%','82%'],center:['50%','50%'],avoidLabelOverlap:false,
+      label:{show:true,position:'center',formatter:'及时率\n'+rate+'%',fontSize:14,fontWeight:'bold',color:'#16202e'},
+      labelLine:{show:false},
+      data:[
+        {value:ontime,name:'及时',itemStyle:{color:'#16a34a'}},
+        {value:late,name:'不及时',itemStyle:{color:'#e5484d'}}
+      ]
+    }]
+  });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 多级抽屉叠层
+(function(){
+  var stack=document.getElementById('drawer-stack');
+  var drawerLayers=[]; // {el, type, arg}
+
+  function createLayerEl(level){
+    var layer=document.createElement('div');
+    layer.className='drawer-layer level-'+level;
+    layer.innerHTML='<div class="drawer-backdrop"></div>'
+      +'<div class="drawer-panel">'
+      +'<div class="drawer-head"><h3 class="drawer-title">明细</h3><button class="drawer-close">✕</button></div>'
+      +'<div class="drawer-body"></div>'
+      +'</div>';
+    stack.appendChild(layer);
+    // bind close
+    var closeBtn=layer.querySelector('.drawer-close');
+    var backdrop=layer.querySelector('.drawer-backdrop');
+    closeBtn.addEventListener('click',function(){closeTopDrawer();});
+    backdrop.addEventListener('click',function(e){if(e.target===backdrop)closeTopDrawer();});
+    return layer;
+  }
+
+  function closeTopDrawer(){
+    if(drawerLayers.length===0) return;
+    var top=drawerLayers.pop();
+    top.el.classList.remove('on');
+    // remove after animation
+    setTimeout(function(){if(top.el.parentNode)top.el.parentNode.removeChild(top.el);},250);
+    if(drawerLayers.length===0){document.body.style.overflow='';}
+  }
+
+  function closeAllDrawers(){
+    while(drawerLayers.length>0){
+      var top=drawerLayers.pop();
+      top.el.classList.remove('on');
+      setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}(top.el),250);
+    }
+    document.body.style.overflow='';
+  }
+
+  function openDrawer(type,arg){
+    // Check if already at max 3 levels
+    if(drawerLayers.length>=3){
+      // Close topmost and replace
+      closeTopDrawer();
+    }
+    var level=drawerLayers.length+1;
+    var layerEl=createLayerEl(level);
+    var titleEl=layerEl.querySelector('.drawer-title');
+    var bodyEl=layerEl.querySelector('.drawer-body');
+
+    var t='',content='';
+    function fmt(n){return n.toLocaleString();}
+  function split75(n){var t=Math.round(n*0.75);return {trunk:t,branch:n-t};}
+  function pagerHtml(total,pageSize,current,totalPages){
+    var sizes=[10,20,50,100],opts=sizes.map(function(s){return '<option value="'+s+'"'+(s===pageSize?' selected':'')+'>'+s+'条/页</option>';}).join('');
+    var nums=''; for(var p=1;p<=Math.min(totalPages,5);p++){ nums+='<button class="pg-no '+(p===current?'on':'')+'">'+p+'</button>'; }
+    if(totalPages>5) nums+='<span>…</span><button class="pg-no">'+totalPages+'</button>';
+    return '<div class="dpager">'
+      +'<button class="pg-step" disabled>&lt;&lt;</button>'
+      +'<button class="pg-step" disabled>&lt;</button>'
+      +nums
+      +'<button class="pg-step">&gt;</button>'
+      +'<button class="pg-step">&gt;&gt;</button>'
+      +'<select>'+opts+'</select>'
+      +'<span>前往</span><input value="'+current+'"/><span>页</span>'
+      +'<button>前往</button>'
+      +'<span>共'+total+'条记录</span>'
+      +'</div>';
+  }
+  function timeDistSelect(defaultVal){ var opts='<option value="">全部</option>'; var buckets=['≤0.5H','1H','2H','3H','4H','>4H']; buckets.forEach(function(b){ opts+='<option value="'+b+'"'+(defaultVal===b?' selected':'')+'>'+b+'</option>'; }); return '<select>'+opts+'</select>'; }
+  function navLink(text,type){ var label=type==='vehicleMonitor'?'车辆监控台':type==='tms'?'TMS出发到达管理':type==='dispatchMonitor'?'调度监控工作台':type==='bagQuery'?'袋号查询':'派件运单管理中的基本信息'; return '<span class="mtlink" onclick="event.stopPropagation();kbNavTo(\''+type+'\',\''+text+'\')" title="跳转至'+label+'">'+text+'</span>'; }
+  function filterBar(fields){
+    var f=fields.map(function(x){return '<div class="fld"><label>'+x[0]+'</label>'+x[1]+'</div>';}).join('');
+    return '<div class="dbar"><div class="dfilters">'+f+'</div>'
+      +'<div style="display:flex;gap:8px;"><button class="dexport">导出</button><button class="dquery">查询</button><button class="dreset">重置</button></div></div>';
+  }
+  function expBar(){ return '<div class="dbar"><button class="dexport">导出</button></div>'; }
+  function selHtml(ph){ return '<select><option>'+(ph||'请选择')+'</option></select>'; }
+  function statTable(dim,rows,opts){
+    opts=opts||{};
+    var drillVeh=opts.drillVeh||(opts.drillAll?'unloadveh':null);
+    var drillBag=opts.drillBag||(opts.drillAll?'unloadbag':null);
+    var drillBill=opts.drillBill||(opts.drillAll?'unloadbill':null);
+    var h='<div class="scroll"><table><thead><tr><th>'+dim+'</th><th>车辆数</th><th>袋数</th><th>运单数</th></tr></thead><tbody>';
+    rows.forEach(function(r,i){
+      var isTotal=i===0;
+      var bucket=r[0];
+      if(isTotal){
+        h+='<tr class="tot"><td>合计</td><td class="tot">'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td class="tot">'+fmt(r[3])+'</td></tr>';
+      } else {
+        var vehOnclick=drillVeh?'onclick="kbOpenDrawer(\''+drillVeh+'\',{bucket:\''+bucket+'\'})"':'';
+        var bagOnclick=drillBag?'onclick="kbOpenDrawer(\''+drillBag+'\',{bucket:\''+bucket+'\'})"':'';
+        var billOnclick=drillBill?'onclick="kbOpenDrawer(\''+drillBill+'\',{bucket:\''+bucket+'\'})"':'';
+        h+='<tr><td class="key-col">'+bucket+'</td>'
+          +'<td><span class="numlink" '+vehOnclick+'>'+r[1]+'</span></td>'
+          +'<td><span class="numlink" '+bagOnclick+'>'+fmt(r[2])+'</span></td>'
+          +'<td><span class="numlink" '+billOnclick+'>'+fmt(r[3])+'</span></td></tr>';
+      }
+    });
+    return h+'</tbody></table></div>';
+  }
+  function etaTimeTable(rows){
+    var h='<div class="scroll"><table><thead><tr><th>时间分布</th><th>总车辆数</th><th>总袋数</th><th>总运单数</th></tr></thead><tbody>';
+    rows.forEach(function(r,i){
+      var isTotal=i===0;
+      h+='<tr'+(isTotal?' class="tot"':'')+'>'
+        +'<td'+(isTotal?'':' class="key-col"')+'>'+r[0]+'</td>'
+        +'<td class="tot"><span class="numlink" data-drill="etaveh" data-bucket="'+r[0]+'" data-col="veh">'+r[1]+'</span></td>'
+        +'<td class="tot"><span class="numlink" data-drill="etabag" data-bucket="'+r[0]+'" data-col="bag">'+fmt(r[2])+'</span></td>'
+        +'<td class="tot"><span class="numlink" data-drill="etabill" data-bucket="'+r[0]+'" data-col="bill">'+fmt(r[3])+'</span></td></tr>';
+    });
+    return h+'</tbody></table></div>';
+  }
+  var flowsData=[
+    {n:'站点 · SDF',c:'lb-trunk',lt:'干线',veh:2,bag:58,bill:21300,hrs:[['16:00',1,30,11000],['18:30',1,28,10300]]},
+    {n:'站点 · BNA',c:'lb-trunk',lt:'干线',veh:2,bag:46,bill:16200,hrs:[['15:20',1,24,8600],['20:10',1,22,7600]]},
+    {n:'站点 · CLT',c:'lb-branch',lt:'支线',veh:1,bag:21,bill:8900,hrs:[['16:10',1,21,8900]]},
+    {n:'站点 · RDU',c:'lb-branch',lt:'支线',veh:1,bag:16,bill:6492,hrs:[['17:05',1,16,6492]]},
+    {n:'hub · ATL',c:'lb-trunk',lt:'干线',veh:1,bag:8,bill:3200,hrs:[['21:40',1,8,3200]]},
+    {n:'服务渠道',c:'lb-branch',lt:'支线',veh:1,bag:6,bill:500,hrs:[['19:00',1,6,500]]}
+  ];
+  function flowTableBody(line){
+    var fs=flowsData.filter(function(f){return line==='all'||(line==='trunk'&&f.lt==='干线')||(line==='branch'&&f.lt==='支线');});
+    fs=fs.slice().sort(function(a,b){return b.bag-a.bag;});
+    var tv=0,tb=0,tl=0; fs.forEach(function(f){tv+=f.veh;tb+=f.bag;tl+=f.bill;});
+    var h='<tr class="tot"><td>合计</td><td></td><td>'+tv+'</td><td>'+tb+'</td><td>'+fmt(tl)+'</td><td>100%</td><td></td></tr>';
+    fs.forEach(function(f,i){
+      var id='fd'+i, pct=tl?(Math.round(f.bill/tl*1000)/10):0;
+      h+='<tr><td class="key-col">'+f.n+'</td><td><span class="lbadge '+f.c+'">'+f.lt+'</span></td><td>'+f.veh+'</td><td class="tot">'+f.bag+'</td><td class="tot">'+fmt(f.bill)+'</td><td>'+pct+'%</td><td><span class="dd flow-exp" data-target="'+id+'">展开时段 ▾</span></td></tr>';
+      var sub=''; f.hrs.forEach(function(hh){ sub+='<tr><td>'+hh[0]+'</td><td>'+hh[1]+' 辆</td><td class="tot">'+hh[2]+'</td><td class="tot">'+fmt(hh[3])+'</td></tr>'; });
+      h+='<tr class="flow-detail" id="'+id+'" style="display:none;"><td colspan="7" style="background:#fafbfd;padding:10px 14px;">'
+        +'<div style="font-size:12px;color:#9aa6b6;margin-bottom:6px;">'+f.n+' · 到达时段</div>'
+        +'<div class="scroll"><table style="background:#fff;"><thead><tr><th>预计到达(ETA)</th><th>车辆</th><th>袋</th><th>票</th></tr></thead><tbody>'+sub+'</tbody></table></div></td></tr>';
+    });
+    return h;
+  }
+  function arrivedVehTable(mode){
+    var timeCol=mode==='etaVeh'?'预计到车时间':'实际抵达目的站时间';
+    var durCol=(mode==='timely'||mode==='late')?'卸车时间':'时长';
+    var head='<div class="scroll"><table><thead><tr><th>任务编码</th><th>'+timeCol+'</th><th>'+durCol+'</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var rLate=[
+      ['MT202609011346','06-15 23:10','15.4h',10,20,'SDF→LAX 干线','SDF','LAX H','06-15 08:00','06-15 22:00'],
+      ['MT-88207','06-15 23:40','14.9h',120,3910,'BNA→LAX 干线','BNA','LAX H','06-15 09:10','06-15 22:30'],
+      ['MT-88350','06-16 01:20','13.2h',110,3560,'CLT→LAX 支线','CLT','LAX H','06-15 11:00','06-16 00:30'],
+      ['MT-88412','06-16 10:05','4.5h',98,3120,'RDU→LAX 支线','RDU','LAX H','06-16 02:30','06-16 09:40']
+    ];
+    var rTimely=[
+      ['MT-88455','06-16 12:40','0.6h',86,2740,'BNA→LAX 干线','BNA','LAX H','06-16 04:00','06-16 12:30']
+    ];
+    function rows(arr){return arr.map(function(r){
+      var linkType=mode==='etaVeh'?'vehicleMonitor':'tms';
+      var bagDrill=mode==='etaVeh'?'etabag':'unloadbag';
+      var billDrill=mode==='etaVeh'?'etabill':'unloadbill';
+      return '<tr><td class="key-col">'+navLink(r[0],linkType)+'</td><td>'+r[1]+'</td><td'+(r[2].indexOf('h')>-1&&parseFloat(r[2])>1?' style="color:#e5484d;"':'')+'>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\''+bagDrill+'\',{bucket:\''+r[0]+'\'})">'+r[3]+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\''+billDrill+'\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    }).join('');}
+    var b,foot;
+    if(mode==='timely'){ b=rows(rTimely); foot='<tr><td class="key-col" colspan="5">合计 1 辆</td><td class="tot">86</td><td class="tot">2,740</td><td></td><td></td><td></td></tr>'; }
+    else if(mode==='late'){ b=rows(rLate); foot='<tr><td class="key-col" colspan="5">… 共 16 辆</td><td class="tot">1,743</td><td class="tot">57,013</td><td></td><td></td><td></td></tr>'; }
+    else { b=rows(rLate); foot='<tr><td class="key-col" colspan="5">… 共 17 辆</td><td class="tot">1,829</td><td class="tot">59,753</td><td></td><td></td><td></td></tr>'; }
+    return head+b+foot+'</tbody></table></div>'+pagerHtml(30,20,1,154);
+  }
+  function arrivedVehDrawer(bucketDefault,mode){
+    var tf=bucketDefault?'<select><option>'+bucketDefault+'</option></select>':selHtml('请选择');
+    var fields;
+    if(mode==='etaVeh'){
+      fields=[
+        ['时间分布状态',tf],
+        ['始发地',selHtml('请选择')],
+        ['运输类型',selHtml('请选择')],
+        ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+      ];
+    } else {
+      fields=[
+        ['时间分布',tf],
+        ['状态',selHtml('请选择')],
+        ['始发地',selHtml('请选择')],
+        ['运输类型',selHtml('请选择')]
+      ];
+    }
+    return filterBar(fields)+arrivedVehTable(mode);
+  }
+  function etaBagBillDrawer(bucketDefault,col){
+    var tf=bucketDefault?'<select><option>'+bucketDefault+'</option></select>':selHtml('请选择');
+    var fields=[
+      ['时间分布',tf],
+      [col==='bag'?'袋号':'运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+etaBagBillTable(col);
+  }
+  function etaBagBillTable(col){
+    var isBag=col==='bag';
+    var codeHead=isBag?'袋号':'运单号';
+    var codePrefix=isBag?'B':'WB';
+    var data=[
+      [codePrefix+'2606270009205','>4H',592,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270009208','>4H',400,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014236','>4H',591,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014238','>4H',697,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014243','>4H',610,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014249','>4H',439,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014251','>4H',335,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014720','>4H',162,'LAX.H','LAX.H','LAX01','','','LAX.H','LAX.H-SpeedX(TT)','EWR.H'],
+      [codePrefix+'2606270014721','>4H',1290,'LAX.H','LAX.H','LAX01','','','LAX.H','LAX.H-SwiftX(TT)','EWR.H']
+    ];
+    if(isBag){
+      var h='<div class="scroll"><table><thead><tr><th>'+codeHead+'</th><th>时长</th><th>运单数</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    } else {
+      var h='<div class="scroll"><table><thead><tr><th>'+codeHead+'</th><th>时长</th><th>袋号</th><th>目的中心</th><th>目的站点</th><th>目的路区</th><th>服务渠道</th><th>邮编</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    }
+    var sum=0;
+    data.forEach(function(r){ sum+=r[2]; });
+    data.forEach(function(r){
+      if(isBag){
+        h+='<tr><td class="key-col">'+navLink(r[0],'bagQuery')+'</td><td>'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+navLink(r[9],'vehicleMonitor')+'</td><td>'+r[10]+'</td><td>'+r[3]+'</td></tr>';
+      } else {
+        h+='<tr><td class="key-col">'+navLink(r[0],'billQuery')+'</td><td>'+r[1]+'</td><td>'+navLink(r[0].replace(codePrefix,'B'),'bagQuery')+'</td><td>'+r[3]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>LAX.H-FEDEX(TT)</td><td>90058</td><td>'+navLink('MT2026062800229','vehicleMonitor')+'</td><td>EWR.H</td><td>LAX.H</td></tr>';
+      }
+    });
+    if(isBag){
+      h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="8"></td></tr>';
+    } else {
+      h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="9"></td></tr>';
+    }
+    return h+'</tbody></table></div>'+pagerHtml(126,10,1,13);
+  }
+  function simpleVehicleDrawer(label,veh,bag,bill){
+    if(veh===0){
+      return '<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">'+label+'车辆</div><div class="v" style="color:#b0b5bc;">0<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v" style="color:#b0b5bc;">0</div><div class="stsplit">干线 0 · 支线 0</div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v" style="color:#b0b5bc;">0</div><div class="stsplit">干线 0 · 支线 0</div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><div class="drawer-sub" style="text-align:center;color:#b0b5bc;padding:24px 0;">当前无'+label+'车辆</div></div>';
+    }
+    var bg=split75(bag),bl=split75(bill);
+    return '<div class="drawer-stats">'
+      +'<div class="drawer-stat"><div class="l">'+label+'车辆</div><div class="v">'+veh+'<span class="u">辆</span></div></div>'
+      +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">'+fmt(bag)+'<span class="u">袋</span></div><div class="stsplit">干线 '+fmt(bg.trunk)+' · 支线 '+fmt(bg.branch)+'</div></div>'
+      +'<div class="drawer-stat"><div class="l">票数</div><div class="v">'+fmt(bill)+'<span class="u">票</span></div><div class="stsplit">干线 '+fmt(bl.trunk)+' · 支线 '+fmt(bl.branch)+'</div></div>'
+      +'</div>'
+      +'<div class="drawer-section"><h4>🚛 车辆明细（MT 号可点击）</h4>'
+      +'<div class="scroll"><table><thead><tr><th>MT 号</th><th>线路</th><th>承运/车牌</th><th>预计到达(ETA)</th><th>袋</th><th>票</th><th>始发地</th></tr></thead><tbody>'
+      +'<tr><td class="key-col"><span class="mtlink">MT-901'+veh+'0</span></td><td><span class="lbadge lb-trunk">干线</span></td><td>承运X · 7C-'+veh+'201</td><td>示例 ETA</td><td class="tot">'+Math.round(bag/veh)+'</td><td class="tot">'+fmt(Math.round(bill/veh))+'</td><td>SDF</td></tr>'
+      +'<tr><td class="key-col" colspan="7" style="text-align:center;color:#b0b5bc;">… 共 '+veh+' 辆（示例数据）</td></tr>'
+      +'</tbody></table></div></div>'
+      +'<div class="drawer-section"><h4>📍 目的地组织</h4>'
+      +'<div class="scroll"><table><thead><tr><th>目的组织</th><th>袋数</th><th>票数</th><th>占比</th></tr></thead><tbody>'
+      +'<tr><td class="key-col">站点</td><td class="tot">'+Math.round(bag*0.9)+'</td><td class="tot">'+fmt(Math.round(bill*0.9))+'</td><td>90%</td></tr>'
+      +'<tr><td class="key-col">hub</td><td class="tot">'+Math.round(bag*0.1)+'</td><td class="tot">'+fmt(Math.round(bill*0.1))+'</td><td>10%</td></tr>'
+      +'</tbody></table></div></div>';
+  }
+  // ===== 已到未卸下钻 =====
+  function unloadVehDrawer(bucketDefault){
+    var tf=timeDistSelect(bucketDefault);
+    var fields=[
+      ['时间分布',tf],
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadVehTable();
+  }
+  function unloadVehTable(){
+    var data=[
+      ['MT2026062800229','2026-06-28 14:30','>12H',720,33000,'干线任务A','EWR.H','LAX.H','2026-06-28 06:00','2026-06-28 13:00'],
+      ['MT2026062800231','2026-06-28 15:00','>12H',580,26000,'干线任务B','ORD.H','LAX.H','2026-06-28 07:00','2026-06-28 13:30'],
+      ['MT2026062800235','2026-06-28 16:20','>12H',140,7142,'支线任务C','SFO.H','LAX.H','2026-06-28 08:30','2026-06-28 14:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>实际抵达目的站时间</th><th>时长</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function unloadBagDrawer(bucketDefault,linkType){
+    linkType=linkType||'tms';
+    var tf=timeDistSelect(bucketDefault);
+    var fields=[
+      ['时间分布',tf],
+      ['袋号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBagTable(linkType);
+  }
+  function unloadBagTable(linkType){
+    linkType=linkType||'tms';
+    var data=[
+      ['B2606270009205','>12H',592,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270009208','>12H',400,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014236','>12H',591,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014238','>12H',697,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014243','>12H',610,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014249','>12H',439,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014251','>12H',335,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014720','>12H',162,'LAX.H','LAX01','','LAX.H','LAX.H-SpeedX(TT)','EWR.H','LAX.H'],
+      ['B2606270014721','>12H',1290,'LAX.H','LAX01','','LAX.H','LAX.H-SwiftX(TT)','EWR.H','LAX.H']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>袋号</th><th>时长</th><th>运单数</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    var sum=0;
+    data.forEach(function(r){sum+=r[2];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'bagQuery')+'</td><td>'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+navLink(r[7],linkType)+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="8"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function unloadBillDrawer(bucketDefault,linkType){
+    linkType=linkType||'tms';
+    var tf=timeDistSelect(bucketDefault);
+    var fields=[
+      ['时间分布',tf],
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable(linkType);
+  }
+  function unloadBillTable(linkType){
+    linkType=linkType||'tms';
+    var data=[
+      ['WB2606270009205','>12H','B2606270009205','LAX.H','LAX01','','LAX.H-FEDEX(TT)','90058','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270009208','>12H','B2606270009208','LAX.H','LAX01','','LAX.H-UPS(TT)','90059','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014236','>12H','B2606270014236','LAX.H','LAX01','','LAX.H-DHL(TT)','90060','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014238','>12H','B2606270014238','LAX.H','LAX01','','LAX.H-GLS(TT)','90061','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014243','>12H','B2606270014243','LAX.H','LAX01','','LAX.H-ARAMEX(TT)','90062','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014249','>12H','B2606270014249','LAX.H','LAX01','','LAX.H-ONT(TT)','90063','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014251','>12H','B2606270014251','LAX.H','LAX01','','LAX.H-SPD(TT)','90064','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014720','>12H','B2606270014720','LAX.H','LAX01','','LAX.H-SpeedX(TT)','90065','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014721','>12H','B2606270014721','LAX.H','LAX01','','LAX.H-SwiftX(TT)','90066','MT2026062800229','EWR.H','LAX.H']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>运单号</th><th>时长</th><th>袋号</th><th>目的中心</th><th>目的站点</th><th>目的路区</th><th>服务渠道</th><th>邮编</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    var sum=0;
+    data.forEach(function(r){sum+=1;});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'billQuery')+'</td><td>'+r[1]+'</td><td>'+navLink(r[2],'bagQuery')+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+navLink(r[8],linkType)+'</td><td>'+r[9]+'</td><td>'+r[10]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="9"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  // ===== 已卸下钻 =====
+  function unloadedVehDrawer(bucketDefault){
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadedVehTable();
+  }
+  function unloadedVehTable(){
+    var data=[
+      ['MT2026062800101','2026-06-28 13:00','2026-06-28 13:45',120,5500,'干线任务A','EWR.H','LAX.H','2026-06-28 05:00','2026-06-28 12:00'],
+      ['MT2026062800102','2026-06-28 13:30','2026-06-28 14:20',80,3800,'干线任务B','ORD.H','LAX.H','2026-06-28 06:00','2026-06-28 12:30'],
+      ['MT2026062800103','2026-06-28 14:00','2026-06-28 14:50',60,2500,'支线任务C','SFO.H','LAX.H','2026-06-28 07:00','2026-06-28 13:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>实际抵达目的站时间</th><th>卸车时间</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadedbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadedbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function unloadedBagDrawerFn(bucketDefault){
+    var fields=[
+      ['袋号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBagTable('tms');
+  }
+  function unloadedBillDrawerFn(bucketDefault){
+    var fields=[
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable('tms');
+  }
+  // ===== 上游未发车下钻 =====
+  function upstreamVehDrawer(bucketDefault){
+    var tf=selHtml('请选择');
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',tf],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+upstreamVehTable();
+  }
+  function upstreamVehTable(){
+    var data=[
+      ['MT2026062800401','2026-06-28 18:00','支线任务D','ORD.H','LAX.H','2026-06-29 02:00'],
+      ['MT2026062800402','2026-06-28 19:00','干线任务E','JFK.H','LAX.H','2026-06-29 04:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划发车时间</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>计划到车时间</th></tr></thead><tbody>';
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="1">合计 '+data.length+' 辆</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  // ===== 在途下钻 =====
+  function transitVehDrawer(bucketDefault){
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+transitVehTable();
+  }
+  function transitVehTable(){
+    var data=[
+      ['MT2026062800501','2026-06-28 16:00','2026-06-28 15:30',210,39100,'干线任务F','SDF.H','LAX.H','2026-06-28 08:00'],
+      ['MT2026062800502','2026-06-28 17:00','2026-06-28 16:20',60,9100,'支线任务G','CLT.H','LAX.H','2026-06-28 10:00'],
+      ['MT2026062800503','2026-06-28 18:00','2026-06-28 17:45',6,677,'支线任务H','RDU.H','LAX.H','2026-06-28 11:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划到车时间</th><th>预计到车时间</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'dispatchMonitor')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'transitbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'transitbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="4"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function transitBillDrawerFn(bucketDefault){
+    var fields=[
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable('dispatchMonitor');
+  }
+  // ===== 异常未到下钻 =====
+  function abnormalVehDrawer(bucketDefault){
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+abnormalVehTable();
+  }
+  function abnormalVehTable(){
+    var data=[
+      ['MT2026062800601','2026-06-28 13:00','2026-06-28 14:00',120,3000,'干线任务I','BNA.H','LAX.H','2026-06-28 06:00'],
+      ['MT2026062800602','2026-06-28 14:00','2026-06-28 15:00',46,1064,'支线任务J','MCO.H','LAX.H','2026-06-28 07:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划到车时间</th><th>预计到车时间</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'dispatchMonitor')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'abnormalbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'abnormalbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="4"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function abnormalBillDrawerFn(bucketDefault){
+    var fields=[
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable('dispatchMonitor');
+  }
+  // ===== 截单后到下钻 =====
+  function latestVehDrawer(bucketDefault){
+    var tf=bucketDefault?'<select><option>'+bucketDefault+'</option></select>':selHtml('请选择');
+    var fields=[
+      ['时间分布状态',tf],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+latestVehTable();
+  }
+  function latestVehTable(){
+    var data=[
+      ['MT2026062800701','2026-06-28 13:30','>12H',38,13900,'干线任务K','ATL.H','LAX.H','2026-06-28 07:00','2026-06-28 13:30'],
+      ['MT2026062800702','2026-06-28 14:00','>12H',11,3503,'支线任务L','TPA.H','LAX.H','2026-06-28 08:00','2026-06-28 14:00'],
+      ['MT2026062800703','2026-06-28 15:00','>12H',0,0,'干线任务M','MIA.H','LAX.H','2026-06-28 09:00','2026-06-28 15:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>预计到车时间</th><th>时长</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'vehicleMonitor')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'latestbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'latestbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  // ===== 等待卸车时长分布下钻 (H) =====
+  function waitVehDetailDrawer(bucketDefault){
+    var buckets=['0-0.5H','0.5-1H','1-3H','3-6H','6-12H','>12H'];
+    var opts='<option value="">全部</option>';
+    buckets.forEach(function(b){ opts+='<option value="'+b+'"'+(bucketDefault===b?' selected':'')+'>'+b+'</option>'; });
+    var tf='<select>'+opts+'</select>';
+    var fields=[
+      ['时间分布',tf],
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+waitVehDetailTable();
+  }
+  function waitVehDetailTable(){
+    var data=[
+      ['MT2026062800229','2026-06-28 14:30','>12H',720,33000,'干线任务A','EWR.H','LAX.H','2026-06-28 06:00','2026-06-28 13:00'],
+      ['MT2026062800231','2026-06-28 15:00','>12H',580,26000,'干线任务B','ORD.H','LAX.H','2026-06-28 07:00','2026-06-28 13:30'],
+      ['MT2026062800235','2026-06-28 16:20','>12H',140,7142,'支线任务C','SFO.H','LAX.H','2026-06-28 08:30','2026-06-28 14:00'],
+      ['MT2026062800405','2026-06-28 12:10','3.5H',98,3120,'干线任务N','JFK.H','LAX.H','2026-06-28 04:00','2026-06-28 11:30'],
+      ['MT2026062800408','2026-06-28 13:20','2.2H',86,2740,'支线任务P','RDU.H','LAX.H','2026-06-28 05:30','2026-06-28 12:40']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>实际抵达目的站时间</th><th>时长</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot">'+fmt(r[3])+'</td><td class="tot">'+fmt(r[4])+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  if(type==='flowtime'){
+      var info=arg||{};
+      var hr=info.hour||'该时段', bag=info.bag||0, bill=info.bill||0, veh=info.veh||0;
+      t='预计到车 · '+hr+' 时段流向';
+      var head='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">时段</div><div class="v">'+hr+'</div></div>'
+        +'<div class="drawer-stat"><div class="l">车辆</div><div class="v">'+veh+'<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">'+fmt(bag)+'<span class="u">袋</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v">'+fmt(bill)+'<span class="u">票</span></div></div>'
+        +'</div>';
+      if(bag===0&&bill===0&&veh===0){
+        content=head+'<div class="drawer-section"><div class="drawer-sub" style="text-align:center;color:#b0b5bc;padding:24px 0;">'+hr+' 时段暂无预计到车</div></div>';
+      } else {
+        var defs=[['站点 · SDF','lb-trunk','干线',0.38],['站点 · BNA','lb-trunk','干线',0.28],['站点 · CLT','lb-branch','支线',0.18],['hub · ATL','lb-trunk','干线',0.10],['服务渠道','lb-branch','支线',0.06]];
+        if(info.line==='trunk') defs=defs.filter(function(d){return d[2]==='干线';});
+        else if(info.line==='branch') defs=defs.filter(function(d){return d[2]==='支线';});
+        var sumR=defs.reduce(function(s,d){return s+d[3];},0)||1;
+        var frows='';
+        defs.forEach(function(d){
+          var share=d[3]/sumR;
+          frows+='<tr><td class="key-col">'+d[0]+'</td><td><span class="lbadge '+d[1]+'">'+d[2]+'</span></td><td class="tot">'+Math.round(bag*share)+'</td><td class="tot">'+fmt(Math.round(bill*share))+'</td><td>'+Math.round(share*100)+'%</td></tr>';
+        });
+        content=head
+          +'<div class="dbar"><div></div><button class="dexport">导出</button></div>'
+          +'<div class="drawer-section"><h4>📍 '+hr+' 预计到车流向分布</h4>'
+          +'<div class="scroll"><table><thead><tr><th>目的流向</th><th>线路</th><th>袋数</th><th>票数</th><th>票数占比</th></tr></thead><tbody>'
+          +frows
+          +'<tr class="tot"><td>合计</td><td></td><td>'+bag+'</td><td>'+fmt(bill)+'</td><td>100%</td></tr>'
+          +'</tbody></table></div></div>';
+      }
+    } else if(type==='flow'){
+      t='预计到车 · 目的流向明细';
+      content='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">预计到车车辆</div><div class="v">8<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">155<span class="u">袋</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v">56,592<span class="u">票</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">流向数</div><div class="v">6<span class="u">个</span></div></div>'
+        +'</div>'
+        +'<div class="dbar"><div class="dfilters"><div class="fld"><label>线路</label>'
+        +'<span class="seg" id="flow-fl"><span class="on" data-fline="all">全部</span><span data-fline="trunk">干线</span><span data-fline="branch">支线</span></span></div></div>'
+        +'<button class="dexport">导出</button></div>'
+        +'<div class="drawer-section"><h4>📍 目的流向明细</h4>'
+        +'<div class="scroll"><table><thead><tr><th>目的流向</th><th>线路</th><th>车辆</th><th>袋数</th><th>票数</th><th>票数占比</th><th>到达时段</th></tr></thead><tbody id="flow-tbody">'
+        +flowTableBody('all')
+        +'</tbody></table></div></div>';
+    } else if(type==='unload'){
+      t='查看明细-已到未卸';
+      content=expBar()
+        +statTable('时间分布',[
+          ['合计',17,1440,66142],
+          ['>12H',17,1440,66142]
+        ],{drillVeh:'unloadveh',drillBag:'unloadbag',drillBill:'unloadbill'});
+    } else if(type==='unloaded'){
+      t='查看明细-已卸';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',10,184,59585],
+          ['SDF.H',3,61,16608],
+          ['BNA.H',2,38,20123],
+          ['CLT.H',1,18,8302],
+          ['RDU.H',1,43,8248],
+          ['ATL.H',1,21,6255],
+          ['MCO.H',2,3,49]
+        ],{drillVeh:'unloadedveh',drillBag:'unloadedbag',drillBill:'unloadedbill'});
+    } else if(type==='overtime'){
+      t='超时未卸预警 · 已到未卸车辆';
+      content=arrivedVehDrawer('全部','late');
+    } else if(type==='eta'){
+      t='查看明细-预计到车';
+      content=expBar()
+        +etaTimeTable([
+          ['合计',30,300,3000],
+          ['<=0H',3,30,300],
+          ['0.5H',0,0,0],
+          ['1H',3,30,300],
+          ['2H',3,30,300],
+          ['3H',3,30,300],
+          ['4H',6,60,600],
+          ['>4H',12,120,1200]
+        ]);
+    } else if(type==='etaveh'){
+      t='查看明细-预计到车车辆数';
+      content=arrivedVehDrawer(arg&&arg.bucket?arg.bucket:null,'etaVeh');
+    } else if(type==='etabag'){
+      t='查看明细-预计到车-袋数';
+      content=etaBagBillDrawer(arg&&arg.bucket?arg.bucket:null,'bag');
+    } else if(type==='etabill'){
+      t='查看明细-预计到车-运单数';
+      content=etaBagBillDrawer(arg&&arg.bucket?arg.bucket:null,'bill');
+    } else if(type==='unloadveh'){
+      t='查看明细-已到未卸-车辆数';
+      content=unloadVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadbag'){
+      t='查看明细-已到未卸-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadbill'){
+      t='查看明细-已到未卸-运单数';
+      content=unloadBillDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadedveh'){
+      t='查看明细-已卸-车辆数';
+      content=unloadedVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadedbag'){
+      t='查看明细-已卸-袋数';
+      content=unloadedBagDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadedbill'){
+      t='查看明细-已卸-运单数';
+      content=unloadedBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='upstream'){
+      t='查看明细-上游未发车';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +'<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">上游未发车车辆</div><div class="v" style="color:#b0b5bc;">0<span class="u">辆</span></div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><h4>始发地分布</h4>'
+        +'<div class="scroll"><table><thead><tr><th>始发地</th><th>车辆数</th></tr></thead><tbody>'
+        +'<tr class="tot"><td>合计</td><td>0</td></tr>'
+        +'</tbody></table></div></div>'
+        +'<div class="drawer-sub" style="text-align:center;color:#b0b5bc;padding:24px 0;">当前无上游未发车车辆</div>';
+    } else if(type==='transit'){
+      t='查看明细-在途';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',7,276,48877],
+          ['SDF.H',1,50,8200],
+          ['BNA.H',2,60,15200],
+          ['CLT.H',1,46,9140],
+          ['RDU.H',2,70,10600],
+          ['ATL.H',1,50,5737]
+        ],{drillVeh:'transitveh',drillBag:'transitbag',drillBill:'transitbill'});
+    } else if(type==='abnormal'){
+      t='查看明细-异常未到';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',2,166,4064],
+          ['BNA.H',1,120,3000],
+          ['MCO.H',1,46,1064]
+        ],{drillVeh:'abnormalveh',drillBag:'abnormalbag',drillBill:'abnormalbill'});
+    } else if(type==='latest'){
+      t='查看明细-截单后到';
+      content=expBar()+statTable('时间分布',[
+        ['合计',3,49,17403],
+        ['>12H',3,49,17403]
+      ],{drillVeh:'latestveh',drillBag:'latestbag',drillBill:'latestbill'});
+    } else if(type==='upstreamveh'){
+      t='查看明细-上游未发车-车辆数';
+      content=upstreamVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='transitveh'){
+      t='查看明细-在途-车辆数';
+      content=transitVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='transitbag'){
+      t='查看明细-在途-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null,'dispatchMonitor');
+    } else if(type==='transitbill'){
+      t='查看明细-在途-运单数';
+      content=transitBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='abnormalveh'){
+      t='查看明细-异常未到-车辆数';
+      content=abnormalVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='abnormalbag'){
+      t='查看明细-异常未到-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null,'dispatchMonitor');
+    } else if(type==='abnormalbill'){
+      t='查看明细-异常未到-运单数';
+      content=abnormalBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='latestveh'){
+      t='查看明细-截单后到-车辆数';
+      content=latestVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='latestbag'){
+      t='查看明细-截单后到-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null,'vehicleMonitor');
+    } else if(type==='latestbill'){
+      t='查看明细-截单后到-运单数';
+      content=unloadBillDrawer(arg&&arg.bucket?arg.bucket:null,'vehicleMonitor');
+    } else if(type==='timelyveh'){
+      t='及时卸车车辆明细（≤1H）';
+      content=arrivedVehDrawer(null,'timely');
+    } else if(type==='lateveh'){
+      t='不及时卸车车辆明细（>1H）';
+      content=arrivedVehDrawer(null,'late');
+    } else if(type==='waitveh'){
+      t='等待卸车 · '+arg.bucket+' 车辆明细';
+      content=waitVehDetailDrawer(arg.bucket);
+    } else if(type==='wait'){
+      t='等待卸车 · 时长分布';
+      var buckets=['0-0.5H','0.5-1H','1-3H','3-6H','6-12H','>12H'];
+      var counts=[1,0,2,3,5,6];
+      var h='';
+      h+=expBar();
+      h+='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">等待卸车车辆</div><div class="v">17<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">1,440<span class="u">袋</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v">66,142<span class="u">票</span></div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><h4>等待时长分布</h4>'
+        +'<div class="scroll"><table><thead><tr><th>等待时长</th><th>车辆数</th></tr></thead><tbody>';
+      for(var i=0;i<buckets.length;i++){
+        h+='<tr><td class="key-col">'+buckets[i]+'</td><td><span class="numlink" onclick="kbOpenDrawer(\'waitveh\',{bucket:\''+buckets[i]+'\'})">'+counts[i]+'</span></td></tr>';
+      }
+      h+='<tr class="tot"><td>合计</td><td>17</td></tr></tbody></table></div></div>';
+      content=h;
+    } else if(type==='timely'){
+      t='卸车及时率 · 明细';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',17,184,59585],
+          ['SDF.H',3,61,16608],
+          ['BNA.H',2,38,20123],
+          ['CLT.H',1,18,8302],
+          ['RDU.H',1,43,8248],
+          ['ATL.H',1,21,6255],
+          ['MCO.H',2,3,49]
+        ],{drillVeh:'timelyunloadedveh',drillBag:'timelyunloadedbag',drillBill:'timelyunloadedbill'});
+    } else if(type==='timelyunloadedveh'){
+      t='卸车及时率 · 车辆明细';
+      content=unloadedVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='timelyunloadedbag'){
+      t='卸车及时率 · 袋数明细';
+      content=unloadedBagDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='timelyunloadedbill'){
+      t='卸车及时率 · 运单数明细';
+      content=unloadedBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    }
+    titleEl.textContent=t;
+    bodyEl.innerHTML=content;
+    layerEl.classList.add('on');
+    drawerLayers.push({el:layerEl,type:type,arg:arg});
+    document.body.style.overflow='hidden';
+    // 绑定流向展开
+    bodyEl.querySelectorAll('.flow-exp').forEach(function(el){
+      el.addEventListener('click',function(){
+        var tgt=bodyEl.querySelector('#'+this.getAttribute('data-target'));
+        if(tgt){
+          var h=tgt.style.display;
+          tgt.style.display=h==='none'?'table-row':'none';
+          this.textContent=h==='none'?'收起时段 ▴':'展开时段 ▾';
+        }
+      });
+    });
+    // 绑定流向线路切换
+    var fl=bodyEl.querySelector('#flow-fl');
+    if(fl){
+      fl.querySelectorAll('span').forEach(function(s){
+        s.addEventListener('click',function(){
+          fl.querySelectorAll('span').forEach(function(x){x.classList.remove('on');});
+          this.classList.add('on');
+          var line=this.getAttribute('data-fline');
+          var tb=bodyEl.querySelector('#flow-tbody');
+          if(tb) tb.innerHTML=flowTableBody(line);
+          // 重新绑定展开
+          bodyEl.querySelectorAll('.flow-exp').forEach(function(el){
+            el.addEventListener('click',function(){
+              var tgt=bodyEl.querySelector('#'+this.getAttribute('data-target'));
+              if(tgt){
+                var h=tgt.style.display;
+                tgt.style.display=h==='none'?'table-row':'none';
+                this.textContent=h==='none'?'收起时段 ▴':'展开时段 ▾';
+              }
+            });
+          });
+        });
+      });
+    }
+  }
+  window.kbOpenDrawer=openDrawer;
+  window.kbNavTo=function(type,text){
+    var labels={'vehicleMonitor':'车辆监控台','tms':'TMS出发到达管理','dispatchMonitor':'调度监控工作台','bagQuery':'袋号查询','billQuery':'派件运单管理中的基本信息'};
+    alert('跳转至：'+labels[type]+'\n编码：'+text);
+  };
+  // 绑定所有 data-drawer 点击
+  document.querySelectorAll('[data-drawer]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
+      openDrawer(this.getAttribute('data-drawer'));
+    });
+  });
+  // 绑定表格中数字下钻（时间分布汇总表 → 车辆/袋/运单明细）
+  document.addEventListener('click',function(e){
+    var target=e.target.closest('[data-drill]');
+    if(!target) return;
+    var drillType=target.getAttribute('data-drill');
+    var bucket=target.getAttribute('data-bucket');
+    if(drillType==='etaveh'){
+      openDrawer('etaveh',{bucket:bucket});
+    } else if(drillType==='etabag'){
+      openDrawer('etabag',{bucket:bucket});
+    } else if(drillType==='etabill'){
+      openDrawer('etabill',{bucket:bucket});
+    } else if(drillType==='unloadveh'){
+      openDrawer('unloadveh',{bucket:bucket});
+    } else if(drillType==='unloadbag'){
+      openDrawer('unloadbag',{bucket:bucket});
+    } else if(drillType==='unloadbill'){
+      openDrawer('unloadbill',{bucket:bucket});
+    } else if(drillType==='unloadedveh'){
+      openDrawer('unloadedveh',{bucket:bucket});
+    } else if(drillType==='unloadedbag'){
+      openDrawer('unloadedbag',{bucket:bucket});
+    } else if(drillType==='unloadedbill'){
+      openDrawer('unloadedbill',{bucket:bucket});
+    } else if(drillType==='upstreamveh'){
+      openDrawer('upstreamveh',{bucket:bucket});
+    } else if(drillType==='transitveh'){
+      openDrawer('transitveh',{bucket:bucket});
+    } else if(drillType==='transitbag'){
+      openDrawer('transitbag',{bucket:bucket});
+    } else if(drillType==='transitbill'){
+      openDrawer('transitbill',{bucket:bucket});
+    } else if(drillType==='abnormalveh'){
+      openDrawer('abnormalveh',{bucket:bucket});
+    } else if(drillType==='abnormalbag'){
+      openDrawer('abnormalbag',{bucket:bucket});
+    } else if(drillType==='abnormalbill'){
+      openDrawer('abnormalbill',{bucket:bucket});
+    } else if(drillType==='latestveh'){
+      openDrawer('latestveh',{bucket:bucket});
+    } else if(drillType==='latestbag'){
+      openDrawer('latestbag',{bucket:bucket});
+    } else if(drillType==='latestbill'){
+      openDrawer('latestbill',{bucket:bucket});
+    } else if(drillType==='timelyunloadedveh'){
+      openDrawer('timelyunloadedveh',{bucket:bucket});
+    } else if(drillType==='timelyunloadedbag'){
+      openDrawer('timelyunloadedbag',{bucket:bucket});
+    } else if(drillType==='timelyunloadedbill'){
+      openDrawer('timelyunloadedbill',{bucket:bucket});
+    }
+  });
+  // 辅助卡展开/收起
+  var auxToggle=document.getElementById('aux-toggle');
+  var auxCards=document.getElementById('aux-cards');
+  if(auxToggle){
+    auxToggle.addEventListener('click',function(){
+      var h=auxCards.style.display;
+      auxCards.style.display=h==='none'?'grid':'none';
+      this.textContent=h==='none'?'收起辅助卡 ▴':'展开辅助卡（上游未发车 / 在途 / 异常未到 / 截单后到）▾';
+    });
+  }
+  // lightbox 关闭
+  var lb=document.getElementById('lightbox');
+  document.getElementById('lb-close').addEventListener('click',function(){lb.classList.remove('on');});
+  lb.addEventListener('click',function(e){if(e.target===lb)lb.classList.remove('on');});
+  // ESC 关闭
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeTopDrawer();lb.classList.remove('on');}
+  });
+})();
+</script>
+</body>
+</html>

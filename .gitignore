@@ -1,0 +1,10 @@
+# macOS 元数据
+__MACOSX/
+.DS_Store
+._*
+
+# 备份文件
+*.bak
+
+# 压缩包
+*.zip
