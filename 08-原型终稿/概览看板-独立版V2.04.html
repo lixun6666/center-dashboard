@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>中心看板 · 概况（独立版）</title>
+<title>中心运营实时看板 · 概况（视觉优化版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -121,13 +121,314 @@
   .info2 .ico{font-size:18px;line-height:1;}
   .info2 .tx{flex:1;font-size:13px;color:#6b4e10;}
   .info2 .tx b{color:#b3760a;}
+
+
+  /* ===== 业务大屏视觉优化层 ===== */
+  :root{
+    --screen-navy:#081421;
+    --screen-navy-2:#102338;
+    --screen-ink:#172536;
+    --screen-muted:#6f7f91;
+    --screen-line:#dce3ea;
+    --screen-bg:#e9edf2;
+    --screen-panel:#ffffff;
+    --screen-success:#16835c;
+    --screen-warning:#c98213;
+    --screen-danger:#d74343;
+    --screen-blue:#365f86;
+    --screen-shadow:0 5px 18px rgba(10,29,48,.07);
+  }
+  html{background:var(--screen-bg);}
+  body{
+    min-width:1280px;
+    background:
+      radial-gradient(circle at 85% 0%,rgba(252,76,2,.055),transparent 26%),
+      linear-gradient(180deg,#edf1f5 0%,#e7ebf0 100%) !important;
+    color:var(--screen-ink) !important;
+  }
+  button,select,input{outline:none;}
+  button:focus-visible,select:focus-visible,input:focus-visible,.chain-node:focus-visible,.aux-card:focus-visible{
+    box-shadow:0 0 0 3px rgba(252,76,2,.18) !important;
+  }
+
+  /* 顶部：深色主导航 + 清晰筛选带 */
+  .top-shell{
+    position:sticky;
+    top:0;
+    z-index:30 !important;
+    background:var(--screen-navy) !important;
+    border-bottom:0 !important;
+    box-shadow:0 8px 24px rgba(5,17,29,.18) !important;
+  }
+  .top-main{
+    min-height:54px;
+    padding:9px 24px !important;
+    color:#f7f9fb;
+    background:linear-gradient(90deg,var(--screen-navy) 0%,#0d1c2c 62%,#122943 100%);
+  }
+  .top-main > div:first-child > div:first-child{
+    width:34px !important;height:34px !important;border-radius:7px !important;
+    background:var(--gofo-primary) !important;
+    box-shadow:0 0 0 4px rgba(252,76,2,.14),0 5px 12px rgba(0,0,0,.2) !important;
+  }
+  .top-main > div:first-child > div:last-child{
+    font-size:16px !important;font-weight:700 !important;letter-spacing:.5px !important;
+  }
+  .top-main > div:nth-child(2){height:34px;gap:2px !important;}
+  .top-main > div:nth-child(2) > span{
+    height:34px;display:flex;align-items:center;padding:0 16px !important;
+    border-radius:5px !important;color:#9fb0c2 !important;background:transparent !important;
+    box-shadow:none !important;font-weight:600 !important;position:relative;
+  }
+  .top-main > div:nth-child(2) > span:first-child{
+    color:#fff !important;background:rgba(252,76,2,.94) !important;
+  }
+  .top-main > div:nth-child(2) > span:not(:first-child):hover{color:#fff !important;background:rgba(255,255,255,.06) !important;}
+  .top-main > div:last-child{color:#6ee7a6 !important;font-weight:600;}
+  .top-main > div:last-child .num{color:#aebdca !important;}
+
+  .filter-bar{
+    min-height:48px;
+    padding:7px 24px !important;
+    gap:9px !important;
+    border-top:1px solid rgba(255,255,255,.07) !important;
+    border-bottom:1px solid #d6dde5;
+    background:#f8fafc !important;
+    box-shadow:inset 0 -1px 0 rgba(14,32,52,.03);
+  }
+  .filter-bar > div,.filter-bar > span{
+    border-radius:6px !important;
+  }
+  .filter-bar > div[style*="background:#fff"]{
+    background:#fff !important;border-color:#d8e0e8 !important;
+  }
+  .filter-bar > button{
+    min-width:68px;border-radius:6px !important;background:var(--gofo-primary) !important;
+    box-shadow:0 3px 8px rgba(252,76,2,.22);transition:.15s ease;
+  }
+  .filter-bar > button:hover{transform:translateY(-1px);background:var(--gofo-primary-hover) !important;}
+  .filter-bar .seg{border-radius:6px !important;}
+  .filter-bar .seg span{padding:6px 11px;}
+
+  /* 页面与通用面板 */
+  .dashboard-content{
+    padding:13px 24px 24px !important;
+    gap:12px !important;
+  }
+  .panel{
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--screen-line) !important;
+    border-radius:8px !important;
+    background:rgba(255,255,255,.98) !important;
+    box-shadow:var(--screen-shadow) !important;
+    padding:14px 18px !important;
+  }
+  .panel::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:2px;
+    background:linear-gradient(90deg,var(--gofo-primary),rgba(252,76,2,.15) 34%,transparent 76%);
+  }
+  .section-heading{margin-bottom:11px !important;min-height:24px;}
+  .section-heading > span:first-child{
+    width:3px !important;height:16px !important;border-radius:2px !important;background:var(--gofo-primary) !important;
+  }
+  .section-heading > div:last-child,.trend-heading > div:first-child > div:last-child{
+    font-size:15px !important;font-weight:750 !important;letter-spacing:.15px;color:#1b2939;
+  }
+  .risk-panel::before{background:linear-gradient(90deg,var(--screen-danger),rgba(215,67,67,.18),transparent 76%);}
+  .risk-panel .section-heading > span:first-child{background:var(--screen-danger) !important;}
+
+  /* 作业流水线 */
+  .pipeline-panel{padding-bottom:15px !important;}
+  .pipeline-panel > div:last-child{align-items:stretch !important;}
+  .chain-node{
+    min-width:0 !important;min-height:104px;
+    border:1px solid #dfe5ec !important;border-radius:7px !important;
+    background:#fff !important;box-shadow:none !important;
+    padding:15px 15px 13px !important;position:relative;overflow:hidden;
+  }
+  .chain-node::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#9eacba;
+  }
+  .chain-node.warn::before{background:var(--screen-warning);}
+  .chain-node.core::before{background:var(--screen-danger);}
+  .chain-node:hover{
+    transform:translateY(-2px) !important;
+    border-color:#b9c5d1 !important;
+    box-shadow:0 8px 18px rgba(17,42,67,.10) !important;
+  }
+  .chain-node > div:first-child{
+    font-size:12.5px !important;color:#45586b !important;font-weight:700 !important;
+    letter-spacing:.2px;
+  }
+  .chain-node.core > div:first-child{color:#a93434 !important;}
+  .chain-node .num{letter-spacing:-1px;}
+  .chain-node .dd{text-decoration:none !important;}
+  .chain-arrow{flex:0 0 34px !important;position:relative;color:transparent !important;}
+  .chain-arrow::before{
+    content:"";position:absolute;left:5px;right:7px;top:50%;height:1px;background:#b9c4cf;
+  }
+  .chain-arrow::after{
+    content:"";position:absolute;right:5px;top:calc(50% - 4px);width:7px;height:7px;
+    border-top:1px solid #9eabb8;border-right:1px solid #9eabb8;transform:rotate(45deg);
+  }
+  .chain-arrow .ar{display:none;}
+
+  /* 中段 */
+  .middle-grid{gap:12px !important;}
+  .backlog-panel{flex:1.25 !important;}
+  .risk-panel{flex:.75 !important;background:linear-gradient(180deg,#fff 0%,#fffafa 100%) !important;}
+  .backlog-panel > div:last-child{gap:10px !important;}
+  .backlog-panel .split{
+    height:20px !important;border-radius:4px !important;background:#edf1f5;
+    box-shadow:inset 0 0 0 1px rgba(20,42,64,.05);
+    margin-top:7px !important;overflow:hidden;position:relative;
+  }
+  .backlog-item{padding:1px 0 3px;}
+  .backlog-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:7px;}
+  .backlog-title{font-size:13px;color:#536579;font-weight:700;min-width:0;}
+  .backlog-title .hint{font-size:10.5px;color:#98a5b3;margin-left:5px;font-weight:500;}
+  .split-values{display:flex;align-items:center;gap:18px;margin-bottom:6px;min-width:0;}
+  .split-value{display:flex;align-items:baseline;gap:5px;min-width:0;font-size:12px;color:#647487;}
+  .split-value::before{content:"";width:7px;height:7px;border-radius:50%;flex:0 0 auto;align-self:center;}
+  .split-value.now::before{background:var(--screen-blue);}
+  .split-value.old::before{background:#d49a39;}
+  .split-value .name{white-space:nowrap;}
+  .split-value .value{font-size:14px;font-weight:800;white-space:nowrap;}
+  .split-value.now .value{color:var(--screen-blue);}
+  .split-value.old .value{color:#c78922;}
+  .split-value .unit,.split-value .pct{font-size:11px;color:#8897a6;white-space:nowrap;}
+  .split-value-separator{width:1px;height:16px;background:#d9e0e7;flex:0 0 auto;}
+  .split-segment{height:100%;display:flex;align-items:center;justify-content:center;min-width:0;
+    white-space:nowrap;overflow:hidden;transition:filter .15s ease,opacity .15s ease;cursor:default;}
+  .split-segment.now{background:var(--screen-blue) !important;}
+  .split-segment.old{background:#d49a39 !important;}
+  .split-segment:hover{filter:brightness(.96);}
+  .split-segment .bar-label{font-size:10.5px;font-weight:800;color:#fff;line-height:1;
+    text-shadow:0 1px 1px rgba(0,0,0,.12);pointer-events:none;}
+  .split-segment.is-compact .bar-label{font-size:9.5px;}
+  .split-segment.is-tiny .bar-label{display:none;}
+  .split-tooltip{position:fixed;z-index:3000;pointer-events:none;opacity:0;transform:translateY(4px);
+    background:rgba(20,31,43,.94);color:#fff;border-radius:6px;padding:7px 10px;font-size:11.5px;
+    line-height:1.5;box-shadow:0 6px 18px rgba(15,25,38,.2);transition:opacity .12s,transform .12s;white-space:nowrap;}
+  .split-tooltip.on{opacity:1;transform:translateY(0);}
+  @media(max-width:1180px){
+    .split-values{gap:10px;}
+    .split-value-separator{display:none;}
+    .split-value{flex-wrap:wrap;row-gap:1px;}
+  }
+  .risk-panel > div:last-child{gap:9px !important;}
+
+  /* 指标卡：保持中性，只用细条和数字表达状态 */
+  .aux-card{
+    position:relative;overflow:hidden;
+    border:1px solid #e0e6ec !important;border-radius:7px !important;
+    background:#fff !important;box-shadow:none !important;
+    padding:13px 14px 12px !important;min-width:0;
+  }
+  .aux-card::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:3px;background:#8da0b2;
+  }
+  .aux-card.status-success::before{background:var(--screen-success);}
+  .aux-card.status-warning::before{background:var(--screen-warning);}
+  .aux-card.status-danger::before{background:var(--screen-danger);}
+  .aux-card.status-neutral::before{background:var(--screen-blue);}
+  .aux-card:hover{
+    transform:translateY(-2px) !important;border-color:#bdc8d3 !important;
+    box-shadow:0 8px 16px rgba(17,42,67,.09) !important;
+  }
+  .aux-card .al{font-size:12px !important;color:#526477 !important;font-weight:700 !important;}
+  .aux-card.status-danger .al{color:#a73535 !important;}
+  .aux-card .av{font-size:23px !important;margin-top:7px !important;line-height:1.05;}
+  .aux-card .as{
+    margin-top:8px !important;padding-top:7px;border-top:1px dashed #e5eaf0;
+    color:#8795a4 !important;line-height:1.45 !important;
+    overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  }
+  .risk-panel .aux-card{min-height:76px;}
+  .risk-panel .aux-card .av{font-size:25px !important;}
+  .key-panel > div:last-child{gap:9px !important;}
+  .key-panel .aux-card{min-height:108px;}
+
+  /* 趋势区域 */
+  .trend-panel{padding-bottom:8px !important;}
+  .trend-heading{margin-bottom:4px !important;align-items:center !important;}
+  .seg{border-color:#d7dfe7 !important;border-radius:6px !important;}
+  .seg span{padding:6px 11px !important;}
+  .seg .on{background:#fff0e8 !important;color:var(--gofo-primary) !important;font-weight:700 !important;box-shadow:inset 0 0 0 1px #ffd1bc;}
+  #chart-trend{height:220px !important;}
+
+  /* 图例降级为辅助信息 */
+  .legend-panel{
+    min-height:36px;padding:8px 16px !important;border-radius:7px !important;
+    border:1px solid #dce3ea !important;background:rgba(255,255,255,.74) !important;
+    box-shadow:none !important;
+  }
+  .legend-panel > div{gap:12px !important;font-size:11px !important;}
+  .legend-panel > span{font-size:11px !important;}
+
+  /* 下钻保持业务系统风格 */
+  .drawer-backdrop{background:rgba(5,15,25,.58) !important;backdrop-filter:blur(2px) !important;}
+  .drawer-panel{border-radius:9px !important;border:1px solid #bfcad4 !important;box-shadow:0 28px 70px rgba(4,15,26,.34) !important;}
+  .drawer-head{background:var(--screen-navy-2);color:#fff;border-bottom:0 !important;padding:14px 20px !important;}
+  .drawer-head .drawer-close{background:rgba(255,255,255,.08) !important;color:#dfe8f0 !important;border-color:rgba(255,255,255,.15) !important;}
+  .drawer-body{padding:18px 20px !important;}
+  .drawer-body .drawer-stat{border-radius:6px !important;background:#f7f9fb !important;}
+  .dquery{background:var(--gofo-primary) !important;}
+  .dexport{background:var(--screen-blue) !important;}
+  table{font-family:"IBM Plex Mono","Microsoft YaHei",sans-serif;}
+  thead th{background:#f3f6f9 !important;color:#526477 !important;}
+
+  @media (max-width:1500px){
+    body{min-width:1180px;}
+    .dashboard-content{padding-left:16px !important;padding-right:16px !important;}
+    .top-main,.filter-bar{padding-left:16px !important;padding-right:16px !important;}
+    .chain-node{padding-left:12px !important;padding-right:12px !important;}
+    .chain-node .num[style*="font-size:32px"]{font-size:28px !important;}
+    .key-panel .aux-card .av{font-size:20px !important;}
+    .key-panel .aux-card .as{font-size:10px !important;}
+  }
+  @media (max-height:900px){
+    .dashboard-content{gap:9px !important;padding-top:9px !important;}
+    .panel{padding-top:11px !important;padding-bottom:11px !important;}
+    .section-heading{margin-bottom:8px !important;}
+    .chain-node{min-height:92px;padding-top:12px !important;}
+    .key-panel .aux-card{min-height:96px;}
+    #chart-trend{height:185px !important;}
+    .legend-panel{display:none !important;}
+  }
+
+
+  /* 状态数字与风险区布局补强 */
+  .aux-card.status-success .dd{color:var(--screen-success) !important;}
+  .aux-card.status-warning .dd{color:var(--screen-warning) !important;}
+  .aux-card.status-danger .dd{color:var(--screen-danger) !important;}
+  .aux-card.status-neutral .dd{color:var(--screen-blue) !important;}
+  .risk-panel .section-heading::after{
+    content:"3 项待处理";margin-left:auto;padding:3px 8px;border-radius:10px;
+    background:#fff0f0;color:#b83232;border:1px solid #f4cccc;font-size:10.5px;font-weight:700;
+  }
+  .risk-panel > div:last-child{
+    grid-template-columns:1fr !important;grid-template-rows:repeat(3,1fr);
+  }
+  .risk-panel .aux-card{
+    min-height:55px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 14px 10px 16px !important;
+  }
+  .risk-panel .aux-card::before{left:0;right:auto;bottom:0;width:4px;height:auto;}
+  .risk-panel .aux-card .av{margin-top:0 !important;font-size:24px !important;}
+  @media (max-height:1100px){
+    .legend-panel{display:none !important;}
+    #chart-trend{height:210px !important;}
+  }
+
 </style>
 </head>
 <body>
 
 <!-- ============ 顶部导航 ============ -->
-<div style="z-index:30;background:#fff;border-bottom:1px solid #e6ebf1;box-shadow:0 1px 3px rgba(16,32,64,.04);">
-  <div style="display:flex;align-items:center;gap:22px;padding:11px 26px;">
+<div class="top-shell" style="z-index:30;background:#fff;border-bottom:1px solid #e6ebf1;box-shadow:0 1px 3px rgba(16,32,64,.04);">
+  <div class="top-main" style="display:flex;align-items:center;gap:22px;padding:11px 26px;">
     <div style="display:flex;align-items:center;gap:11px;">
       <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#fc4c02,#f76121);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;">概</div>
       <div style="font-size:15px;font-weight:600;letter-spacing:.2px;">中心实时看板</div>
@@ -145,7 +446,7 @@
       数据实时 <span class="num" style="color:#9aa6b6;">14:32:08</span>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:12px;padding:10px 26px;border-top:1px solid #f0f3f7;background:#fafbfd;">
+  <div class="filter-bar" style="display:flex;align-items:center;gap:12px;padding:10px 26px;border-top:1px solid #f0f3f7;background:#fafbfd;">
     <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;font-size:13px;cursor:pointer;">LAX H <span style="color:#9aa6b6;">▾</span></div>
     <div style="display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;font-size:12.5px;color:#64718a;">操作日 <b class="num" style="color:#16202e;font-weight:500;">06-16 04:00 ~ 06-17 04:00</b></div>
     <div style="display:inline-flex;border:1px solid #d6dde6;border-radius:9px;overflow:hidden;background:#fff;">
@@ -170,11 +471,11 @@
 </div>
 
 <!-- ============ 内容区 ============ -->
-<div style="padding:16px 26px 44px;display:flex;flex-direction:column;gap:15px;">
+<main class="dashboard-content" style="padding:16px 26px 44px;display:flex;flex-direction:column;gap:15px;">
 
   <!-- FR-1 作业流水线 -->
-  <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+  <section class="panel pipeline-panel" style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+    <div class="section-heading" style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
       <span style="width:4px;height:18px;border-radius:2px;background:#fc4c02;"></span>
       <div style="font-size:17px;font-weight:700;">作业流水线</div>
     </div>
@@ -200,13 +501,13 @@
       <div class="chain-node warn" data-drawer="presort">
         <div style="font-size:13px;color:#16202e;font-weight:600;">应分拣</div>
         <div style="margin-top:12px;">
-          <span class="num dd" style="font-size:32px;font-weight:800;color:#b3760a;line-height:1;">59,977</span>
+          <span class="num dd" style="font-size:32px;font-weight:800;color:#b3760a;line-height:1;">42,000</span>
           <span style="font-size:12px;color:#9aa6b6;margin-left:4px;">件</span>
         </div>
       </div>
       <div class="chain-arrow"><div class="ar">→</div></div>
       <div class="chain-node warn" data-drawer="toload">
-        <div style="font-size:13px;color:#16202e;font-weight:600;">待装车签出</div>
+        <div style="font-size:13px;color:#16202e;font-weight:600;">待签出</div>
         <div style="margin-top:12px;">
           <span class="num dd" style="font-size:32px;font-weight:800;color:#b3760a;line-height:1;">108,909</span>
           <span style="font-size:12px;color:#9aa6b6;margin-left:4px;">件</span>
@@ -222,128 +523,160 @@
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- FR-3 本班次 vs 历史积压 + FR-4/FR-5 独立流程 -->
-  <div style="display:flex;gap:15px;align-items:stretch;">
+  <section class="middle-grid" style="display:flex;gap:15px;align-items:stretch;">
     <!-- 积压拆分 -->
-    <div style="flex:1;background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+    <div class="panel backlog-panel" style="flex:1;background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+      <div class="section-heading" style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
         <span style="width:4px;height:18px;border-radius:2px;background:#fc4c02;"></span>
         <div style="font-size:17px;font-weight:700;">积压拆分 · 本班次 vs 历史</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:#64718a;font-weight:600;">已到未卸 <b class="num">16</b> 辆</span>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="backlog-item" data-current="6" data-history="10" data-unit="辆">
+          <div class="backlog-top">
+            <span class="backlog-title">已到未卸 <b class="num">16</b> 辆</span>
             <span class="dd" data-drawer="unload" style="font-size:12px;">查看明细 ›</span>
           </div>
-          <div class="split"><span class="now" style="width:38%;">本班次 6</span><span class="old" style="width:62%;">历史积压 10</span></div>
+          <div class="split-values">
+            <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+            <span class="split-value-separator"></span>
+            <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+          <div class="split" aria-label="已到未卸积压拆分">
+            <span class="split-segment now"><span class="bar-label"></span></span>
+            <span class="split-segment old"><span class="bar-label"></span></span>
+          </div>
         </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:#64718a;font-weight:600;">应分拣 <b class="num">42,000</b> 件 <span style="font-size:10.5px;color:#9aa6b6;margin-left:4px;">截单前必分</span></span>
+        <div class="backlog-item" data-current="25000" data-history="17000" data-unit="件">
+          <div class="backlog-top">
+            <span class="backlog-title">应分拣 <b class="num">42,000</b> 件 <span class="hint">截单前必分</span></span>
             <span class="dd" data-drawer="presort" style="font-size:12px;">查看明细 ›</span>
           </div>
-          <div class="split"><span class="now" style="width:60%;">本班次 2.5 万</span><span class="old" style="width:40%;">历史 1.7 万</span></div>
+          <div class="split-values">
+            <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+            <span class="split-value-separator"></span>
+            <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+          <div class="split" aria-label="应分拣积压拆分">
+            <span class="split-segment now"><span class="bar-label"></span></span>
+            <span class="split-segment old"><span class="bar-label"></span></span>
+          </div>
         </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:#64718a;font-weight:600;">待分拣 <b class="num">60,000</b> 件 <span style="font-size:10.5px;color:#9aa6b6;margin-left:4px;">全部待分</span></span>
+        <div class="backlog-item" data-current="42000" data-history="18000" data-unit="件">
+          <div class="backlog-top">
+            <span class="backlog-title">待分拣 <b class="num">60,000</b> 件 <span class="hint">全部待分</span></span>
             <span class="dd" data-drawer="presort" style="font-size:12px;">查看明细 ›</span>
           </div>
-          <div class="split"><span class="now" style="width:70%;">本班次 4.2 万</span><span class="old" style="width:30%;">历史 1.8 万</span></div>
+          <div class="split-values">
+            <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+            <span class="split-value-separator"></span>
+            <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+          <div class="split" aria-label="待分拣积压拆分">
+            <span class="split-segment now"><span class="bar-label"></span></span>
+            <span class="split-segment old"><span class="bar-label"></span></span>
+          </div>
         </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:#64718a;font-weight:600;">待装车签出 <b class="num">108,909</b> 件</span>
+        <div class="backlog-item" data-current="60000" data-history="48909" data-unit="件">
+          <div class="backlog-top">
+            <span class="backlog-title">待签出 <b class="num">108,909</b> 件</span>
             <span class="dd" data-drawer="toload" style="font-size:12px;">查看明细 ›</span>
           </div>
-          <div class="split"><span class="now" style="width:55%;">本班次 6.0 万</span><span class="old" style="width:45%;">历史 4.9 万</span></div>
+          <div class="split-values">
+            <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+            <span class="split-value-separator"></span>
+            <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+          <div class="split" aria-label="待签出积压拆分">
+            <span class="split-segment now"><span class="bar-label"></span></span>
+            <span class="split-segment old"><span class="bar-label"></span></span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- FR-2 需要立刻关注 -->
-    <div style="flex:1;background:#fff;border:1px solid #f6cdc8;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+    <div class="panel risk-panel" style="flex:1;background:#fff;border:1px solid #f6cdc8;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+      <div class="section-heading" style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
         <span style="width:4px;height:18px;border-radius:2px;background:#e5484d;"></span>
         <div style="font-size:17px;font-weight:700;">需要立刻关注</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-        <div class="aux-card" data-drawer="unload" style="border-color:#f3d2cf;">
+        <div class="aux-card status-danger" data-drawer="unload" style="border-color:#f3d2cf;">
           <div class="al" style="color:#cf1322;">超时未卸</div>
           <div class="av" style="color:#e5484d;"><span class="num dd">16</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div>
         </div>
-        <div class="aux-card" data-drawer="presort" style="border-color:#ffe2ad;">
+        <div class="aux-card status-warning" data-drawer="presort" style="border-color:#ffe2ad;">
           <div class="al" style="color:#b3760a;">应分拣</div>
           <div class="av" style="color:#b3760a;"><span class="num dd">42,000</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
         </div>
-        <div class="aux-card" data-drawer="dispatch" style="border-color:#ffe2ad;">
+        <div class="aux-card status-warning" data-drawer="dispatch" style="border-color:#ffe2ad;">
           <div class="al" style="color:#b3760a;">发车预警</div>
           <div class="av" style="color:#b3760a;"><span class="num dd">2</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- FR-5 各环节关键量（辅助卡） -->
-  <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+  <section class="panel key-panel" style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+    <div class="section-heading" style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
       <span style="width:4px;height:18px;border-radius:2px;background:#fc4c02;"></span>
       <div style="font-size:17px;font-weight:700;">各环节关键量</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
-      <div class="aux-card" data-drawer="inbound">
+      <div class="aux-card status-success" data-drawer="inbound">
         <div class="al">今日已入库</div>
         <div class="av" style="color:#16a34a;"><span class="num dd">299,454</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
         <div class="as">清关 52,528 · 中转 6,193 · 揽收 1,011</div>
       </div>
-      <div class="aux-card" data-drawer="presort">
+      <div class="aux-card status-warning" data-drawer="presort">
         <div class="al">待分拣</div>
         <div class="av" style="color:#b3760a;"><span class="num dd">59,977</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
         <div class="as">来源：清关 52,528 · 中转 6,193 · 揽收 1,011</div>
       </div>
-      <div class="aux-card" data-drawer="sorted">
+      <div class="aux-card status-success" data-drawer="sorted">
         <div class="al">已分拣</div>
         <div class="av" style="color:#16a34a;"><span class="num dd">234,024</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
-        <div class="as">待装车签出 108,909 · 已装未发 46,514 · 已装已发 78,601</div>
+        <div class="as">待签出 108,909 · 已装未发 46,514 · 已装已发 78,601</div>
       </div>
-      <div class="aux-card" data-drawer="toload">
+      <div class="aux-card status-neutral" data-drawer="toload">
         <div class="al">箱中转</div>
         <div class="av" style="color:#b3760a;"><span class="num dd">4,813</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
         <div class="as">路区 57% · hub 38% · 服务渠道 5%</div>
       </div>
-      <div class="aux-card" data-drawer="dispatch">
+      <div class="aux-card status-success" data-drawer="dispatch">
         <div class="al">今日签出</div>
         <div class="av" style="color:#16a34a;"><span class="num dd">108,909</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
         <div class="as">待发车 1 辆 · 今日计划发车 23 辆</div>
       </div>
-      <div class="aux-card" data-drawer="abnormal" style="border-color:#f3d2cf;">
+      <div class="aux-card status-danger" data-drawer="abnormal" style="border-color:#f3d2cf;">
         <div class="al" style="color:#cf1322;">异常在库数</div>
         <div class="av" style="color:#e5484d;"><span class="num dd">24,357</span><span style="font-size:11px;color:#bd7d7d;"> 件</span></div>
         <div class="as">地址异常 9,820 · 面单破损 6,240</div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- FR-7 分拣票数趋势（借鉴分拣区） -->
-  <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+  <section class="panel trend-panel" style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
+    <div class="section-heading trend-heading" style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
       <div style="display:flex;align-items:center;gap:9px;">
         <span style="width:4px;height:18px;border-radius:2px;background:#fc4c02;"></span>
         <div style="font-size:17px;font-weight:700;">全流程票数趋势</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <div class="seg" id="seg-trend-metric"><span class="on" data-metric="sort">分拣</span><span data-metric="inbound">入库</span><span data-metric="load">装车</span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <span id="trend-mode-tip" style="font-size:12px;color:#9aa6b6;">并列柱对比每小时处理节奏</span>
         <div class="seg" id="seg-trend-mode"><span class="on" data-mode="hour">单小时</span><span data-mode="cum">累计</span></div>
       </div>
     </div>
-    <div id="chart-trend" style="width:100%;height:260px;"></div>
-  </div>
+    <div id="chart-trend" role="img" aria-label="入库、分拣、装车全流程票数趋势合成图" style="width:100%;height:220px;"></div>
+  </section>
 
   <!-- 颜色规范图例 -->
-  <div style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+  <footer class="legend-panel" style="background:#fff;border:1px solid #e8edf3;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
     <div style="font-size:12px;color:#9aa6b6;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
       <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16202e;margin-right:4px;"></span>正常</span>
       <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16a34a;margin-right:4px;"></span>达标</span>
@@ -352,10 +685,10 @@
       <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e5484d;margin-right:4px;"></span>重点关注</span>
       <span><span style="color:#fc4c02;text-decoration:underline;">下划线</span>＝可下钻</span>
     </div>
-    <span style="font-size:12px;color:#9aa6b6;">独立版 · 依据《PRD-概况优化》v0.2 · 仅供讨论</span>
-  </div>
+    <span style="font-size:12px;color:#9aa6b6;">视觉优化版 v3 · 合成趋势图 · 保留原交互与下钻</span>
+  </footer>
 
-</div>
+</main>
 
 <!-- 抽屉 -->
 <div class="drawer-backdrop" id="drawer-backdrop">
@@ -369,44 +702,107 @@
 </div>
 
 <script>
-// 全流程票数趋势
+// 全流程票数趋势 · 合成图
 (function(){
-  var el=document.getElementById('chart-trend'); if(!el) return;
+  var el=document.getElementById('chart-trend'); if(!el||typeof echarts==='undefined') return;
   var chart=echarts.init(el);
+  var modeTip=document.getElementById('trend-mode-tip');
   var hours=['04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
   var data={
-    sort:[1800,3200,5800,9200,12500,15800,17200,18900,20100,22400,24600,23400],
     inbound:[2200,3600,6200,9800,13200,16600,18500,20100,21500,23800,25900,29900],
+    sort:[1800,3200,5800,9200,12500,15800,17200,18900,20100,22400,24600,23400],
     load:[1200,2400,4200,6800,9200,11800,13200,14800,16200,18100,20100,19100]
   };
-  var names={sort:'分拣票数',inbound:'入库票数',load:'装车票数'};
-  var colors={sort:'#fc4c02',inbound:'#16a34a',load:'#f5a623'};
-  var state={metric:'sort',mode:'hour'};
+  var meta={
+    inbound:{name:'入库',color:'#2f6bff'},
+    sort:{name:'分拣',color:'#fc4c02'},
+    load:{name:'装车',color:'#16a34a'}
+  };
+  var state={mode:'hour'};
   function cum(a){var s=0;return a.map(function(v){s+=v;return s;});}
-  function build(){
-    var d=data[state.metric].slice();
-    if(state.mode==='cum') d=cum(d);
+  function fmt(v){return Number(v||0).toLocaleString('zh-CN');}
+  function gapText(label,value){
+    var positive=value>=0;
+    return '<div style="display:flex;justify-content:space-between;gap:28px;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.14);color:'+(positive?'#ffd6a8':'#9ee7bd')+';">'
+      +'<span>'+label+'</span><b style="font-family:IBM Plex Mono,monospace;">'+(positive?'':'超出 ')+fmt(Math.abs(value))+'</b></div>';
+  }
+  function tooltipFormatter(params){
+    if(!params||!params.length) return '';
+    var values={};
+    params.forEach(function(p){values[p.seriesName]=Number(p.value||0);});
+    var inbound=values['入库']||0, sort=values['分拣']||0, load=values['装车']||0;
+    var prefix=state.mode==='cum'?'累计':'';
+    var html='<div style="min-width:220px;font-size:12px;">'
+      +'<div style="font-weight:700;margin-bottom:7px;color:#fff;">'+params[0].axisValue+'</div>';
+    ['入库','分拣','装车'].forEach(function(name){
+      var color=name==='入库'?meta.inbound.color:(name==='分拣'?meta.sort.color:meta.load.color);
+      html+='<div style="display:flex;justify-content:space-between;gap:28px;line-height:22px;">'
+        +'<span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+color+';margin-right:7px;"></i>'+prefix+name+'</span>'
+        +'<b style="font-family:IBM Plex Mono,monospace;">'+fmt(values[name])+' 票</b></div>';
+    });
+    html+=gapText(prefix+'入库未消化',inbound-sort);
+    html+=gapText(prefix+'分拣待装车',sort-load);
+    return html+'</div>';
+  }
+  function commonOption(){
     return {
-      tooltip:{trigger:'axis'},
-      legend:{top:0,textStyle:{fontSize:12,color:'#9aa6b6'}},
-      grid:{left:55,right:30,top:35,bottom:30},
-      xAxis:{type:'category',data:hours,boundaryGap:true,axisLine:{lineStyle:{color:'#d6dde6'}},axisTick:{show:false},axisLabel:{color:'#9aa6b6',fontSize:11}},
-      yAxis:{type:'value',name:'票',nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:10,formatter:function(v){return v>=1000?(v/1000)+'k':v;}},splitLine:{lineStyle:{color:'#eef2f6',type:'dashed'}}},
-      series:[{name:names[state.metric],type:'line',data:d,smooth:true,areaStyle:{opacity:.12},lineStyle:{color:colors[state.metric],width:2},itemStyle:{color:colors[state.metric]},symbol:'circle',symbolSize:5}]
+      animationDuration:420,
+      color:[meta.inbound.color,meta.sort.color,meta.load.color],
+      aria:{enabled:true,decal:{show:false}},
+      tooltip:{
+        trigger:'axis',confine:true,backgroundColor:'rgba(22,32,46,.94)',borderWidth:0,
+        padding:[10,12],textStyle:{color:'#fff',fontSize:12},extraCssText:'box-shadow:0 10px 26px rgba(16,32,64,.22);border-radius:9px;',
+        axisPointer:{type:state.mode==='hour'?'shadow':'line',lineStyle:{color:'#aab6c5'},shadowStyle:{color:'rgba(47,107,255,.045)'}},
+        formatter:tooltipFormatter
+      },
+      legend:{
+        top:0,left:'center',itemWidth:10,itemHeight:10,itemGap:28,icon:'roundRect',selectedMode:true,
+        textStyle:{fontSize:12,color:'#64718a',padding:[0,0,0,3]},
+        data:['入库','分拣','装车']
+      },
+      grid:{left:58,right:28,top:42,bottom:30,containLabel:false},
+      xAxis:{
+        type:'category',data:hours,boundaryGap:state.mode==='hour',
+        axisLine:{lineStyle:{color:'#d6dde6'}},axisTick:{show:false},axisLabel:{color:'#8b98aa',fontSize:11}
+      },
+      yAxis:{
+        type:'value',name:'票',nameGap:12,nameTextStyle:{color:'#9aa6b6',fontSize:11,padding:[0,22,0,0]},
+        axisLine:{show:false},axisTick:{show:false},
+        axisLabel:{color:'#9aa6b6',fontSize:10,formatter:function(v){return v>=10000?(v/10000)+'万':(v>=1000?(v/1000)+'k':v);}},
+        splitLine:{lineStyle:{color:'#edf1f5',type:'dashed'}}
+      }
     };
   }
-  chart.setOption(build());
-  function bindSeg(id,key){
-    document.querySelectorAll('#'+id+' span').forEach(function(s){
-      s.addEventListener('click',function(){
-        document.querySelectorAll('#'+id+' span').forEach(function(x){x.classList.remove('on');});
-        this.classList.add('on');
-        state[key]=this.getAttribute('data-'+key);
-        chart.setOption(build(),true);
-      });
-    });
+  function build(){
+    var option=commonOption();
+    if(state.mode==='hour'){
+      option.series=[
+        {name:'入库',type:'bar',data:data.inbound,barMaxWidth:24,barGap:'18%',itemStyle:{color:meta.inbound.color,borderRadius:[4,4,0,0]},emphasis:{focus:'series'}},
+        {name:'分拣',type:'bar',data:data.sort,barMaxWidth:24,itemStyle:{color:meta.sort.color,borderRadius:[4,4,0,0]},emphasis:{focus:'series'}},
+        {name:'装车',type:'bar',data:data.load,barMaxWidth:24,itemStyle:{color:meta.load.color,borderRadius:[4,4,0,0]},emphasis:{focus:'series'}}
+      ];
+    }else{
+      option.series=[
+        {name:'入库',type:'line',data:cum(data.inbound),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.inbound.color},itemStyle:{color:meta.inbound.color},emphasis:{focus:'series'}},
+        {name:'分拣',type:'line',data:cum(data.sort),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.sort.color},itemStyle:{color:meta.sort.color},emphasis:{focus:'series'}},
+        {name:'装车',type:'line',data:cum(data.load),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.load.color},itemStyle:{color:meta.load.color},emphasis:{focus:'series'}}
+      ];
+    }
+    return option;
   }
-  bindSeg('seg-trend-metric','metric');bindSeg('seg-trend-mode','mode');
+  function render(){
+    if(modeTip) modeTip.textContent=state.mode==='hour'?'并列柱对比每小时处理节奏':'三条折线对比全流程累计进度';
+    chart.setOption(build(),true);
+  }
+  render();
+  document.querySelectorAll('#seg-trend-mode span').forEach(function(s){
+    s.addEventListener('click',function(){
+      document.querySelectorAll('#seg-trend-mode span').forEach(function(x){x.classList.remove('on');});
+      this.classList.add('on');
+      state.mode=this.getAttribute('data-mode');
+      render();
+    });
+  });
   window.addEventListener('resize',function(){chart.resize();});
 })();
 
@@ -533,7 +929,7 @@
         +'</div>'
         +statTable('装发车状态',['运单数','占比'],[
           ['合计',234024,'100%'],
-          ['待装车签出',108909,'46.5%'],
+          ['待签出',108909,'46.5%'],
           ['已装未发',46514,'19.9%'],
           ['已装已发',78601,'33.6%']
         ]);
@@ -572,7 +968,7 @@
       t='查看明细-箱中转';
       content=statTable('状态',['件数','占比'],[
         ['合计',4813,'100%'],
-        ['待装车签出',1031,'21.4%'],
+        ['待签出',1031,'21.4%'],
         ['已装未发',1135,'23.6%'],
         ['已装已发',2647,'55.0%']
       ]);
@@ -588,6 +984,108 @@
     el.addEventListener('click',function(e){e.stopPropagation();openDrawer(this.getAttribute('data-drawer'));});
   });
   document.addEventListener('keydown',function(e){if(e.key==='Escape') closeDrawer();});
+})();
+</script>
+
+
+<script>
+(function(){
+  var clock=document.querySelector('.top-main > div:last-child .num');
+  function pad(n){return String(n).padStart(2,'0');}
+  function tick(){
+    if(!clock) return;
+    var d=new Date(); clock.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+  document.querySelectorAll('.chain-node,.aux-card,[data-drawer]').forEach(function(el){
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    el.addEventListener('keydown',function(e){
+      if((e.key==='Enter'||e.key===' ') && this.getAttribute('data-drawer')){
+        e.preventDefault(); window.kbOpenDrawer && window.kbOpenDrawer(this.getAttribute('data-drawer'));
+      }
+    });
+  });
+})();
+</script>
+
+
+<script>
+// 积压拆分：数量固定显示，条内百分比根据占比自动降级
+(function(){
+  var items=document.querySelectorAll('.backlog-item');
+  if(!items.length) return;
+
+  var tooltip=document.createElement('div');
+  tooltip.className='split-tooltip';
+  document.body.appendChild(tooltip);
+
+  function fmt(n){return Number(n||0).toLocaleString('zh-CN');}
+  function pctText(v){
+    if(Math.abs(v-Math.round(v))<0.05) return Math.round(v)+'%';
+    return v.toFixed(1)+'%';
+  }
+  function setSegment(seg,pct,label,value,unit){
+    seg.style.width=Math.max(0,Math.min(100,pct))+'%';
+    seg.classList.remove('is-compact','is-tiny');
+    if(pct<8) seg.classList.add('is-tiny');
+    else if(pct<20) seg.classList.add('is-compact');
+    var pctLabel=pctText(pct);
+    seg.querySelector('.bar-label').textContent=pct<8?'':pctLabel;
+    seg.dataset.tip=label+'：'+fmt(value)+' '+unit+' · '+pctLabel;
+    seg.setAttribute('aria-label',seg.dataset.tip);
+    seg.setAttribute('tabindex','0');
+  }
+  function positionTip(e){
+    var x=e.clientX+12,y=e.clientY+14;
+    var r=tooltip.getBoundingClientRect();
+    if(x+r.width>window.innerWidth-10) x=e.clientX-r.width-12;
+    if(y+r.height>window.innerHeight-10) y=e.clientY-r.height-12;
+    tooltip.style.left=x+'px';tooltip.style.top=y+'px';
+  }
+  function showTip(seg,e){
+    tooltip.textContent=seg.dataset.tip||'';
+    tooltip.classList.add('on');
+    if(e && typeof e.clientX==='number') positionTip(e);
+    else {
+      var r=seg.getBoundingClientRect();
+      tooltip.style.left=Math.min(r.left,window.innerWidth-tooltip.offsetWidth-10)+'px';
+      tooltip.style.top=(r.bottom+8)+'px';
+    }
+  }
+  function hideTip(){tooltip.classList.remove('on');}
+
+  items.forEach(function(item){
+    var current=Number(item.dataset.current||0);
+    var history=Number(item.dataset.history||0);
+    var unit=item.dataset.unit||'件';
+    var total=current+history;
+    var currentPct=total?current/total*100:0;
+    var historyPct=total?history/total*100:0;
+
+    var currentValue=item.querySelector('.split-value.now .value');
+    var historyValue=item.querySelector('.split-value.old .value');
+    var currentUnit=item.querySelector('.split-value.now .unit');
+    var historyUnit=item.querySelector('.split-value.old .unit');
+    var currentPctEl=item.querySelector('.split-value.now .pct');
+    var historyPctEl=item.querySelector('.split-value.old .pct');
+    currentValue.textContent=fmt(current);historyValue.textContent=fmt(history);
+    currentUnit.textContent=unit;historyUnit.textContent=unit;
+    currentPctEl.textContent='（'+pctText(currentPct)+'）';
+    historyPctEl.textContent='（'+pctText(historyPct)+'）';
+
+    var nowSeg=item.querySelector('.split-segment.now');
+    var oldSeg=item.querySelector('.split-segment.old');
+    setSegment(nowSeg,currentPct,'本班次',current,unit);
+    setSegment(oldSeg,historyPct,'历史积压',history,unit);
+
+    [nowSeg,oldSeg].forEach(function(seg){
+      seg.addEventListener('mouseenter',function(e){showTip(seg,e);});
+      seg.addEventListener('mousemove',positionTip);
+      seg.addEventListener('mouseleave',hideTip);
+      seg.addEventListener('focus',function(){showTip(seg);});
+      seg.addEventListener('blur',hideTip);
+    });
+  });
 })();
 </script>
 
