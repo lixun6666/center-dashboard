@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - 独立版 V2.45</title>
+<title>分拣区看板 - 独立版 V2.50</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -707,7 +707,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 <!-- ===== Sub Bar (Filters) ===== -->
 <div class="subbar">
   <div class="center-pill">ATL H <span class="chev">▾</span></div>
-  <div class="date-tag">分拣班次 <b class="num">06-16 06:00 ~ 06-17 06:00</b></div>
+  <div class="date-tag">操作日 <b class="num">06-16 06:00 ~ 06-17 06:00</b></div>
   <div class="seg-group">
     <span class="on">今日</span>
     <span>明日</span>
@@ -716,12 +716,11 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
   <div class="date-tag">散货截单 <b class="num">1D 03:00</b></div>
   <div class="date-tag cutoff-countdown-tag" title="距离散货截单时间">距离截单时间 <b class="num" id="cutoffCountdown">--:--:--</b></div>
   <div class="spacer"></div>
-  <span class="area-label">分拣区</span>
-  <div class="filter-tabs">
-    <span class="on">全部</span>
-    <span>分拣区</span>
-    <span>全部</span>
-    <span>回流率</span>
+  <span class="area-label">分拣班次</span>
+  <div class="filter-tabs" id="sortingShiftTabs" role="tablist" aria-label="分拣班次">
+    <span class="on" role="tab" tabindex="0" data-shift="早班" aria-selected="true">早班</span>
+    <span role="tab" tabindex="0" data-shift="中班" aria-selected="false">中班</span>
+    <span role="tab" tabindex="0" data-shift="晚班" aria-selected="false">晚班</span>
   </div>
   <button class="query-btn">查询</button>
 </div>
@@ -1040,7 +1039,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
     </div>
   </section>
 
-  <div class="footer">中心看板 · 分拣区 V2.46</div>
+  <div class="footer">中心看板 · 分拣区 V2.50</div>
 </main>
 
 <!-- ===== Drawer (二级弹框) ===== -->
@@ -1847,6 +1846,31 @@ document.addEventListener('change', (e) => {
     setPaginationPage(e.target.closest('.detail-pagination'), e.target.value);
   }
 });
+
+/* ============== Sorting shift filter ============== */
+const sortingShiftTabs = document.getElementById('sortingShiftTabs');
+if (sortingShiftTabs) {
+  const activateSortingShift = tab => {
+    sortingShiftTabs.querySelectorAll('[data-shift]').forEach(item => {
+      const selected = item === tab;
+      item.classList.toggle('on', selected);
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+  };
+
+  sortingShiftTabs.addEventListener('click', event => {
+    const tab = event.target.closest('[data-shift]');
+    if (tab) activateSortingShift(tab);
+  });
+
+  sortingShiftTabs.addEventListener('keydown', event => {
+    const tab = event.target.closest('[data-shift]');
+    if (tab && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      activateSortingShift(tab);
+    }
+  });
+}
 
 /* ============== Hold Toggle ============== */
 let holdExpanded = false;
