@@ -1,0 +1,2686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分拣区看板 - 独立版 V2.45</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  /* ===== Design Tokens (GOFO) ===== */
+  :root {
+    --bg: #eef1f5;
+    --card: #fff;
+    --line: #e8edf3;
+    --line-2: #eef2f6;
+    --text: #16202e;
+    --muted: #64718a;
+    --faint: #9aa6b6;
+    --accent: #fc4c02;
+    --accent-soft: #fff1e6;
+    --accent-line: #ffd9b8;
+    --red: #e5484d;
+    --red-bg: #fff6f5;
+    --red-line: #f7d6d3;
+    --red-soft: #f3d2cf;
+    --amber: #e0921a;
+    --amber-bg: #fff8eb;
+    --amber-line: #fae3bf;
+    --green: #16a34a;
+    --shadow: 0 1px 2px rgba(16,32,64,.04);
+    --shadow-lg: 0 30px 80px rgba(12,20,32,.28);
+    --r-card: 14px;
+    --r-tag: 9px;
+    --r-pill: 20px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .num { font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .eb {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  /* ===== Top Bar (Tab Navigation) ===== */
+  .topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    padding: 0 26px;
+    display: flex;
+    align-items: center;
+    height: 46px;
+    gap: 28px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; color: var(--text);
+  }
+  .brand .dot {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent), #f76121);
+    color: #fff; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+  }
+  .tabs { display: flex; gap: 4px; }
+  .tabs a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 13.5px; font-weight: 500;
+    padding: 6px 14px; border-radius: 7px;
+    cursor: pointer;
+  }
+  .tabs a:hover { background: #f3f6fa; color: var(--text); }
+  .tabs a.active {
+    background: var(--accent); color: #fff; font-weight: 600;
+  }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .realtime { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--green); }
+  .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(22,163,74,.4);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(22,163,74,.4); }
+    70%  { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
+    100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
+  }
+  .clock { color: var(--faint); font-size: 12.5px; }
+
+  /* ===== Sub Bar (Filters) ===== */
+  .subbar {
+    background: #fafbfd;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 26px;
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .center-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: var(--r-tag);
+    background: #fff; border: 1px solid #e3e8ee;
+    font-size: 13px; cursor: pointer;
+  }
+  .center-pill .chev { color: var(--faint); }
+  .date-tag {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 12px; border-radius: var(--r-tag);
+    background: #fff; border: 1px solid #e3e8ee;
+    font-size: 12.5px; color: var(--muted);
+  }
+  .date-tag b { color: var(--text); font-weight: 500; }
+  .seg-group {
+    display: inline-flex; border: 1px solid #d6dde6;
+    border-radius: var(--r-tag); overflow: hidden;
+    background: #fff;
+  }
+  .seg-group span {
+    padding: 7px 13px; font-size: 12.5px;
+    cursor: pointer; color: var(--text);
+    border-right: 1px solid #e3e8ee;
+  }
+  .seg-group span:last-child { border-right: none; }
+  .seg-group span.on {
+    background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .filter-tabs {
+    display: inline-flex; border: 1px solid #d6dde6;
+    border-radius: var(--r-tag); overflow: hidden;
+    background: #fff; font-size: 12.5px;
+  }
+  .filter-tabs span {
+    padding: 7px 13px; cursor: pointer; color: var(--muted);
+    border-right: 1px solid #e3e8ee;
+  }
+  .filter-tabs span:last-child { border-right: none; }
+  .filter-tabs span.on { color: var(--accent); font-weight: 600; }
+  .query-btn {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--r-tag); padding: 8px 18px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  .query-btn:hover { background: #2a55cc; }
+  .spacer { flex: 1; }
+  .area-label { font-size: 12px; color: var(--faint); }
+
+  /* ===== Main Content ===== */
+  main {
+    padding: 16px 26px 44px;
+    display: flex; flex-direction: column; gap: 15px;
+  }
+
+  /* ===== KPI Cards ===== */
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+  }
+  .kpi {
+    border-radius: 13px; padding: 14px 17px;
+    background: #fff; border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .kpi:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,32,64,.06); }
+  .kpi-clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .kpi .label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .kpi .value { margin-top: 8px; display: flex; align-items: baseline; gap: 4px; }
+  .kpi .v { font-size: 26px; font-weight: 700; }
+  .kpi .unit { font-size: 11px; color: var(--faint); }
+  .kpi .meta { font-size: 10.5px; color: var(--faint); margin-top: 5px; }
+  .kpi.k-red { border-color: var(--red-soft); }
+  .kpi.k-red .label { color: #c0362f; }
+  .kpi.k-red .v { color: var(--red); }
+  .kpi.k-red .meta { color: #bd7d7d; }
+  .kpi.k-blue {
+    background: linear-gradient(135deg, var(--accent-soft), #fff);
+    border-color: var(--accent-line);
+  }
+  .kpi.k-blue .label { color: var(--accent); }
+  .kpi.k-blue .v { color: var(--accent); }
+  .kpi.k-blue .meta { color: #7da0e0; }
+
+  /* ===== Card ===== */
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow);
+    padding: 15px 20px;
+  }
+  .card-hd {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .bar {
+    width: 4px; height: 18px; border-radius: 2px;
+    background: var(--accent);
+  }
+  .bar-red { background: var(--red); }
+  .bar-amber { background: var(--amber); }
+  .card-title .h1 { font-size: 17px; font-weight: 700; margin-top: 1px; }
+  .card-title .h2 { font-size: 15px; font-weight: 600; margin-top: 1px; }
+
+  /* ===== Section Grids ===== */
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1.1fr; gap: 15px; }
+  .grid-machine-status { display: grid; grid-template-columns: minmax(360px, .9fr) minmax(0, 1.6fr); gap: 15px; }
+  .grid-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+  /* ===== Abnormal Panel ===== */
+  .abn-panel {
+    background: linear-gradient(180deg, #fff7f6, #fff);
+    border: 1px solid #f6cdc8;
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow);
+    padding: 15px 18px;
+    display: flex; flex-direction: column;
+  }
+  .abn-badge {
+    background: var(--red); color: #fff;
+    border-radius: 10px; padding: 4px 11px;
+    text-align: center; min-width: 50px;
+  }
+  .abn-badge .v { font-size: 20px; font-weight: 700; line-height: 1; }
+  .abn-badge .l { font-size: 9px; letter-spacing: .5px; }
+  .abn-list { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .abn-item {
+    display: flex; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; background: #fff;
+    border: 1px solid #f0d6d3; cursor: pointer;
+    align-items: flex-start;
+    transition: background .12s ease;
+  }
+  .abn-item:hover { background: #fffbfb; }
+  .abn-item.amber { border-color: #f4e2c4; }
+  .abn-item .dot {
+    flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red); margin-top: 5px;
+    box-shadow: 0 0 0 3px rgba(229,72,77,.14);
+  }
+  .abn-item.amber .dot { background: var(--amber); box-shadow: 0 0 0 3px rgba(224,146,26,.14); }
+  .abn-item .txt { flex: 1; }
+  .abn-item .ttl { font-size: 13px; font-weight: 600; color: var(--text); }
+  .abn-item .sub { font-size: 11.5px; color: #8a96a8; margin-top: 2px; }
+
+  /* ===== Mini KPI Strip ===== */
+  .kpi-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px;
+    margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line-2);
+  }
+  .ms-card {
+    text-align: center; padding: 7px;
+    border-radius: 9px; background: #f6f8fc; border: 1px solid var(--line-2);
+  }
+  .ms-card.amber { background: var(--amber-bg); border-color: var(--amber-line); }
+  .ms-card.blue  { background: var(--accent-soft); border-color: var(--accent-line); }
+  .ms-card .l { font-size: 11px; color: var(--muted); }
+  .ms-card.amber .l { color: #a8780f; }
+  .ms-card.blue  .l { color: var(--accent); }
+  .ms-card .v { font-size: 17px; font-weight: 700; margin-top: 1px; }
+  .ms-card.amber .v { color: #d97706; }
+  .ms-card.blue  .v { color: var(--accent); }
+  .ms-card .s { font-size: 10px; color: var(--faint); }
+  .ms-card.amber .s { color: #bda66e; }
+  .ms-card.blue  .s { color: #7da0e0; }
+
+  /* ===== Timeliness Bars ===== */
+  .tl-list { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+  .tl-row .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .tl-row .lbl { font-size: 12.5px; color: var(--muted); }
+  .tl-row .pct { font-size: 15px; font-weight: 700; }
+  .tl-row .meta { font-size: 11px; color: var(--faint); margin-top: 4px; }
+  .tl-bar {
+    height: 8px; background: #f0f3f7; border-radius: 4px; overflow: hidden;
+    position: relative;
+  }
+  .tl-fill { height: 100%; border-radius: 4px; }
+  .tl-fill.green { background: var(--green); }
+  .tl-fill.amber { background: var(--amber); }
+  .tl-fill.red   { background: var(--red); }
+
+  /* ===== Chips / Filter Tabs ===== */
+  .chip-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .chip {
+    padding: 7px 14px; border-radius: var(--r-pill);
+    font-size: 12.5px; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    background: #f3f6fa; color: var(--muted);
+    border: 1px solid #e3e8ee;
+  }
+  .chip.on {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent);
+  }
+  .ghost-btn {
+    background: #f3f6fa; border: 1px solid #e3e8ee;
+    color: var(--accent); border-radius: 8px;
+    padding: 7px 13px; font-size: 12px; cursor: pointer;
+    font-family: inherit;
+  }
+  .ghost-btn:hover { background: #eef2f6; }
+
+  /* ===== Table ===== */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; font-family: 'IBM Plex Mono', monospace; }
+  .tbl th {
+    padding: 9px 12px; text-align: right;
+    color: var(--muted); font-weight: 600;
+    border-bottom: 2px solid var(--line-2);
+    background: #fafbfd;
+    font-family: 'Space Grotesk', sans-serif;
+    white-space: nowrap;
+  }
+  .tbl th:first-child { text-align: left; }
+  .tbl td {
+    padding: 9px 12px; text-align: right;
+    border-bottom: 1px solid #f0f3f7;
+    color: #3c4757;
+  }
+  .tbl td:first-child { text-align: left; font-weight: 600; color: var(--text); }
+  .tbl tr.total td { font-weight: 700; color: var(--text); }
+  .tbl tr:hover:not(.total) { background: #fafbfd; cursor: pointer; }
+  .row-dim { color: #8a96a8 !important; }
+
+  /* ===== Reflow Stacked Bar (custom) ===== */
+  .reflow-bars {
+    display: grid; grid-template-columns: repeat(24, 1fr);
+    gap: 6px; height: 220px; align-items: end;
+    margin-top: 12px;
+  }
+  .reflow-col { display: flex; flex-direction: column; align-items: center; height: 100%; }
+  .reflow-stack { width: 70%; max-width: 22px; display: flex; flex-direction: column-reverse; height: 100%; }
+  .reflow-stack > div { width: 100%; }
+  .reflow-bag  { background: var(--accent); }
+  .reflow-un   { background: #e0921a; }
+  .reflow-axis { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10.5px; color: var(--muted); }
+  .reflow-y { position: absolute; left: 0; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: space-between; font-size: 10.5px; color: var(--faint); }
+  .reflow-wrap { position: relative; padding-left: 32px; }
+
+  /* ===== Historical Hold ===== */
+  .hold-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; }
+  .hold-card {
+    padding: 14px 16px; border-radius: 11px;
+    cursor: pointer; transition: transform .12s ease;
+  }
+  .hold-card:hover { transform: translateY(-1px); }
+  .hold-card.bg-red { background: var(--red-bg); border: 1px solid var(--red-line); }
+  .hold-card.bg-gry { background: #f7f9fc; border: 1px solid var(--line-2); }
+  .hold-card .l { font-size: 12.5px; color: var(--muted); }
+  .hold-card.bg-red .l { color: var(--muted); }
+  .hold-card .v-grp { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+  .hold-card .v { font-size: 24px; font-weight: 700; }
+  .hold-card.bg-red .v { color: var(--red); }
+  .hold-card .u { font-size: 12px; color: var(--faint); }
+
+  /* ===== Drawer ===== */
+  .drawer-mask {
+    display: none; position: fixed; inset: 0;
+    background: rgba(12,20,32,.4);
+    backdrop-filter: blur(3px);
+    z-index: 80; align-items: center; justify-content: center;
+    padding: 30px;
+  }
+  .drawer-mask.on { display: flex; }
+  .drawer {
+    width: 880px; max-width: 94vw; max-height: 86vh;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: pnIn .22s ease;
+  }
+  @keyframes pnIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .drawer-hd {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; border-bottom: 1px solid var(--line-2);
+  }
+  .drawer-hd .ttl { font-size: 15.5px; font-weight: 600; }
+  .drawer-x {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid #e3e8ee; background: #f7f9fc; color: var(--muted);
+    cursor: pointer; font-size: 15px; line-height: 1;
+  }
+  .drawer-x:hover { background: #eef2f6; }
+  .drawer-bd { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+  /* Lightbox */
+  .lightbox {
+    display: none; position: fixed; inset: 0;
+    background: rgba(12,20,32,.5); backdrop-filter: blur(4px);
+    z-index: 90; align-items: center; justify-content: center;
+    padding: 30px;
+  }
+  .lightbox.on { display: flex; }
+  .lightbox-box {
+    width: 700px; max-width: 94vw; max-height: 80vh;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: pnIn .22s ease;
+  }
+
+  /* Stats row inside drawer */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat { padding: 11px 14px; background: #f7f9fc; border: 1px solid var(--line-2); border-radius: 10px; }
+  .stat .l { font-size: 11.5px; color: var(--muted); }
+  .stat .v { font-size: 19px; font-weight: 700; margin-top: 2px; }
+
+  .sec-title { font-size: 13px; font-weight: 600; margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line-2); }
+
+  .footer {
+    text-align: center; padding: 20px 0 30px; color: var(--faint);
+    font-size: 12px;
+  }
+</style>
+<style>
+/* 2026 sorting dashboard visual refresh */
+:root{--bg:#eef2f7;--card:#fff;--line:#e5eaf0;--text:#172033;--muted:#66758a;--accent:#ff5a1f;--accent-soft:#fff3ed;--accent-line:#ffd2bf;--shadow:0 8px 28px rgba(31,45,61,.07);--shadow-lg:0 28px 80px rgba(15,23,42,.24);--r-card:16px}
+html{background:#eef2f7}body{min-width:1180px;background:radial-gradient(circle at 8% -6%,rgba(255,90,31,.11),transparent 24rem),linear-gradient(180deg,#f8fafc 0,#eef2f7 100%)}
+.topbar{height:60px;padding:0 30px;gap:30px;background:rgba(255,255,255,.94);border-color:rgba(226,232,240,.9);box-shadow:0 8px 30px rgba(15,23,42,.08);backdrop-filter:blur(16px)}.brand{font-size:14px;letter-spacing:.2px}.brand .dot{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#ff6b35,#e9470d);box-shadow:0 7px 14px rgba(255,90,31,.25)}.tabs a{padding:8px 15px;border-radius:9px;transition:all .18s ease}.tabs a:hover{background:#fff3ed;color:var(--accent)}.tabs a.active{background:linear-gradient(135deg,#ff6b35,#f04a12);box-shadow:0 6px 15px rgba(252,76,2,.22)}
+.subbar{padding:11px 30px;background:rgba(248,250,252,.88);border-color:#e4e9ef}.center-pill,.date-tag{border-radius:9px;border-color:#dfe5ec;box-shadow:0 1px 2px rgba(15,23,42,.03)}.center-pill:hover{border-color:#ff9b75;color:var(--accent)}.seg-group,.filter-tabs{padding:3px;border-radius:10px;border-color:#e1e6ed;background:#f4f6f9;overflow:visible}.seg-group span,.filter-tabs span{border:0!important;border-radius:7px;padding:5px 12px}.seg-group span.on,.filter-tabs span.on{background:#fff;color:var(--accent);box-shadow:0 2px 7px rgba(31,41,55,.10)}.query-btn{border-radius:9px;background:linear-gradient(135deg,#ff6b35,#ef4b12);box-shadow:0 6px 15px rgba(252,76,2,.18);transition:all .18s ease}.query-btn:hover{background:#e9470d;transform:translateY(-1px);box-shadow:0 9px 19px rgba(252,76,2,.25)}
+main{max-width:1680px;margin:0 auto;padding:22px 30px 56px;gap:18px}.card,.abn-panel{border-radius:16px;border-color:var(--line);box-shadow:var(--shadow);transition:box-shadow .2s ease,transform .2s ease}.card:hover{box-shadow:0 14px 38px rgba(31,45,61,.10)}.card{padding:18px 22px}.card-hd{margin-bottom:15px}.bar{width:5px;height:20px;border-radius:5px;background:linear-gradient(180deg,#ff743f,#ef4b12)}.card-title .h1{font-size:18px;letter-spacing:-.2px}
+.kpi-row{gap:14px}.kpi{position:relative;overflow:hidden;min-height:116px;padding:17px 19px;border-radius:15px;border-color:#e5eaf0;box-shadow:0 5px 18px rgba(31,45,61,.055);transition:all .2s ease}.kpi:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#cbd5e1}.kpi.k-red:before{background:#ef4444}.kpi.k-blue:before{background:var(--accent)}.kpi:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(31,45,61,.11)}.kpi .label{font-size:12.5px}.kpi .v{font-size:30px;letter-spacing:-1px}.kpi .meta.kpi-breakdown{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}.kpi .meta.kpi-breakdown span{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}.kpi .meta.kpi-breakdown b{font-size:12px;color:#b84632;font-weight:700}.kpi .meta.sorted-kpi-breakdown b{color:var(--accent)}.kpi.k-blue{background:linear-gradient(145deg,#fff5ef,#fff);border-color:#ffd3c1}.kpi.k-blue .label,.kpi.k-blue .v{color:var(--accent)}
+.abn-panel{background:linear-gradient(150deg,#fff4f2 0,#fff 62%);border-color:#f4cbc7;padding:18px 20px}.abn-badge{border-radius:10px;background:linear-gradient(135deg,#f05252,#dc3439);box-shadow:0 6px 13px rgba(229,72,77,.22)}.abn-list>div{border-radius:11px!important;transition:transform .15s ease,box-shadow .15s ease}.abn-list>div:hover{transform:translateX(3px);box-shadow:0 7px 18px rgba(153,27,27,.08)}
+[id^='chart-'],.chart{border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#fff)}table{border-collapse:separate!important;border-spacing:0}.scroll{border:1px solid #edf0f4;border-radius:12px;overflow:hidden}thead th{background:#f6f8fb!important;color:#536174!important}th,td{padding:11px 13px!important}tbody tr{transition:background .15s ease}tbody tr:hover{background:#fff6f0!important}
+button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled):hover{transform:translateY(-1px)}.drawer-panel{border-radius:18px!important;border:0!important;box-shadow:var(--shadow-lg)!important}.drawer-head{background:linear-gradient(180deg,#fff,#fafbfd);padding:18px 24px!important}.drawer-close{border-radius:8px!important}.drawer-stat{border-radius:12px!important;background:#f8fafc!important}
+@media(max-width:1360px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-machine-status{grid-template-columns:minmax(340px,.9fr) minmax(0,1.35fr)}}
+@media(max-width:1200px){body{min-width:1024px}.topbar,.subbar{padding-left:20px;padding-right:20px}main{padding-left:20px;padding-right:20px}.brand span:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== 应分拣下钻增强 ===== */
+.drawer.drawer-wide { width: 1040px; }
+.lightbox-box { width: 1180px; }
+.stats-row.backlog-stats { grid-template-columns: repeat(3, 1fr); }
+.backlog-filter-card { cursor:pointer; position:relative; transition:all .18s ease; }
+.backlog-filter-card:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(31,45,61,.08); }
+.backlog-filter-card.on { background:var(--accent-soft); border-color:var(--accent-line); box-shadow:0 0 0 2px rgba(255,90,31,.08); }
+.backlog-filter-card.on:after { content:'当前筛选'; position:absolute; right:10px; top:9px; font-size:10px; color:var(--accent); font-weight:700; }
+.backlog-filter-card.on .l,.backlog-filter-card.on .v { color:var(--accent)!important; }
+.metric-note { padding:10px 12px; margin-bottom:14px; background:#f8fafc; border:1px solid var(--line-2); border-radius:10px; color:var(--muted); font-size:11.5px; line-height:1.65; }
+.metric-note b { color:var(--text); }
+.drawer-section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:18px 0 8px; padding-bottom:7px; border-bottom:1px solid var(--line-2); }
+.drawer-section-head .sec-title { margin:0; padding:0; border:0; }
+.section-head-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+.section-export-btn { display:inline-flex; align-items:center; justify-content:center; height:28px; padding:0 10px; border:1px solid var(--accent-line); border-radius:7px; background:#fff; color:var(--accent); font-family:inherit; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.section-export-btn:before { content:'⇩'; margin-right:4px; font-size:12px; line-height:1; }
+.section-export-btn:hover { background:var(--accent-soft); transform:none!important; }
+.scope-tag { padding:4px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent); font-size:11px; font-weight:600; }
+.flow-filter-tabs { display:inline-flex; align-items:center; gap:2px; padding:3px; border:1px solid #e1e6ed; border-radius:9px; background:#f4f6f9; }
+.flow-filter-tab { min-width:48px; padding:5px 11px; border:0; border-radius:7px; background:transparent; color:var(--muted); font-family:inherit; font-size:11.5px; line-height:1.2; cursor:pointer; }
+.flow-filter-tab:hover { color:var(--accent); transform:none!important; }
+.flow-filter-tab.on { background:#fff; color:var(--accent); font-weight:700; box-shadow:0 2px 7px rgba(31,41,55,.10); }
+
+.flow-breadcrumb { display:flex; align-items:center; gap:7px; margin:9px 0 10px; padding:8px 10px; border:1px solid #e7ebf0; border-radius:9px; background:#f8fafc; color:var(--muted); font-size:11.5px; }
+.flow-breadcrumb b { color:var(--text); font-weight:650; }
+.flow-breadcrumb .sep { color:#b2bcc9; }
+.flow-back-btn { display:inline-flex; align-items:center; gap:4px; margin-right:3px; padding:4px 8px; border:1px solid #dde4ec; border-radius:7px; background:#fff; color:var(--accent); font-family:inherit; font-size:11px; font-weight:650; cursor:pointer; }
+.flow-back-btn:hover { background:var(--accent-soft); transform:none!important; }
+.flow-drill-link { display:inline-flex; align-items:center; gap:7px; padding:0; border:0; background:transparent; color:var(--text); font-family:inherit; font-size:12.5px; font-weight:650; cursor:pointer; }
+.flow-drill-link:hover { color:var(--accent); transform:none!important; }
+.flow-drill-link .arrow { display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:5px; background:var(--accent-soft); color:var(--accent); font-size:13px; line-height:1; }
+.flow-hierarchy-hint { display:inline-flex; align-items:center; gap:5px; margin-left:7px; color:var(--accent); font-size:10.5px; font-weight:600; }
+.flow-dimension-note { margin-top:6px; color:var(--faint); font-size:10.5px; }
+.count-link,.bag-link,.waybill-link { color:var(--accent); font-weight:700; cursor:pointer; text-decoration:none; }
+.count-link:hover,.bag-link:hover,.waybill-link:hover { text-decoration:underline; }
+.prototype-toast { position:fixed; left:50%; top:76px; z-index:160; transform:translate(-50%,-10px); padding:10px 16px; border:1px solid #d9e0e8; border-radius:8px; background:rgba(23,32,51,.94); color:#fff; box-shadow:0 10px 30px rgba(15,23,42,.22); font-size:13px; line-height:1.4; opacity:0; pointer-events:none; transition:opacity .18s ease,transform .18s ease; }
+.prototype-toast.on { opacity:1; transform:translate(-50%,0); }
+.query-panel { display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr 1fr auto auto auto; gap:8px; align-items:end; padding:13px; margin-bottom:14px; border:1px solid var(--line-2); border-radius:12px; background:#f8fafc; }
+.query-item { min-width:0; }
+.query-item label { display:block; margin-bottom:5px; font-size:10.5px; color:var(--muted); font-weight:600; }
+.query-input,.query-select { width:100%; height:34px; border:1px solid #dfe5ec; border-radius:8px; background:#fff; padding:0 10px; color:var(--text); font-family:inherit; font-size:12px; outline:none; }
+.query-input:focus,.query-select:focus { border-color:#ff9b75; box-shadow:0 0 0 3px rgba(255,90,31,.08); }
+.action-btn { height:34px; padding:0 14px; border:0; border-radius:8px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.action-btn.primary { background:var(--accent); color:#fff; }
+.action-btn.secondary { background:#fff; color:var(--accent); border:1px solid var(--accent-line); }
+.drawer-hd-actions { display:flex; align-items:center; gap:9px; }
+.drawer-export-btn { display:inline-flex; align-items:center; justify-content:center; min-width:64px; height:32px; }
+.drawer-export-btn:before { content:'⇩'; margin-right:5px; font-size:13px; line-height:1; }
+
+.table-scroll { overflow:auto; border:1px solid var(--line-2); border-radius:11px; }
+.table-scroll .tbl { min-width:1500px; }
+.lightbox-summary { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+.lightbox-summary .desc { color:var(--muted); font-size:12px; }
+.status-pill { display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px; background:#fff7ed; color:#c2410c; font-size:11px; font-weight:600; }
+.detail-pagination { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:12px; min-height:44px; padding:6px 10px; border:1px solid #d9e0e8; border-radius:0; background:#fff; }
+.detail-pagination-summary { display:flex; align-items:center; gap:8px; min-width:0; color:#606266; font-size:12px; white-space:nowrap; }
+.detail-pagination-summary b { color:#303133; font-size:12px; font-weight:600; }
+.detail-pagination-summary .split { width:1px; height:13px; background:#dcdfe6; }
+.pagination-controls { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex:0 0 auto; color:#606266; font-size:12px; white-space:nowrap; }
+.pagination-btn { min-width:28px; height:28px; padding:0 8px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#606266; font-family:inherit; font-size:12px; line-height:26px; cursor:pointer; box-shadow:none; }
+.pagination-btn:hover:not(:disabled):not(.on) { color:#409eff; border-color:#a0cfff; background:#ecf5ff; transform:none; }
+.pagination-btn.on { border-color:#409eff; background:#409eff; color:#fff; font-weight:600; }
+.pagination-btn:disabled { color:#c0c4cc; background:#fff; cursor:not-allowed; transform:none; }
+.pagination-ellipsis { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#606266; font-weight:700; }
+.pagination-page-size { width:116px; height:30px; margin-left:4px; padding:0 28px 0 11px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#606266; font-family:inherit; font-size:12px; outline:none; cursor:pointer; }
+.pagination-page-size:focus,.pagination-jump-input:focus { border-color:#409eff; }
+.pagination-jump-label { margin-left:2px; }
+.pagination-jump-input { width:52px; height:30px; padding:0 7px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#606266; font-family:inherit; font-size:12px; text-align:center; outline:none; }
+.pagination-total { margin-left:2px; color:#606266; }
+.pagination-total b { color:#606266; font-weight:400; }
+.bag-query-card { padding:16px; border:1px solid var(--line-2); border-radius:12px; background:#f8fafc; }
+.bag-query-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; }
+.bag-query-grid .stat { background:#fff; }
+.bag-count-link { color:var(--accent); font-weight:700; text-decoration:none; cursor:pointer; border-bottom:1px dashed rgba(255,90,31,.45); }
+.bag-count-link:hover { color:#df4310; border-bottom-color:#df4310; }
+.bag-list-table { min-width:980px!important; }
+
+/* ===== 分拣机 VS 人工分拣 ===== */
+.machine-manual-card .card-hd { align-items:center; }
+.machine-manual-scope { padding:4px 8px; border-radius:999px; background:#f4f6f9; color:var(--muted); font-size:10.5px; font-weight:600; }
+.machine-manual-card #pieChart { margin-top:-4px; }
+.compare-table { overflow:hidden; border:1px solid var(--line-2); border-radius:10px; background:#fff; }
+.compare-table-head,.compare-table-row { display:grid; grid-template-columns:minmax(88px,1.25fr) repeat(3,minmax(58px,.8fr)); align-items:center; column-gap:8px; min-height:34px; padding:0 10px; }
+.compare-table-head { min-height:30px; background:#f6f8fb; color:var(--muted); font-size:10.5px; font-weight:600; }
+.compare-table-row { border-top:1px solid var(--line-2); color:var(--text); font-size:11.5px; }
+.compare-table-head span:not(:first-child),.compare-table-row span:not(:first-child) { text-align:right; }
+.compare-method { display:flex; align-items:center; min-width:0; font-weight:600; }
+.compare-dot { flex:0 0 auto; width:8px; height:8px; margin-right:6px; border-radius:2px; }
+.compare-dot.machine { background:var(--accent); }
+.compare-dot.manual { background:var(--amber); }
+.compare-value { font-weight:700; }
+.compare-footnote { margin-top:7px; color:var(--faint); font-size:10px; line-height:1.45; }
+
+/* ===== 已分拣下钻增强 ===== */
+.stats-row.sorted-stats { grid-template-columns:repeat(2,minmax(0,1fr)); max-width:620px; }
+.sorted-stat-main { background:linear-gradient(145deg,#fff5ef,#fff); border-color:var(--accent-line); }
+.sorted-stat-main .l,.sorted-stat-main .v { color:var(--accent); }
+.sorted-stat-clickable { cursor:pointer; transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease; }
+.sorted-stat-clickable:hover { transform:translateY(-2px); border-color:#ff9b75; box-shadow:0 8px 20px rgba(255,90,31,.12); }
+.sorted-stat-clickable:focus-visible { outline:3px solid rgba(255,90,31,.18); outline-offset:2px; }
+.sorted-table-wrap { overflow:auto; border:1px solid var(--line-2); border-radius:11px; }
+.sorted-detail-table { min-width:1340px; }
+.sorted-detail-table th,.sorted-detail-table td { white-space:nowrap; }
+.sorted-detail-table th:first-child,.sorted-detail-table td:first-child { position:sticky; left:0; z-index:1; background:inherit; }
+.sorted-detail-table thead th:first-child { z-index:2; background:#f6f8fb!important; }
+.sorted-detail-table tbody tr.total td:first-child { background:#fff; }
+.sorted-detail-table tbody tr:not(.total) td:first-child { background:#fff; }
+.sorted-detail-table tbody tr:hover td:first-child { background:#fff6f0; }
+.shift-scope { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:11.5px; }
+.shift-scope b { color:var(--text); }
+.sorted-rule-list { margin:0; padding-left:18px; }
+.sorted-rule-list li+li { margin-top:2px; }
+@media(max-width:1200px){.query-panel{grid-template-columns:repeat(3,1fr)}.query-panel .action-btn{width:100%}.lightbox-box{width:96vw}}
+
+</style>
+
+<style>
+/* ===== Main purpose-flow interactive module ===== */
+.main-flow-filterbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:2px 0 12px;padding:10px 12px;border:1px solid #edf0f4;border-radius:12px;background:#fafbfd}
+.main-flow-filter-left{display:flex;flex-direction:column;gap:9px;min-width:0}
+.main-flow-perspective-row,.main-flow-type-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.main-flow-filter-label{flex:0 0 58px;font-size:11.5px;color:var(--faint);font-weight:600}
+.main-flow-type-tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10.5px;margin-left:6px}
+.main-flow-structure-hint{display:inline-flex;align-items:center;gap:5px;color:#7a8798;font-size:11px}
+.main-flow-structure-hint b{color:var(--text)}
+.main-flow-tabs{display:inline-flex;align-items:center;gap:3px;padding:3px;border:1px solid #e1e6ed;border-radius:10px;background:#f2f5f8}
+.main-flow-tab{min-width:64px;padding:7px 13px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-family:inherit;font-size:12.5px;cursor:pointer;transition:all .16s ease}
+.main-flow-tab:hover{color:var(--accent);background:#fff8f4;transform:none!important}
+.main-flow-tab.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 2px 8px rgba(31,41,55,.11)}
+.main-flow-summary{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted)}
+.main-flow-summary b{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text)}
+.main-flow-breadcrumb{display:flex;align-items:center;gap:7px;min-height:31px;margin-bottom:9px;font-size:12px;color:var(--muted)}
+.main-flow-breadcrumb .sep{color:#c1c9d4}.main-flow-breadcrumb b{color:var(--text)}
+.main-flow-back{padding:4px 8px;border:1px solid #e1e6ed;border-radius:7px;background:#fff;color:var(--accent);font-family:inherit;font-size:11.5px;cursor:pointer}
+.main-flow-name-btn,.main-flow-number-btn{border:0;background:transparent;padding:0;font-family:inherit;cursor:pointer}
+.main-flow-name-btn{display:inline-flex;align-items:center;gap:5px;color:var(--accent);font-weight:650;text-align:left}
+.main-flow-name-btn:hover{text-decoration:underline}.main-flow-name-btn .arrow{font-size:16px;line-height:1;color:#f4875d}
+.main-flow-number-btn{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:12.5px}
+.main-flow-number-btn:hover{text-decoration:underline}
+.main-flow-chart-wrap{display:none;height:330px;border:1px solid #edf0f4;border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#fff);padding:8px}
+.main-flow-chart-wrap.on{display:block}.main-flow-table-wrap.off{display:none}
+.main-flow-name-static{display:inline-flex;align-items:center;font-weight:600;color:var(--text);padding:4px 0}
+.main-flow-note{margin-top:9px;padding:8px 11px;border-radius:9px;background:#f8fafc;color:#7a8798;font-size:11.5px;line-height:1.55}
+.main-flow-empty{padding:42px 10px;text-align:center;color:var(--faint)}
+#mainFlowTable th:first-child,#mainFlowTable td:first-child{text-align:left}
+#mainFlowTable td{white-space:nowrap}
+@media(max-width:1200px){.main-flow-filterbar{align-items:flex-start}.main-flow-summary{width:100%;justify-content:flex-end}}
+</style>
+<style>
+/* ===== 历史留仓展示 V2.45 ===== */
+.history-demo-card{overflow:hidden;background:linear-gradient(145deg,#fff 0,#fffaf7 100%)}
+.history-demo-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;margin-left:8px;border:1px solid var(--accent-line);border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:10.5px;font-weight:700;vertical-align:middle}
+.history-overview{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(0,1.8fr);gap:18px;align-items:stretch}
+.history-total-card{display:flex;flex-direction:column;justify-content:space-between;min-height:205px;padding:20px;border:1px solid #f3d2c5;border-radius:14px;background:linear-gradient(145deg,#fff2ec,#fff);box-shadow:0 10px 24px rgba(255,90,31,.08)}
+.history-total-label{font-size:12px;color:#a54827;font-weight:700}
+.history-total-value{display:flex;align-items:baseline;gap:6px;margin-top:8px}.history-total-value .v{font-size:44px;line-height:1;font-weight:750;color:var(--accent);letter-spacing:-2px}.history-total-value .u{font-size:12px;color:#a05c44}
+.history-total-desc{margin-top:9px;color:#7a604f;font-size:11.5px;line-height:1.6}
+.history-total-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:17px;padding-top:14px;border-top:1px solid rgba(255,90,31,.14)}
+.history-total-meta div{min-width:0}.history-total-meta span{display:block;color:#9b6a58;font-size:10.5px}.history-total-meta b{display:block;margin-top:2px;color:#462b22;font-family:'IBM Plex Mono',monospace;font-size:14px}
+.history-status-panel{padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.history-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.history-panel-head b{font-size:13px}.history-panel-head span{font-size:10.5px;color:var(--faint)}
+.history-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.history-status-card{position:relative;min-height:103px;padding:13px 13px 11px;border:1px solid #e8edf3;border-radius:11px;background:#fafbfd;cursor:pointer;transition:all .16s ease}
+.history-status-card:hover{transform:translateY(-2px);border-color:#ffd0bd;box-shadow:0 8px 18px rgba(31,45,61,.08)}
+.history-status-card:before{content:'';position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:4px;background:#cbd5e1}
+.history-status-card.danger:before{background:#ef4444}.history-status-card.orange:before{background:var(--accent)}.history-status-card.amber:before{background:#e0921a}.history-status-card.gray:before{background:#94a3b8}
+.history-status-card .name{padding-left:4px;color:var(--muted);font-size:11.5px;font-weight:650}.history-status-card .count{padding-left:4px;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:750;color:var(--text)}.history-status-card .count small{font-family:inherit;font-size:10.5px;font-weight:500;color:var(--faint)}
+.history-status-card .sub{display:flex;justify-content:space-between;gap:6px;padding-left:4px;margin-top:6px;color:var(--faint);font-size:10.5px}.history-status-card .risk{color:#d94a43;font-weight:650}
+.history-segment{display:flex;height:10px;margin-top:15px;border-radius:999px;overflow:hidden;background:#eef2f6}.history-segment span{height:100%}.history-segment .s1{background:#ef4444}.history-segment .s2{background:var(--accent)}.history-segment .s3{background:#e0921a}.history-segment .s4{background:#94a3b8}
+.history-legend{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:10.5px}.history-legend span{display:inline-flex;align-items:center;gap:5px}.history-legend i{width:7px;height:7px;border-radius:2px;background:#cbd5e1}.history-legend .l1 i{background:#ef4444}.history-legend .l2 i{background:var(--accent)}.history-legend .l3 i{background:#e0921a}.history-legend .l4 i{background:#94a3b8}
+.history-main-note{display:flex;align-items:flex-start;gap:7px;margin-top:12px;padding:9px 11px;border:1px solid #edf0f4;border-radius:9px;background:#f8fafc;color:#6e7a8a;font-size:11px;line-height:1.55}.history-main-note b{color:var(--text)}
+
+.history-drawer-hero{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(115px,.55fr));gap:10px;margin-bottom:14px}
+.history-hero-main{padding:16px 18px;border:1px solid #f2cdbf;border-radius:12px;background:linear-gradient(145deg,#fff2ec,#fff)}
+.history-hero-main .label{color:#a54827;font-size:11.5px;font-weight:700}.history-hero-main .value{display:flex;align-items:baseline;gap:6px;margin-top:6px}.history-hero-main .value b{font-family:'IBM Plex Mono',monospace;font-size:34px;line-height:1;color:var(--accent)}.history-hero-main .value span{font-size:11px;color:#a05c44}.history-hero-main .desc{margin-top:7px;color:#7a604f;font-size:10.5px}
+.history-hero-metric{padding:14px;border:1px solid var(--line-2);border-radius:12px;background:#f8fafc}.history-hero-metric .l{font-size:10.5px;color:var(--muted)}.history-hero-metric .v{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:750}.history-hero-metric.alert .v{color:var(--red)}
+.history-insight{display:flex;align-items:flex-start;gap:8px;margin-bottom:16px;padding:10px 12px;border:1px solid #f6d4cd;border-radius:10px;background:#fff7f5;color:#8a4a3c;font-size:11.5px;line-height:1.55}.history-insight b{color:#b5342d}
+.history-drawer-status{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.history-drawer-status .history-status-card{min-height:112px;background:#fff}
+.history-age-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;padding:13px;border:1px solid var(--line-2);border-radius:11px;background:#fafbfd}
+.history-age-row{display:grid;grid-template-columns:70px minmax(0,1fr) 54px;gap:10px;align-items:center}.history-age-label{font-size:11.5px;color:var(--muted)}.history-age-track{height:8px;border-radius:999px;background:#e9edf2;overflow:hidden}.history-age-fill{height:100%;border-radius:999px;background:#aeb9c8}.history-age-row.risk .history-age-fill{background:#ef4444}.history-age-row.warn .history-age-fill{background:#e0921a}.history-age-count{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:700}.history-age-count small{font-family:inherit;font-size:9.5px;color:var(--faint);font-weight:500}
+.history-dimension-tabs{display:inline-flex;gap:3px;padding:3px;border:1px solid #e1e6ed;border-radius:9px;background:#f4f6f9}.history-dimension-tab{padding:6px 12px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-family:inherit;font-size:11.5px;cursor:pointer}.history-dimension-tab:hover{color:var(--accent);transform:none!important}.history-dimension-tab.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 2px 7px rgba(31,41,55,.10)}
+.history-dimension-panel{display:none}.history-dimension-panel.on{display:block}.history-dimension-panel .tbl th,.history-dimension-panel .tbl td{white-space:nowrap}
+.history-pill{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:650}.history-pill.danger{background:#fff1ef;color:#d9433d}.history-pill.warn{background:#fff7e8;color:#b86c00}
+.history-definition{margin-top:13px;padding:9px 11px;border:1px solid var(--line-2);border-radius:9px;background:#f8fafc;color:var(--muted);font-size:10.5px;line-height:1.6}.history-definition b{color:var(--text)}
+@media(max-width:1280px){.history-overview{grid-template-columns:1fr}.history-drawer-hero{grid-template-columns:1fr repeat(3,1fr)}.history-status-grid,.history-drawer-status{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+
+<style>
+/* ===== 历史留仓 V2.46：主指标常显，子指标点击展开 ===== */
+.history-total-card{min-height:268px}
+.history-total-value .count-link{display:inline-flex;color:var(--accent);text-decoration:none}
+.history-total-value .count-link:hover{text-decoration:underline}
+.history-time-table{margin-top:16px;border:1px solid rgba(255,90,31,.16);border-radius:11px;overflow:hidden;background:rgba(255,255,255,.72)}
+.history-time-row{display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:34px;padding:0 12px;border-top:1px solid rgba(255,90,31,.11);font-size:11.5px}
+.history-time-row:first-child{border-top:0}
+.history-time-row span:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;color:#3b2b25}
+.history-time-row .count-link{font-family:'IBM Plex Mono',monospace}
+.history-time-row.head{min-height:31px;background:rgba(255,90,31,.07);color:#9b5a43;font-size:10.5px;font-weight:700}
+.history-time-row.head span:last-child{font-family:inherit;color:#9b5a43}
+.history-time-row.total{background:#fff8f4;font-weight:700}.history-time-row.total span:last-child{color:var(--accent)}
+.history-time-row.risk span:first-child,.history-time-row.risk span:last-child{color:var(--red);font-weight:750}
+.history-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.history-status-card{min-height:118px}
+.history-status-card .metric-pair{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap;padding-left:4px;margin-top:8px}
+.history-status-card .metric-pair .ticket{font-family:'IBM Plex Mono',monospace;font-size:23px;font-weight:750;color:var(--text)}
+.history-status-card .metric-pair .ticket small,.history-status-card .metric-pair .bag small{font-family:inherit;font-size:10px;font-weight:500;color:var(--faint)}
+.history-status-card .metric-pair .bag{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)}
+.history-drawer-hero{grid-template-columns:minmax(280px,.86fr) minmax(390px,1.14fr)}
+.history-drawer-time{padding:13px 15px;border:1px solid var(--line-2);border-radius:12px;background:#f8fafc}
+.history-drawer-time .history-time-table{margin-top:0;border-color:#e5eaf0;background:#fff}
+.history-drawer-time .history-time-row{border-color:#edf0f4}
+.history-drawer-time .history-time-row.head{background:#f5f7fa;color:var(--muted)}
+.history-drawer-time .history-time-row.head span:last-child{color:var(--muted)}
+.history-drawer-status{grid-template-columns:repeat(3,minmax(0,1fr))}
+.history-data-note{margin-top:10px;color:var(--faint);font-size:10.5px;line-height:1.55}
+.history-status-card.history-stage-toggle{min-height:118px;padding:13px;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden}
+.history-status-card.history-stage-toggle.expanded{min-height:118px}
+.history-stage-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:24px;padding-left:4px}
+.history-stage-head .name{padding-left:0;font-size:13px;color:var(--text)}
+.history-stage-chevron{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:#fff;color:var(--muted);font-size:15px;line-height:1;transition:transform .18s ease,color .18s ease,background .18s ease}
+.history-status-card.history-stage-toggle:hover .history-stage-chevron{background:var(--accent-soft);color:var(--accent)}
+.history-status-card.history-stage-toggle.expanded .history-stage-chevron{transform:rotate(180deg);background:var(--accent-soft);color:var(--accent)}
+.history-stage-details{opacity:1;overflow:visible;pointer-events:auto}
+.history-stage-hint{padding-left:4px;margin-top:7px;color:var(--faint);font-size:10px;line-height:1.4}
+.history-stage-children{max-height:0;margin-top:0;padding-top:0;border-top:1px solid transparent;opacity:0;overflow:hidden;pointer-events:none;transition:max-height .26s ease,opacity .18s ease,margin-top .2s ease,padding-top .2s ease,border-color .2s ease}
+.history-status-card.history-stage-toggle.expanded .history-stage-children{max-height:230px;margin-top:10px;padding-top:10px;border-color:var(--line-2);opacity:1;pointer-events:auto}
+.history-child-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.history-child-item{min-width:0;padding:8px 9px;border:1px solid #e8edf3;border-radius:8px;background:#fff}
+.history-child-item .l{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:10.5px}
+.history-child-item .v{display:block;margin-top:3px;font-family:'IBM Plex Mono',monospace;color:var(--text);font-size:13px;font-weight:750}
+.history-child-item .v small{font-family:inherit;color:var(--faint);font-size:9px;font-weight:500}
+.history-status-card.history-stage-toggle:focus-visible{outline:3px solid rgba(255,90,31,.18);outline-offset:2px}
+@media(max-width:1280px){.history-drawer-hero{grid-template-columns:1fr}.history-status-grid,.history-drawer-status{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+
+<style>
+/* distance to loose-cargo cutoff */
+.cutoff-countdown-tag b{color:var(--accent);font-weight:700;letter-spacing:.25px;}
+.cutoff-countdown-tag.is-warning{border-color:#f5c978;background:#fffaf0;}
+.cutoff-countdown-tag.is-warning b{color:#d97706;}
+.cutoff-countdown-tag.is-danger{border-color:#f2b8b5;background:#fff6f5;}
+.cutoff-countdown-tag.is-danger b{color:var(--red);}
+</style>
+
+</head>
+<body>
+
+<!-- ===== Top Tab Bar ===== -->
+<nav class="topbar">
+  <div class="brand"><span class="dot">中</span>中心看板</div>
+  <div class="tabs">
+    <a href="#">概览</a>
+    <a href="#">卸车区</a>
+    <a href="#" class="active">分拣区</a>
+    <a href="#">装车区</a>
+    <a href="#">异常区</a>
+  </div>
+</nav>
+
+<!-- ===== Sub Bar (Filters) ===== -->
+<div class="subbar">
+  <div class="center-pill">ATL H <span class="chev">▾</span></div>
+  <div class="date-tag">分拣班次 <b class="num">06-16 06:00 ~ 06-17 06:00</b></div>
+  <div class="seg-group">
+    <span class="on">今日</span>
+    <span>明日</span>
+  </div>
+  <div class="date-tag">卸车截单 <b class="num">0D 20:00</b></div>
+  <div class="date-tag">散货截单 <b class="num">1D 03:00</b></div>
+  <div class="date-tag cutoff-countdown-tag" title="距离散货截单时间">距离截单时间 <b class="num" id="cutoffCountdown">--:--:--</b></div>
+  <div class="spacer"></div>
+  <span class="area-label">分拣区</span>
+  <div class="filter-tabs">
+    <span class="on">全部</span>
+    <span>分拣区</span>
+    <span>全部</span>
+    <span>回流率</span>
+  </div>
+  <button class="query-btn">查询</button>
+</div>
+
+<main>
+
+  <!-- ===== KPI Row ===== -->
+  <section class="kpi-row">
+    <div class="kpi" data-drawer="eta" role="button" tabindex="0" title="点击查看卸车区-预计到车图表界面" aria-label="查看卸车区-预计到车图表界面">
+      <div class="label">预计到达</div>
+      <div class="value"><span class="num v">56,592</span><span class="unit">票</span></div>
+      <div class="meta kpi-breakdown">
+        <span>袋数 <b class="num">155</b> 袋</span>
+        <span>车辆 <b class="num">8</b> 车</span>
+      </div>
+    </div>
+    <div class="kpi" data-drawer="unload" role="button" tabindex="0" title="点击查看卸车区已到未卸卡片界面" aria-label="查看卸车区已到未卸卡片界面">
+      <div class="label">已到未卸</div>
+      <div class="value"><span class="num v">59,753</span><span class="unit">票</span></div>
+      <div class="meta kpi-breakdown">
+        <span>袋数 <b class="num">1,829</b> 袋</span>
+        <span>车辆 <b class="num">17</b> 车</span>
+      </div>
+    </div>
+    <div class="kpi k-red" data-drawer="backlog">
+      <div class="label">应分拣</div>
+      <div class="value"><span class="num v">6,795</span><span class="unit">票</span></div>
+      <div class="meta kpi-breakdown">
+        <span>今日已入库 <b class="num">6,311</b></span>
+        <span>历史留仓 <b class="num">484</b></span>
+      </div>
+    </div>
+    <div class="kpi kpi-clickable" data-drawer="sorted" role="button" tabindex="0" title="点击查看已分拣下钻" aria-label="查看已分拣下钻明细">
+      <div class="label">已分拣</div>
+      <div class="value"><span class="num v">45,823</span><span class="unit">票</span></div>
+      <div class="meta kpi-breakdown sorted-kpi-breakdown">
+        <span>袋数 <b class="num">1,203</b> 袋</span>
+      </div>
+    </div>
+    <div class="kpi k-blue" data-drawer="pending" role="button" tabindex="0" title="点击查看待分拣下钻" aria-label="查看待分拣下钻明细">
+      <div class="label">待分拣</div>
+      <div class="value"><span class="num v">10,000</span><span class="unit">票</span></div>
+      <div class="meta kpi-breakdown">
+        <span>今日已入库 <b class="num">9,516</b></span>
+        <span>历史留仓 <b class="num">484</b></span>
+      </div>
+    </div>
+    <div class="kpi" data-drawer="reflowRate">
+      <div class="label">回流率</div>
+      <div class="value"><span class="num v" style="color:var(--amber);">2.3</span><span class="unit">%</span></div>
+      <div class="meta">回流运单 ÷ 已分拣</div>
+    </div>
+  </section>
+
+  <!-- ===== Sort Trend + Abnormal Panel ===== -->
+  <section class="grid-2-1">
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">
+          <span class="bar"></span>
+          <div>
+            <div class="h1">分拣票数趋势</div>
+          </div>
+        </div>
+        <div class="seg-group" id="trendModeTabs" aria-label="分拣票数趋势展示方式">
+          <span class="on" data-mode="hourly" role="button" tabindex="0">小时</span>
+          <span data-mode="cumulative" role="button" tabindex="0">累计</span>
+        </div>
+      </div>
+      <div id="trendChart" style="width:100%;height:300px;"></div>
+      <div class="kpi-strip" id="trendStats">
+        <div class="ms-card amber">
+          <div class="l" id="trendStat1Label">峰值票数</div>
+          <div class="v num" id="trendStat1Value">8,100</div>
+          <div class="s" id="trendStat1Sub">11:00</div>
+        </div>
+        <div class="ms-card">
+          <div class="l" id="trendStat2Label">谷值票数</div>
+          <div class="v num" id="trendStat2Value">2,000</div>
+          <div class="s" id="trendStat2Sub">06:00</div>
+        </div>
+        <div class="ms-card" title="当前班次累计已分拣票数 ÷ 当前班次已过时长（小时）">
+          <div class="l" id="trendStat3Label">小时均值</div>
+          <div class="v num" id="trendStat3Value">5,990</div>
+          <div class="s" id="trendStat3Sub">当前班次</div>
+        </div>
+        <div class="ms-card blue" title="当前小时截至当前时刻的已分拣票数 ÷ 当前小时已过分钟数 × 60">
+          <div class="l" id="trendStat4Label">当前时速</div>
+          <div class="v num" id="trendStat4Value">5,600</div>
+          <div class="s" id="trendStat4Sub">14:00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="abn-panel">
+      <div class="card-hd">
+        <div class="card-title">
+          <span class="bar bar-red"></span>
+          <div>
+            <div class="h2" style="color:#b5302a;">重点关注</div>
+          </div>
+        </div>
+        <div class="abn-badge">
+          <div class="v num">2</div>
+          <div class="l">事项</div>
+        </div>
+      </div>
+      <div class="abn-list">
+        <div class="abn-item" data-drawer="backlog">
+          <span class="dot"></span>
+          <div class="txt">
+            <div class="ttl">应分拣 6,795 票</div>
+            <div class="sub">今日已入库 6,311 · 历史留仓 484</div>
+          </div>
+        </div>
+        <div class="abn-item amber" data-drawer="history">
+          <span class="dot"></span>
+          <div class="txt">
+            <div class="ttl">历史留仓 282,901 票</div>
+            <div class="sub">&gt;72H 2,258 · 按实际滞留环节处理</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Machine/Manual + Sorter Status ===== -->
+  <section class="grid-machine-status">
+    <div class="card machine-manual-card">
+      <div class="card-hd">
+        <div class="card-title">
+          <span class="bar"></span>
+          <div>
+            <div class="h2">分拣机 VS 人工分拣</div>
+          </div>
+        </div>
+        <span class="machine-manual-scope">当前班次</span>
+      </div>
+      <div id="pieChart" style="width:100%;height:158px;"></div>
+      <div class="compare-table" aria-label="分拣机与人工分拣票数袋数对比">
+        <div class="compare-table-head"><span>分拣方式</span><span>票数</span><span>袋数</span><span>票数占比</span></div>
+        <div class="compare-table-row">
+          <span class="compare-method"><i class="compare-dot machine"></i>分拣机分拣</span>
+          <span class="num compare-value">40,000</span><span class="num compare-value">960</span><span class="num">80%</span>
+        </div>
+        <div class="compare-table-row">
+          <span class="compare-method"><i class="compare-dot manual"></i>人工分拣</span>
+          <span class="num compare-value">10,000</span><span class="num compare-value">243</span><span class="num">20%</span>
+        </div>
+      </div>
+      <div class="compare-footnote">袋数按运单最后一次集包记录中的袋号去重统计。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">
+          <span class="bar"></span>
+          <div>
+            <div class="h2">分拣机状态</div>
+          </div>
+        </div>
+      </div>
+      <div id="sorterChart" style="width:100%;height:290px;"></div>
+    </div>
+
+  </section>
+
+  <!-- ===== Sorted × Destination ===== -->
+  <section class="card" id="mainFlowCard">
+    <div class="card-hd">
+      <div class="card-title">
+        <span class="bar"></span>
+        <div><div class="h2">已分拣 · 目的流向</div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+        <div class="seg-group" id="mainFlowTimeTabs" role="tablist" aria-label="目的流向时间口径">
+          <span class="on" role="tab" tabindex="0" data-main-flow-time="hourly" aria-selected="true">小时</span>
+          <span role="tab" tabindex="0" data-main-flow-time="cumulative" aria-selected="false">累计</span>
+        </div>
+        <div class="seg-group" id="mainFlowViewTabs" role="tablist" aria-label="目的流向展示方式">
+          <span class="on" role="tab" tabindex="0" data-main-flow-view="table" aria-selected="true">表格</span>
+          <span role="tab" tabindex="0" data-main-flow-view="chart" aria-selected="false">图表</span>
+        </div>
+        <button class="ghost-btn" type="button" id="mainFlowExpandBtn" style="display:none;" aria-hidden="true" tabindex="-1">展开明细</button>
+      </div>
+    </div>
+
+    <div class="main-flow-filterbar">
+      <div class="main-flow-filter-left">
+        <div class="main-flow-perspective-row">
+          <span class="main-flow-filter-label">统计视角</span>
+          <div class="seg-group" id="mainFlowPerspectiveTabs" role="tablist" aria-label="目的流向统计视角">
+            <span class="on" role="tab" tabindex="0" data-main-flow-perspective="type" aria-selected="true">按分拣类型</span>
+            <span role="tab" tabindex="0" data-main-flow-perspective="org" aria-selected="false">按组织维度</span>
+          </div>
+        </div>
+        <div class="main-flow-type-row">
+          <span class="main-flow-filter-label" id="mainFlowTypeLabel">分拣类型</span>
+          <div class="main-flow-tabs" id="mainFlowTabs" role="tablist" aria-label="目的流向分类筛选"></div>
+        </div>
+      </div>
+      <div class="main-flow-summary" id="mainFlowSummary" style="display:none;"></div>
+    </div>
+
+    <div class="main-flow-breadcrumb" id="mainFlowBreadcrumb"></div>
+
+    <div class="main-flow-table-wrap" id="mainFlowTableWrap" style="overflow-x:auto;">
+      <table class="tbl" id="mainFlowTable">
+        <thead id="mainFlowTableHead"></thead>
+        <tbody id="mainFlowTableBody"></tbody>
+      </table>
+    </div>
+    <div class="main-flow-chart-wrap" id="mainFlowChartWrap">
+      <div id="mainFlowChart" style="width:100%;height:100%;"></div>
+    </div>
+    <div class="main-flow-note" id="mainFlowNote"></div>
+  </section>
+
+  <!-- ===== Reflow Reason ===== -->
+  <section class="card">
+    <div class="card-hd">
+      <div class="card-title">
+        <span class="bar"></span>
+        <div>
+          <div class="h2">回流原因分布</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12.5px;color:var(--muted);align-items:center;">
+        <span style="display:inline-flex;align-items:center;gap:7px;"><span style="display:inline-block;width:20px;height:0;border-top:2px solid var(--accent);position:relative;"><i style="position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);left:7px;top:-4px;"></i></span>无读</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;"><span style="display:inline-block;width:20px;height:0;border-top:2px solid #e0921a;position:relative;"><i style="position:absolute;width:6px;height:6px;border-radius:50%;background:#e0921a;left:7px;top:-4px;"></i></span>未匹配格口</span>
+      </div>
+    </div>
+    <div class="reflow-wrap">
+      <div class="reflow-y">
+        <span>700</span><span>500</span><span>300</span><span>100</span><span>0</span>
+      </div>
+      <div style="position:relative;height:220px;">
+        <div id="reflowChart" style="width:100%;height:100%;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Historical Hold ===== -->
+  <section class="card history-demo-card">
+    <div class="card-hd">
+      <div class="card-title">
+        <span class="bar"></span>
+        <div><div class="h2">历史留仓</div></div>
+      </div>
+    </div>
+    <div class="history-overview">
+      <div class="history-total-card">
+        <div>
+          <div class="history-total-label">历史留仓总量</div>
+          <div class="history-total-value"><a class="num v count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a><span class="u">票</span></div>
+          <div class="history-total-desc">跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
+        </div>
+        <div class="history-time-table" aria-label="历史留仓时间分布">
+          <div class="history-time-row head"><span>时间分布</span><span>运单数</span></div>
+          <div class="history-time-row total"><span>合计</span><span><a class="count-link" data-waybill-name="历史留仓 · 时间分布合计" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a></span></div>
+          <div class="history-time-row"><span>&lt;24H</span><span>263,335</span></div>
+          <div class="history-time-row"><span>48H</span><span>16,483</span></div>
+          <div class="history-time-row"><span>72H</span><span>825</span></div>
+          <div class="history-time-row risk"><span>&gt;72H</span><span>2,258</span></div>
+        </div>
+      </div>
+      <div class="history-status-panel">
+        <div class="history-panel-head"><b>当前滞留环节</b><span>票数/袋数默认展示，点击展开子指标</span></div>
+        <div class="history-status-grid">
+          <div class="history-status-card history-stage-toggle danger" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
+            <div class="history-stage-head"><div class="name">待分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
+            <div class="history-stage-details">
+              <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 待分拣" data-waybill-count="110517" data-waybill-scope="历史留仓 · 待分拣">110,517</a> <small>票</small></span></div>
+              <div class="history-stage-hint">点击展开业务类型</div>
+            </div>
+            <div class="history-stage-children">
+              <div class="history-child-grid">
+                <div class="history-child-item"><span class="l">中转</span><span class="v">45,394 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">揽收</span><span class="v">1,041 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">清关</span><span class="v">63,972 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">客户自送</span><span class="v">110 <small>票</small></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="history-status-card history-stage-toggle orange" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
+            <div class="history-stage-head"><div class="name">已分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
+            <div class="history-stage-details">
+              <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 已分拣" data-waybill-count="172917" data-waybill-scope="历史留仓 · 已分拣">172,917</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
+              <div class="history-stage-hint">点击展开后续作业状态</div>
+            </div>
+            <div class="history-stage-children">
+              <div class="history-child-grid">
+                <div class="history-child-item"><span class="l">待装车</span><span class="v">131,897 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">已装未发</span><span class="v">41,004 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">已装已发</span><span class="v">16 <small>票</small></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="history-status-card history-stage-toggle gray" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
+            <div class="history-stage-head"><div class="name">箱中转</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
+            <div class="history-stage-details">
+              <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 箱中转" data-waybill-count="6195" data-waybill-scope="历史留仓 · 箱中转">6,195</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
+              <div class="history-stage-hint">点击展开后续作业状态</div>
+            </div>
+            <div class="history-stage-children">
+              <div class="history-child-grid">
+                <div class="history-child-item"><span class="l">待装车</span><span class="v">1,029 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">已装未发</span><span class="v">5,166 <small>票</small></span></div>
+                <div class="history-child-item"><span class="l">已装已发</span><span class="v">0 <small>票</small></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="history-data-note">已分拣、箱中转的袋数当前用“--”占位，接入袋号统计口径后显示实际袋数。</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">中心看板 · 分拣区 V2.46</div>
+</main>
+
+<!-- ===== Drawer (二级弹框) ===== -->
+<div class="drawer-mask" id="drawerMask">
+  <div class="drawer drawer-wide">
+    <div class="drawer-hd">
+      <span class="ttl" id="drawerTitle">明细</span>
+      <div class="drawer-hd-actions">
+        <button type="button" class="action-btn secondary drawer-export-btn" id="drawerExportBtn" data-action="drawer-export" style="display:none;">导出</button>
+        <button class="drawer-x" id="drawerClose">✕</button>
+      </div>
+    </div>
+    <div class="drawer-bd" id="drawerBody"></div>
+  </div>
+</div>
+
+<!-- ===== Lightbox (三级弹框) ===== -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-box">
+    <div class="drawer-hd">
+      <span class="ttl">运单明细</span>
+      <button class="drawer-x" id="lightboxClose">✕</button>
+    </div>
+    <div class="drawer-bd" id="lightboxBody"></div>
+  </div>
+</div>
+
+<script>
+/* ============== Drawer & Lightbox Logic ============== */
+const drawerMask = document.getElementById('drawerMask');
+const drawerTitle = document.getElementById('drawerTitle');
+const drawerBody  = document.getElementById('drawerBody');
+const drawerClose = document.getElementById('drawerClose');
+const drawerExportBtn = document.getElementById('drawerExportBtn');
+const lightbox = document.getElementById('lightbox');
+const lightboxBody = document.getElementById('lightboxBody');
+const lightboxClose = document.getElementById('lightboxClose');
+
+const drawerTitles = {
+  backlog:   '应分拣 · 下钻分析',
+  pending:   '待分拣 · 下钻分析',
+  sorted:    '已分拣 · 下钻分析',
+  eta:       '卸车区 - 预计到车',
+  unload:    '卸车区 - 已到未卸',
+  history:   '历史留仓 · 明细',
+  abnormal:  '重点关注 · 现场问题',
+  reflowRate: '回流率 · 指标口径'
+};
+
+function getDrawerExportName(type, extra) {
+  const scopeMap = {
+    backlog: { all:'应分拣', today:'今日已入库-应分拣', history:'历史留仓-应分拣' },
+    pending: { all:'待分拣', today:'今日已入库-待分拣', history:'历史留仓-待分拣' }
+  };
+  if (type === 'backlog' || type === 'pending') {
+    const scope = (extra && extra.scope) || 'all';
+    return `${scopeMap[type][scope] || scopeMap[type].all} · 下钻数据`;
+  }
+  if (type === 'sorted') return '已分拣 · 目的流向（按分拣类型）';
+  if (type === 'history') return '历史留仓 · 分析明细';
+  return '';
+}
+
+function openDrawer(type, extra) {
+  drawerTitle.textContent = drawerTitles[type] || '明细';
+  drawerBody.innerHTML = buildDrawer(type, extra);
+  const drawerPanel = drawerMask.querySelector('.drawer');
+  const exportable = type === 'backlog' || type === 'pending' || type === 'sorted' || type === 'history';
+  if (drawerPanel) drawerPanel.classList.toggle('drawer-wide', exportable);
+  if (drawerExportBtn) {
+    drawerExportBtn.style.display = exportable ? 'inline-flex' : 'none';
+    drawerExportBtn.setAttribute('data-export-name', exportable ? getDrawerExportName(type, extra) : '');
+    drawerExportBtn.setAttribute('aria-label', exportable ? `导出${getDrawerExportName(type, extra)}下钻数据` : '导出');
+  }
+  drawerMask.classList.add('on');
+}
+function closeDrawer() { drawerMask.classList.remove('on'); }
+drawerClose.addEventListener('click', closeDrawer);
+drawerMask.addEventListener('click', (e) => { if (e.target === drawerMask) closeDrawer(); });
+
+function openLightbox(name, count, scope) {
+  const currentScope = scope || '应分拣';
+  const isSortedScope = currentScope.includes('已分拣');
+  const isHistoryScope = currentScope.includes('历史留仓');
+  const isBoxTransitScope = currentScope.includes('箱中转');
+  const waybillStatus = isSortedScope ? '已分拣' : isBoxTransitScope ? '箱中转' : isHistoryScope ? '历史留仓' : '待分拣';
+  const totalRecords = Number(String(count).replace(/[^\d]/g, '')) || 0;
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+  let pageButtons = '';
+  const firstPageCount = Math.min(totalPages, 5);
+  for (let i = 1; i <= firstPageCount; i++) {
+    pageButtons += `<button type="button" class="pagination-btn ${i === 1 ? 'on' : ''}" data-page="${i}">${i}</button>`;
+  }
+  if (totalPages === 6) {
+    pageButtons += `<button type="button" class="pagination-btn" data-page="6">6</button>`;
+  } else if (totalPages > 6) {
+    pageButtons += `<span class="pagination-ellipsis">...</span><button type="button" class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+  }
+  const detailRows = isSortedScope ? `
+    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160201">WB202606160201</a></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户A</td><td style="text-align:left;">06-16 08:30</td><td style="text-align:left;">06-16 08:42</td><td style="text-align:left;">06-16 11:08</td><td style="text-align:left;">LAX01</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</a></td></tr>
+    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160202">WB202606160202</a></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户B</td><td style="text-align:left;">06-16 09:05</td><td style="text-align:left;">06-16 09:12</td><td style="text-align:left;">06-16 12:16</td><td style="text-align:left;">ONT02</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">ATL H</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</a></td></tr>
+    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160203">WB202606160203</a></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户C</td><td style="text-align:left;">06-16 10:18</td><td style="text-align:left;">06-16 10:35</td><td style="text-align:left;">06-16 13:22</td><td style="text-align:left;">SFO03</td><td style="text-align:left;">SFO H</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH02</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</a></td></tr>` : `
+    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160001">WB202606160001</a></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户A</td><td style="text-align:left;">06-16 08:30</td><td style="text-align:left;">06-16 08:42</td><td style="text-align:left;">—</td><td style="text-align:left;">LAX01</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-001">BAG-DFW-001</a></td></tr>
+    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160002">WB202606160002</a></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户B</td><td style="text-align:left;">06-16 09:05</td><td style="text-align:left;">06-16 09:12</td><td style="text-align:left;">06-16 09:20</td><td style="text-align:left;">ONT02</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">ATL H</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-016">BAG-ATL-016</a></td></tr>
+    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606150128">WB202606150128</a></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户C</td><td style="text-align:left;">06-15 22:18</td><td style="text-align:left;">06-15 22:35</td><td style="text-align:left;">—</td><td style="text-align:left;">SFO03</td><td style="text-align:left;">SFO H</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH02</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-009">BAG-IAH-009</a></td></tr>`;
+  document.querySelector('#lightbox .drawer-hd .ttl').textContent = '运单管理';
+  lightboxBody.innerHTML = `
+    <div class="query-panel">
+      <div class="query-item">
+        <label>运单号</label>
+        <input class="query-input" id="waybillQuery" placeholder="支持多值精确查询，逗号分隔">
+      </div>
+      <div class="query-item">
+        <label>目的中心</label>
+        <select class="query-select"><option>全部</option><option>ATL H</option><option>DFW H</option><option>IAH H</option><option>SFO H</option></select>
+      </div>
+      <div class="query-item">
+        <label>目的站点</label>
+        <select class="query-select"><option>全部</option><option>ATL01</option><option>ATL03</option><option>SDF</option><option>BNA</option></select>
+      </div>
+      <div class="query-item">
+        <label>目的路区</label>
+        <select class="query-select"><option>全部</option><option>ATL-R01</option><option>ATL-R02</option><option>DFW-R01</option></select>
+      </div>
+      <div class="query-item">
+        <label>服务渠道</label>
+        <select class="query-select"><option>全部</option><option>LAX.H-USPS(TT)</option><option>LAX.H-USPS(PM)</option><option>次日达</option></select>
+      </div>
+      <button class="action-btn primary" data-action="waybill-query">查询</button>
+      <button class="action-btn secondary" data-action="waybill-reset">重置</button>
+      <button class="action-btn secondary" data-action="waybill-export">导出</button>
+    </div>
+    <div class="lightbox-summary">
+      <div class="desc">当前明细状态：<span class="status-pill">${waybillStatus}</span></div>
+    </div>
+    <div class="table-scroll">
+      <table class="tbl">
+        <thead><tr>
+          <th style="text-align:left;">运单号</th>
+          <th style="text-align:left;">运单最新状态</th>
+          <th style="text-align:left;">客户</th>
+          <th style="text-align:left;">到件时间</th>
+          <th style="text-align:left;">签入时间</th>
+          <th style="text-align:left;">集包时间</th>
+          <th style="text-align:left;">接单站点</th>
+          <th style="text-align:left;">始发中心</th>
+          <th style="text-align:left;">目的中心</th>
+          <th style="text-align:left;">目的站点</th>
+          <th style="text-align:left;">目的路区</th>
+          <th style="text-align:left;">服务渠道</th>
+          <th style="text-align:left;">袋号</th>
+        </tr></thead>
+        <tbody>${detailRows}</tbody>
+      </table>
+    </div>
+    <div class="detail-pagination" data-total-pages="${totalPages}" data-current-page="1">
+      <div class="detail-pagination-summary">
+        <b>${name}</b>
+        <span class="split"></span>
+        <span>来源：${currentScope}</span>
+      </div>
+      <div class="pagination-controls" aria-label="分页">
+        <button type="button" class="pagination-btn" data-page-action="first" disabled title="首页">«</button>
+        <button type="button" class="pagination-btn" data-page-action="prev" disabled title="上一页">‹</button>
+        ${pageButtons}
+        <button type="button" class="pagination-btn" data-page-action="next" ${totalPages === 1 ? 'disabled' : ''} title="下一页">›</button>
+        <button type="button" class="pagination-btn" data-page-action="last" ${totalPages === 1 ? 'disabled' : ''} title="末页">»</button>
+        <select class="pagination-page-size" aria-label="每页条数">
+          <option selected>10条/页</option>
+          <option>20条/页</option>
+          <option>50条/页</option>
+          <option>100条/页</option>
+        </select>
+        <span class="pagination-jump-label">前往</span>
+        <input class="pagination-jump-input" value="1" inputmode="numeric" aria-label="跳转页码">
+        <span>页</span>
+        <span class="pagination-total">共 <b>${count}</b> 条记录</span>
+      </div>
+    </div>
+  `;
+  lightbox.classList.add('on');
+}
+
+let prototypeToastTimer;
+function showPrototypeToast(message) {
+  let toast = document.getElementById('prototypeToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'prototypeToast';
+    toast.className = 'prototype-toast';
+    toast.setAttribute('role', 'status');
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.remove('on');
+  void toast.offsetWidth;
+  toast.classList.add('on');
+  clearTimeout(prototypeToastTimer);
+  prototypeToastTimer = setTimeout(() => toast.classList.remove('on'), 1800);
+}
+
+function openSortedBagList(name, count, scope) {
+  const currentScope = scope || '已分拣 · 当前班次';
+  const totalRecords = Number(String(count).replace(/[^\d]/g, '')) || 0;
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+  let pageButtons = '';
+  const firstPageCount = Math.min(totalPages, 5);
+  for (let i = 1; i <= firstPageCount; i++) {
+    pageButtons += `<button type="button" class="pagination-btn ${i === 1 ? 'on' : ''}" data-page="${i}">${i}</button>`;
+  }
+  if (totalPages === 6) {
+    pageButtons += `<button type="button" class="pagination-btn" data-page="6">6</button>`;
+  } else if (totalPages > 6) {
+    pageButtons += `<span class="pagination-ellipsis">...</span><button type="button" class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+  }
+  document.querySelector('#lightbox .drawer-hd .ttl').textContent = '袋号查询';
+  lightboxBody.innerHTML = `
+    <div class="query-panel">
+      <div class="query-item">
+        <label>袋号</label>
+        <input class="query-input" placeholder="支持多值精确查询，逗号分隔">
+      </div>
+      <div class="query-item">
+        <label>目的组织</label>
+        <select class="query-select"><option>全部</option><option>DFW H</option><option>IAH H</option><option>ATL01</option><option>ATL03</option><option>SFO03</option></select>
+      </div>
+      <button class="action-btn primary" data-action="bag-query">查询</button>
+      <button class="action-btn secondary" data-action="bag-reset">重置</button>
+      <button class="action-btn secondary" data-action="bag-export">导出</button>
+    </div>
+    <div class="lightbox-summary">
+      <div class="desc">统计口径：取运单最后一次集包扫描记录中的袋号，按袋号去重。</div>
+    </div>
+    <div class="table-scroll">
+      <table class="tbl bag-list-table">
+        <thead><tr>
+          <th style="text-align:left;">袋号</th>
+          <th>运单数</th>
+          <th style="text-align:left;">目的地</th>
+          <th style="text-align:left;">目的组织</th>
+          <th style="text-align:left;">目的区域</th>
+          <th style="text-align:left;">服务渠道</th>
+          <th style="text-align:left;">集包类型</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-DFW-201 · 运单" data-waybill-count="36" data-waybill-scope="已分拣 · 袋号查询">36</a></td><td style="text-align:left;">DFW</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;">自动集包</td></tr>
+          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-ATL-216 · 运单" data-waybill-count="42" data-waybill-scope="已分拣 · 袋号查询">42</a></td><td style="text-align:left;">ATL</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;">人工集包</td></tr>
+          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-IAH-209 · 运单" data-waybill-count="31" data-waybill-scope="已分拣 · 袋号查询">31</a></td><td style="text-align:left;">IAH</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;">自动集包</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="detail-pagination" data-total-pages="${totalPages}" data-current-page="1">
+      <div class="detail-pagination-summary">
+        <b>${name}</b>
+        <span class="split"></span>
+        <span>来源：${currentScope}</span>
+      </div>
+      <div class="pagination-controls" aria-label="分页">
+        <button type="button" class="pagination-btn" data-page-action="first" disabled title="首页">«</button>
+        <button type="button" class="pagination-btn" data-page-action="prev" disabled title="上一页">‹</button>
+        ${pageButtons}
+        <button type="button" class="pagination-btn" data-page-action="next" ${totalPages === 1 ? 'disabled' : ''} title="下一页">›</button>
+        <button type="button" class="pagination-btn" data-page-action="last" ${totalPages === 1 ? 'disabled' : ''} title="末页">»</button>
+        <select class="pagination-page-size" aria-label="每页条数"><option selected>10条/页</option><option>20条/页</option><option>50条/页</option><option>100条/页</option></select>
+        <span class="pagination-jump-label">前往</span>
+        <input class="pagination-jump-input" value="1" inputmode="numeric" aria-label="跳转页码">
+        <span>页</span>
+        <span class="pagination-total">共 <b>${count}</b> 条记录</span>
+      </div>
+    </div>
+  `;
+  lightbox.classList.add('on');
+}
+
+function openBagQuery(bagNo) {
+  document.querySelector('#lightbox .drawer-hd .ttl').textContent = '袋号查询';
+  lightboxBody.innerHTML = `
+    <div class="bag-query-card">
+      <div style="font-size:15px;font-weight:700;">袋号 ${bagNo}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px;">由运单管理中的袋号跳转，自动带入精确查询条件。</div>
+      <div class="bag-query-grid">
+        <div class="stat"><div class="l">袋状态</div><div class="v" style="font-size:16px;">待分拣</div></div>
+        <div class="stat"><div class="l">袋内运单</div><div class="v num" style="font-size:16px;">36</div></div>
+        <div class="stat"><div class="l">始发中心</div><div class="v" style="font-size:16px;">LAX H</div></div>
+        <div class="stat"><div class="l">目的组织</div><div class="v" style="font-size:16px;">DFW H</div></div>
+      </div>
+    </div>
+    <div class="sec-title">袋内运单</div>
+    <table class="tbl">
+      <thead><tr><th style="text-align:left;">运单号</th><th style="text-align:left;">最新状态</th><th style="text-align:left;">目的站点</th><th style="text-align:left;">服务渠道</th></tr></thead>
+      <tbody>
+        <tr><td style="text-align:left;">WB202606160001</td><td style="text-align:left;">待分拣</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">LAX.H-USPS(TT)</td></tr>
+        <tr><td style="text-align:left;">WB202606160018</td><td style="text-align:left;">待分拣</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">LAX.H-USPS(TT)</td></tr>
+      </tbody>
+    </table>
+  `;
+}
+function closeLightbox() { lightbox.classList.remove('on'); }
+lightboxClose.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+
+function buildDrawer(type, extra) {
+  if (type === 'reflowRate') return `
+    <div class="stats-row">
+      <div class="stat"><div class="l">当前值</div><div class="v num" style="color:var(--amber);">2.3%</div></div>
+      <div class="stat"><div class="l">分子</div><div class="v" style="font-size:16px;">发生回流的运单数</div></div>
+      <div class="stat"><div class="l">分母</div><div class="v" style="font-size:16px;">已分拣运单数</div></div>
+    </div>
+    <div class="metric-note">
+      <b>业务定义：</b>已完成分拣后，因未匹配到货、格口或路由异常等原因重新回到分拣环节的运单占比。<br>
+      <b>计算公式：</b>发生回流的去重运单数 ÷ 已分拣去重运单数 × 100%。<br>
+      <b>研发逻辑：</b>按当前组织、当前分拣班次统计；分子取存在有效回流扫描记录的运单，分母与“已分拣”指标保持同一统计口径；同一运单多次回流只计一次。
+    </div>
+  `;
+  if (type === 'backlog' || type === 'pending') {
+    const isPending = type === 'pending';
+    const scope = (extra && extra.scope) || 'all';
+    const flowType = (extra && extra.flowType) || 'all';
+    const backlogScopeData = {
+      all: {
+        label:'应分拣', count:'6,795', time:[['<24H','6,651'],['24-48H','120'],['48-72H','20'],['>72H','4']],
+        flow:{
+          hub:[['DFW H','1,700'],['IAH H','1,200']],
+          station:[['ATL01','1,205'],['SFO03','895']],
+          road:[['ATL-R01','450'],['ATL-R02','330'],['SFO-R03','220']],
+          channel:[['LAX.H-USPS(TT)','400'],['LAX.H-USPS(PM)','220'],['LAX.H-FEDEX(IP)','100'],['其他','75']]
+        }
+      },
+      today: {
+        label:'今日已入库-应分拣', count:'6,311', time:[['<24H','6,220'],['24-48H','75'],['48-72H','13'],['>72H','3']],
+        flow:{
+          hub:[['DFW H','1,580'],['IAH H','1,120']],
+          station:[['ATL01','1,120'],['SFO03','830']],
+          road:[['ATL-R01','420'],['ATL-R02','305'],['SFO-R03','205']],
+          channel:[['LAX.H-USPS(TT)','365'],['LAX.H-USPS(PM)','205'],['LAX.H-FEDEX(IP)','95'],['其他','66']]
+        }
+      },
+      history: {
+        label:'历史留仓-应分拣', count:'484', time:[['<24H','431'],['24-48H','45'],['48-72H','7'],['>72H','1']],
+        flow:{
+          hub:[['DFW H','120'],['IAH H','80']],
+          station:[['ATL01','85'],['SFO03','65']],
+          road:[['ATL-R01','30'],['ATL-R02','25'],['SFO-R03','15']],
+          channel:[['LAX.H-USPS(TT)','35'],['LAX.H-USPS(PM)','15'],['LAX.H-FEDEX(IP)','5'],['其他','9']]
+        }
+      }
+    };
+    const pendingScopeData = {
+      all: {
+        label:'待分拣', count:'10,000', time:[['<24H','9,700'],['24-48H','240'],['48-72H','50'],['>72H','10']],
+        flow:{
+          hub:[['DFW H','2,200'],['IAH H','1,600']],
+          station:[['ATL01','1,750'],['SFO03','1,250']],
+          road:[['ATL-R01','800'],['ATL-R02','650'],['SFO-R03','450']],
+          channel:[['LAX.H-USPS(TT)','650'],['LAX.H-USPS(PM)','350'],['LAX.H-FEDEX(IP)','180'],['其他','120']]
+        }
+      },
+      today: {
+        label:'今日已入库-待分拣', count:'9,516', time:[['<24H','9,450'],['24-48H','55'],['48-72H','10'],['>72H','1']],
+        flow:{
+          hub:[['DFW H','2,080'],['IAH H','1,520']],
+          station:[['ATL01','1,660'],['SFO03','1,190']],
+          road:[['ATL-R01','760'],['ATL-R02','615'],['SFO-R03','425']],
+          channel:[['LAX.H-USPS(TT)','630'],['LAX.H-USPS(PM)','340'],['LAX.H-FEDEX(IP)','176'],['其他','120']]
+        }
+      },
+      history: {
+        label:'历史留仓-待分拣', count:'484', time:[['<24H','431'],['24-48H','45'],['48-72H','7'],['>72H','1']],
+        flow:{
+          hub:[['DFW H','120'],['IAH H','80']],
+          station:[['ATL01','90'],['SFO03','60']],
+          road:[['ATL-R01','40'],['ATL-R02','35'],['SFO-R03','25']],
+          channel:[['LAX.H-USPS(TT)','20'],['LAX.H-USPS(PM)','10'],['LAX.H-FEDEX(IP)','4'],['其他','0']]
+        }
+      }
+    };
+    const scopeData = isPending ? pendingScopeData : backlogScopeData;
+    const d = scopeData[scope];
+    const flowTypeLabelMap = {all:'全部', hub:'HUB', station:'站点', road:'路区', channel:'服务渠道'};
+    const flowTypeLabel = flowTypeLabelMap[flowType] || '全部';
+    const numberValue = value => Number(String(value).replace(/,/g,'')) || 0;
+    const typedRows = ['hub','station','road','channel'].flatMap(key => (d.flow[key] || []).map(([name,count]) => ({type:key,name,count})));
+    const visibleFlow = flowType === 'all' ? typedRows : typedRows.filter(item => item.type === flowType);
+    const flowTotal = visibleFlow.reduce((sum,item)=>sum+numberValue(item.count),0).toLocaleString('en-US');
+    const flowColumnName = flowType === 'hub' ? '目的中心' : flowType === 'station' ? '目的站点' : flowType === 'road' ? '目的区域' : flowType === 'channel' ? '服务渠道' : '目的组织';
+    const timeRows = d.time.map(([name,count]) => `<tr><td>${name}</td><td><a class="count-link" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}">${count}</a></td></tr>`).join('');
+    const flowRows = visibleFlow.map(item => `<tr><td>${item.name}</td><td><a class="count-link" data-waybill-name="目的流向（${flowTypeLabel}）：${item.name}" data-waybill-count="${item.count}" data-waybill-scope="${d.label}">${item.count}</a></td></tr>`).join('');
+    return `
+      <div class="stats-row backlog-stats">
+        <div class="stat backlog-filter-card ${scope === 'all' ? 'on' : ''}" data-backlog-scope="all" data-backlog-context="${type}"><div class="l">${scopeData.all.label}</div><div class="v num" style="color:${isPending ? 'var(--accent)' : 'var(--red)'};">${scopeData.all.count}</div></div>
+        <div class="stat backlog-filter-card ${scope === 'today' ? 'on' : ''}" data-backlog-scope="today" data-backlog-context="${type}"><div class="l">${scopeData.today.label}</div><div class="v num">${scopeData.today.count}</div></div>
+        <div class="stat backlog-filter-card ${scope === 'history' ? 'on' : ''}" data-backlog-scope="history" data-backlog-context="${type}"><div class="l">${scopeData.history.label}</div><div class="v num">${scopeData.history.count}</div></div>
+      </div>
+      <div class="metric-note"><b>统计口径：</b>${isPending ? '今日已入库-待分拣与历史留仓-待分拣中，已经实际入库且尚未完成分拣的运单；不包含预计到车。' : '历史留仓-待分拣与今日已入库-待分拣中，实际入库时间小于等于散货截单时间的运单；不包含预计到车。'}当前筛选：<b>${d.label}</b>。</div>
+      <div class="drawer-section-head">
+        <div class="sec-title">时间分布</div>
+        <div class="section-head-actions"><span class="scope-tag">${d.label} · ${d.count} 票</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 时间分布">导出</button></div>
+      </div>
+      <table class="tbl"><thead><tr><th style="text-align:left;">时间分布</th><th>运单数</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="时间分布：合计" data-waybill-count="${d.count}" data-waybill-scope="${d.label}">${d.count}</a></td></tr>${timeRows}</tbody></table>
+      <div style="font-size:10.5px;color:var(--faint);margin-top:6px;">时间分布 = 当前时间 −【到件时间、签入时间、集包时间】中的最早时间。</div>
+      <div class="drawer-section-head">
+        <div class="sec-title">目的流向</div>
+        <div class="section-head-actions">
+          <div class="flow-filter-tabs" role="tablist" aria-label="目的流向分拣类型筛选">
+            <button type="button" class="flow-filter-tab ${flowType === 'all' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="all">全部</button>
+            <button type="button" class="flow-filter-tab ${flowType === 'hub' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="hub">HUB</button>
+            <button type="button" class="flow-filter-tab ${flowType === 'station' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="station">站点</button>
+            <button type="button" class="flow-filter-tab ${flowType === 'road' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="road">路区</button>
+            <button type="button" class="flow-filter-tab ${flowType === 'channel' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="channel">服务渠道</button>
+          </div>
+          <button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 目的流向（${flowTypeLabel}）">导出</button>
+        </div>
+      </div>
+      <table class="tbl"><thead><tr><th style="text-align:left;">${flowColumnName}</th><th>运单数</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="目的流向（${flowTypeLabel}）：合计" data-waybill-count="${flowTotal}" data-waybill-scope="${d.label}">${flowTotal}</a></td></tr>${flowRows}</tbody></table>
+      <div class="flow-dimension-note">HUB、站点、路区、服务渠道按分拣类型筛选；路区列表展示目的区域。点击运单数进入运单管理。</div>
+    `;
+  }
+  if (type === 'sorted') {
+    const rows = mainFlowTypeSummaryRows();
+    const totalTickets = rows.reduce((sum,row)=>sum+row.tickets,0);
+    const totalBags = rows.reduce((sum,row)=>sum+row.bags,0);
+    const totalHours = mainFlowHours.map((_,index)=>rows.reduce((sum,row)=>sum+row.hours[index],0));
+    const hourHeaders = mainFlowHours.map(hour=>`<th>${hour}</th>`).join('');
+    const totalHourCells = totalHours.map((count,index)=>`<td><a class="count-link" data-waybill-name="已分拣 · 分拣类型合计 · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</a></td>`).join('');
+    const rowHtml = rows.map(row=>{
+      const hourCells = row.hours.map((count,index)=>`<td><a class="count-link" data-waybill-name="${row.name} · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</a></td>`).join('');
+      return `<tr><td>${row.name}</td><td><a class="count-link" data-waybill-name="${row.name} · 合计" data-waybill-count="${mainFlowFormat(row.tickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(row.tickets)}</a></td><td><a class="bag-count-link" data-bag-name="${row.name}" data-bag-count="${mainFlowFormat(row.bags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(row.bags)}</a></td>${hourCells}</tr>`;
+    }).join('');
+    return `
+      <div class="stats-row sorted-stats">
+        <div class="stat sorted-stat-main sorted-stat-clickable" role="button" tabindex="0" title="点击查看已分拣运单" aria-label="查看已分拣运单，共45823票" data-waybill-name="已分拣：全部运单" data-waybill-count="45,823" data-waybill-scope="已分拣 · 当前班次"><div class="l">已分拣</div><div class="v num">45,823 <span style="font-size:11px;font-weight:500;color:var(--faint);">票</span></div></div>
+        <div class="stat"><div class="l">袋数</div><div class="v num"><a class="bag-count-link" data-bag-name="已分拣：全部袋号" data-bag-count="1,203" data-bag-scope="已分拣 · 当前班次">1,203</a> <span style="font-size:11px;font-weight:500;color:var(--faint);">袋</span></div></div>
+      </div>
+      <div class="metric-note"><b>业务定义：</b>当前操作日内已经完成分拣的运单。<br><b>统计口径：</b><ol class="sorted-rule-list"><li>操作类型为“集包”，操作组织为当前组织，取运单最后一次集包扫描记录及对应袋号；</li><li>按左上角分拣班次时间统计，满足“班次开始时间 &lt; 扫描时间 ≤ 班次结束时间”。</li></ol></div>
+      <div class="drawer-section-head"><div class="sec-title">已分拣 · 目的流向（按分拣类型）</div><div class="section-head-actions"><div class="shift-scope"><span>当前班次</span><b class="num">06-16 06:00 ~ 06-17 06:00</b></div><button type="button" class="section-export-btn" data-action="section-export" data-export-name="已分拣 · 目的流向（按分拣类型）">导出</button></div></div>
+      <div class="sorted-table-wrap"><table class="tbl sorted-detail-table"><thead><tr><th style="text-align:left;">分拣类型</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="已分拣 · 分拣类型合计" data-waybill-count="${mainFlowFormat(totalTickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(totalTickets)}</a></td><td><a class="bag-count-link" data-bag-name="已分拣 · 分拣类型合计" data-bag-count="${mainFlowFormat(totalBags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(totalBags)}</a></td>${totalHourCells}</tr>${rowHtml}</tbody></table></div>
+      <div class="flow-dimension-note">HUB、站点、路区、服务渠道四种分拣类型互斥，合计按运单号去重，每票仅计入一种分拣类型。</div>
+    `;
+  }
+  if (type === 'eta') return `
+    <div style="min-height:360px;display:flex;align-items:center;justify-content:center;padding:36px;">
+      <div style="width:min(620px,100%);padding:42px 28px;border:1px dashed var(--accent-line);border-radius:16px;background:linear-gradient(145deg,var(--accent-soft),#fff);text-align:center;">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">页面跳转说明</div>
+        <div style="font-size:24px;font-weight:700;color:var(--text);">卸车区-预计到车 图表界面</div>
+      </div>
+    </div>
+  `;
+  if (type === 'unload') return `
+    <div style="min-height:360px;display:flex;align-items:center;justify-content:center;padding:36px;">
+      <div style="width:min(620px,100%);padding:42px 28px;border:1px dashed #dfe5ec;border-radius:16px;background:linear-gradient(145deg,#f8fafc,#fff);text-align:center;">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">页面跳转说明</div>
+        <div style="font-size:24px;font-weight:700;color:var(--text);">卸车区 已到未卸卡片界面</div>
+      </div>
+    </div>
+  `;
+  if (type === 'history') return `
+    <div class="history-drawer-hero">
+      <div class="history-hero-main">
+        <div class="label">历史留仓总量</div>
+        <div class="value"><b class="num"><a class="count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a></b><span>票</span></div>
+        <div class="desc">跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
+      </div>
+      <div class="history-drawer-time">
+        <div class="history-time-table" aria-label="历史留仓时间分布">
+          <div class="history-time-row head"><span>时间分布</span><span>运单数</span></div>
+          <div class="history-time-row total"><span>合计</span><span><a class="count-link" data-waybill-name="历史留仓 · 时间分布合计" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a></span></div>
+          <div class="history-time-row"><span>&lt;24H</span><span>263,335</span></div>
+          <div class="history-time-row"><span>48H</span><span>16,483</span></div>
+          <div class="history-time-row"><span>72H</span><span>825</span></div>
+          <div class="history-time-row risk"><span>&gt;72H</span><span>2,258</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="history-insight"><span>⚠</span><span><b>重点关注：</b>&gt;72H 运单共 2,258 票，建议优先按当前实际滞留环节分派处理责任。</span></div>
+
+    <div class="drawer-section-head">
+      <div class="sec-title">当前滞留环节</div>
+      <span class="scope-tag">票数/袋数默认展示，点击展开子指标</span>
+    </div>
+    <div class="history-drawer-status">
+      <div class="history-status-card history-stage-toggle danger" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
+        <div class="history-stage-head"><div class="name">待分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
+        <div class="history-stage-details">
+          <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 待分拣" data-waybill-count="110517" data-waybill-scope="历史留仓 · 待分拣">110,517</a> <small>票</small></span></div>
+          <div class="history-stage-hint">点击展开业务类型</div>
+        </div>
+        <div class="history-stage-children">
+          <div class="history-child-grid">
+            <div class="history-child-item"><span class="l">中转</span><span class="v">45,394 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">揽收</span><span class="v">1,041 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">清关</span><span class="v">63,972 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">客户自送</span><span class="v">110 <small>票</small></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="history-status-card history-stage-toggle orange" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
+        <div class="history-stage-head"><div class="name">已分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
+        <div class="history-stage-details">
+          <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 已分拣" data-waybill-count="172917" data-waybill-scope="历史留仓 · 已分拣">172,917</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
+          <div class="history-stage-hint">点击展开后续作业状态</div>
+        </div>
+        <div class="history-stage-children">
+          <div class="history-child-grid">
+            <div class="history-child-item"><span class="l">待装车</span><span class="v">131,897 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">已装未发</span><span class="v">41,004 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">已装已发</span><span class="v">16 <small>票</small></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="history-status-card history-stage-toggle gray" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
+        <div class="history-stage-head"><div class="name">箱中转</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
+        <div class="history-stage-details">
+          <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 箱中转" data-waybill-count="6195" data-waybill-scope="历史留仓 · 箱中转">6,195</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
+          <div class="history-stage-hint">点击展开后续作业状态</div>
+        </div>
+        <div class="history-stage-children">
+          <div class="history-child-grid">
+            <div class="history-child-item"><span class="l">待装车</span><span class="v">1,029 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">已装未发</span><span class="v">5,166 <small>票</small></span></div>
+            <div class="history-child-item"><span class="l">已装已发</span><span class="v">0 <small>票</small></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="history-data-note">已分拣、箱中转的袋数当前用“--”占位，接入袋号统计口径后显示实际袋数。</div>
+    <div class="history-definition"><b>统计口径：</b>跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。时间分布按运单当前滞留时长统计。</div>
+  `;
+  if (type === 'abnormal') return `
+    <div class="sec-title">异常清单</div>
+    <table class="tbl">
+      <thead><tr><th style="text-align:left;">等级</th><th style="text-align:left;">异常项</th><th>数值</th><th style="text-align:left;">建议</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--red);text-align:left;">严重</td><td style="text-align:left;">24h 未分拣 78%</td><td>1,494 票</td><td style="text-align:left;">立即加派分拣人力</td></tr>
+        <tr><td style="color:var(--red);text-align:left;">严重</td><td style="text-align:left;">分拣机 回流率</td><td>15.2%</td><td style="text-align:left;">检查分拣机格口配置</td></tr>
+        <tr><td style="color:var(--amber);text-align:left;">关注</td><td style="text-align:left;">历史积压</td><td>484 票</td><td style="text-align:left;">优先清留仓</td></tr>
+        <tr><td style="color:var(--amber);text-align:left;">关注</td><td style="text-align:left;">18h 分拣率</td><td>92%</td><td style="text-align:left;">临近超时,加强盯防</td></tr>
+        <tr><td style="color:var(--amber);text-align:left;">关注</td><td style="text-align:left;">未匹配到货峰</td><td>480 票/时</td><td style="text-align:left;">11:00 延迟检查卸车</td></tr>
+      </tbody>
+    </table>
+  `;
+  return '<div style="color:var(--muted);padding:20px;text-align:center;">暂无数据</div>';
+}
+
+/* ============== Bind Drawer Triggers ============== */
+document.querySelectorAll('[data-drawer]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const t = el.getAttribute('data-drawer');
+    if (t === 'drill') {
+      openLightbox(el.getAttribute('data-name'), el.getAttribute('data-count'));
+    } else {
+      openDrawer(t);
+    }
+  });
+});
+
+document.querySelectorAll('[data-drawer][role="button"]').forEach(el => {
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      el.click();
+    }
+  });
+});
+
+/* Drawer / tertiary interactions */
+function setPaginationPage(pagination, targetPage) {
+  if (!pagination) return;
+  const totalPages = Number(pagination.getAttribute('data-total-pages')) || 1;
+  const page = Math.min(totalPages, Math.max(1, Number(targetPage) || 1));
+  pagination.setAttribute('data-current-page', String(page));
+  pagination.querySelectorAll('[data-page]').forEach(btn => {
+    btn.classList.toggle('on', Number(btn.getAttribute('data-page')) === page);
+  });
+  const first = pagination.querySelector('[data-page-action="first"]');
+  const prev = pagination.querySelector('[data-page-action="prev"]');
+  const next = pagination.querySelector('[data-page-action="next"]');
+  const last = pagination.querySelector('[data-page-action="last"]');
+  if (first) first.disabled = page === 1;
+  if (prev) prev.disabled = page === 1;
+  if (next) next.disabled = page === totalPages;
+  if (last) last.disabled = page === totalPages;
+  const jump = pagination.querySelector('.pagination-jump-input');
+  if (jump) jump.value = String(page);
+}
+
+function setHistoryStageExpanded(card, expanded) {
+  const grid = card.closest('.history-status-grid, .history-drawer-status');
+  if (expanded && grid) {
+    grid.querySelectorAll('[data-history-stage-toggle].expanded').forEach(other => {
+      if (other !== card) {
+        other.classList.remove('expanded');
+        other.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+  card.classList.toggle('expanded', expanded);
+  card.setAttribute('aria-expanded', String(expanded));
+  const group = card.closest('.history-status-panel, .drawer-bd');
+  if (group) group.classList.toggle('history-stage-group-expanded', Boolean(group.querySelector('[data-history-stage-toggle].expanded')));
+}
+
+document.addEventListener('keydown', (e) => {
+  const historyStageCard = e.target.closest('[data-history-stage-toggle]');
+  if (historyStageCard && (e.key === 'Enter' || e.key === ' ')) {
+    if (e.target.closest('.count-link,.bag-link,.waybill-link')) return;
+    e.preventDefault();
+    setHistoryStageExpanded(historyStageCard, !historyStageCard.classList.contains('expanded'));
+    return;
+  }
+  const sortedStatCard = e.target.closest('.sorted-stat-clickable');
+  if (sortedStatCard && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    openLightbox(
+      sortedStatCard.getAttribute('data-waybill-name'),
+      sortedStatCard.getAttribute('data-waybill-count'),
+      sortedStatCard.getAttribute('data-waybill-scope')
+    );
+  }
+});
+
+document.addEventListener('click', (e) => {
+  const historyStageCard = e.target.closest('[data-history-stage-toggle]');
+  if (historyStageCard && !e.target.closest('.count-link,.bag-link,.waybill-link')) {
+    e.preventDefault();
+    e.stopPropagation();
+    setHistoryStageExpanded(historyStageCard, !historyStageCard.classList.contains('expanded'));
+    return;
+  }
+
+  const historyTab = e.target.closest('.history-dimension-tab');
+  if (historyTab) {
+    const target = historyTab.getAttribute('data-history-tab');
+    drawerBody.querySelectorAll('.history-dimension-tab').forEach(tab => tab.classList.toggle('on', tab === historyTab));
+    drawerBody.querySelectorAll('.history-dimension-panel').forEach(panel => panel.classList.toggle('on', panel.getAttribute('data-history-panel') === target));
+    return;
+  }
+
+  const pagination = e.target.closest('.detail-pagination');
+  const directPage = e.target.closest('[data-page]');
+  if (pagination && directPage) {
+    setPaginationPage(pagination, directPage.getAttribute('data-page'));
+    return;
+  }
+  const pageAction = e.target.closest('[data-page-action]');
+  if (pagination && pageAction) {
+    const current = Number(pagination.getAttribute('data-current-page')) || 1;
+    const totalPages = Number(pagination.getAttribute('data-total-pages')) || 1;
+    const actionName = pageAction.getAttribute('data-page-action');
+    const target = actionName === 'first' ? 1 : actionName === 'prev' ? current - 1 : actionName === 'next' ? current + 1 : totalPages;
+    setPaginationPage(pagination, target);
+    return;
+  }
+
+  const filterCard = e.target.closest('.backlog-filter-card');
+  if (filterCard) {
+    const activeFlowTab = drawerBody.querySelector('.flow-filter-tab.on');
+    const drawerContext = filterCard.getAttribute('data-backlog-context') || 'backlog';
+    openDrawer(drawerContext, {
+      scope: filterCard.getAttribute('data-backlog-scope'),
+      flowType: activeFlowTab ? activeFlowTab.getAttribute('data-flow-type') : 'all'
+    });
+    return;
+  }
+
+  const flowFilterTab = e.target.closest('.flow-filter-tab');
+  if (flowFilterTab) {
+    const flowContext = flowFilterTab.getAttribute('data-flow-context') || 'backlog';
+    if (flowContext === 'sorted') {
+      openDrawer('sorted', { flowType: flowFilterTab.getAttribute('data-flow-type'), flowLevel: 'summary' });
+    } else {
+      const activeScopeCard = drawerBody.querySelector('.backlog-filter-card.on');
+      openDrawer(flowContext, {
+        scope: activeScopeCard ? activeScopeCard.getAttribute('data-backlog-scope') : 'all',
+        flowType: flowFilterTab.getAttribute('data-flow-type'),
+        flowLevel: 'summary'
+      });
+    }
+    return;
+  }
+
+  const flowDrillLink = e.target.closest('.flow-drill-link');
+  if (flowDrillLink) {
+    const flowContext = flowDrillLink.getAttribute('data-flow-context') || 'backlog';
+    const payload = {
+      flowType: flowDrillLink.getAttribute('data-flow-type') || 'station',
+      flowLevel: 'channel',
+      parentStation: flowDrillLink.getAttribute('data-parent-station') || ''
+    };
+    if (flowContext !== 'sorted') payload.scope = flowDrillLink.getAttribute('data-flow-scope') || 'all';
+    openDrawer(flowContext, payload);
+    return;
+  }
+
+  const sortedStatCard = e.target.closest('.sorted-stat-clickable');
+  if (sortedStatCard) {
+    openLightbox(
+      sortedStatCard.getAttribute('data-waybill-name'),
+      sortedStatCard.getAttribute('data-waybill-count'),
+      sortedStatCard.getAttribute('data-waybill-scope')
+    );
+    return;
+  }
+
+  const bagCountLink = e.target.closest('.bag-count-link');
+  if (bagCountLink) {
+    openSortedBagList(
+      bagCountLink.getAttribute('data-bag-name'),
+      bagCountLink.getAttribute('data-bag-count'),
+      bagCountLink.getAttribute('data-bag-scope')
+    );
+    return;
+  }
+
+  const countLink = e.target.closest('.count-link');
+  if (countLink) {
+    openLightbox(
+      countLink.getAttribute('data-waybill-name'),
+      countLink.getAttribute('data-waybill-count'),
+      countLink.getAttribute('data-waybill-scope')
+    );
+    return;
+  }
+
+  const waybillLink = e.target.closest('.waybill-link');
+  if (waybillLink) {
+    showPrototypeToast(`运单号 ${waybillLink.getAttribute('data-waybill')}：正式系统中可查看运单详情`);
+    return;
+  }
+
+  const bagLink = e.target.closest('.bag-link');
+  if (bagLink) {
+    showPrototypeToast(`袋号 ${bagLink.getAttribute('data-bag')}：正式系统中可进入袋号查询`);
+    return;
+  }
+
+  const row = e.target.closest('.row-click');
+  if (row) {
+    openLightbox(row.getAttribute('data-name'), row.getAttribute('data-count'));
+    return;
+  }
+
+  const action = e.target.closest('[data-action]');
+  if (action) {
+    const actionName = action.getAttribute('data-action');
+    if (actionName === 'flow-back') {
+      const flowContext = action.getAttribute('data-flow-context') || 'backlog';
+      const payload = { flowType: action.getAttribute('data-flow-type') || 'station', flowLevel:'summary' };
+      if (flowContext !== 'sorted') payload.scope = action.getAttribute('data-flow-scope') || 'all';
+      openDrawer(flowContext, payload);
+      return;
+    }
+    if (actionName === 'drawer-export') {
+      const exportName = action.getAttribute('data-export-name') || drawerTitle.textContent || '当前下钻';
+      showPrototypeToast(`已导出：${exportName}（静态原型示意）`);
+    }
+    if (actionName === 'section-export') {
+      const exportName = action.getAttribute('data-export-name') || '当前指标';
+      showPrototypeToast(`已导出：${exportName}（按当前筛选条件，静态原型示意）`);
+    }
+    if (actionName === 'waybill-query') {
+      action.textContent = '已查询';
+      setTimeout(() => action.textContent = '查询', 900);
+    }
+    if (actionName === 'waybill-reset') {
+      const panel = action.closest('.query-panel');
+      if (panel) {
+        panel.querySelectorAll('input').forEach(input => input.value = '');
+        panel.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+      }
+      showPrototypeToast('筛选条件已重置');
+    }
+    if (actionName === 'waybill-export') {
+      alert('已按当前筛选条件导出运单明细（静态原型示意）');
+    }
+    if (actionName === 'bag-query') {
+      action.textContent = '已查询';
+      setTimeout(() => action.textContent = '查询', 900);
+    }
+    if (actionName === 'bag-reset') {
+      const panel = action.closest('.query-panel');
+      if (panel) {
+        panel.querySelectorAll('input').forEach(input => input.value = '');
+        panel.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+      }
+      showPrototypeToast('袋号查询条件已重置');
+    }
+    if (actionName === 'bag-export') {
+      alert('已按当前筛选条件导出袋号明细（静态原型示意）');
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || !e.target.classList.contains('pagination-jump-input')) return;
+  const pagination = e.target.closest('.detail-pagination');
+  setPaginationPage(pagination, e.target.value);
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('pagination-jump-input')) {
+    setPaginationPage(e.target.closest('.detail-pagination'), e.target.value);
+  }
+});
+
+/* ============== Hold Toggle ============== */
+let holdExpanded = false;
+const toggleHoldBtn = document.getElementById('toggleHold');
+if (toggleHoldBtn) {
+  toggleHoldBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    holdExpanded = !holdExpanded;
+    e.target.textContent = holdExpanded ? '收起' : '展开全部';
+  });
+}
+
+
+/* ============== Main purpose-flow interactions ============== */
+const mainFlowHours = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+const mainFlowState = { perspective:'type', type:'all', level:'summary', parentStation:'', timeMode:'hourly', viewMode:'table' };
+const mainFlowFormat = value => Number(value || 0).toLocaleString('en-US');
+const mainFlowSplit = (total, ratios=[0.045,0.08,0.098,0.116,0.109,0.141,0.136,0.118,0.104]) => {
+  const values = ratios.map(ratio => Math.floor(total * ratio));
+  values.push(total - values.reduce((sum, value) => sum + value, 0));
+  return values;
+};
+const mainFlowRow = (name, tickets, bags, meta={}) => ({ name, tickets, bags, hours:mainFlowSplit(tickets), ...meta });
+
+// 四种分拣类型互斥；全部合计每票只落入一种分拣类型。
+const mainFlowData = {
+  hub: [
+    mainFlowRow('DFW H', 7200, 190),
+    mainFlowRow('IAH H', 4800, 125)
+  ],
+  station: [
+    mainFlowRow('ATL01', 6300, 165),
+    mainFlowRow('ATL03', 4800, 125),
+    mainFlowRow('SFO03', 3200, 83),
+    mainFlowRow('其他站点', 1700, 45)
+  ],
+  road: [
+    mainFlowRow('ATL-R01', 5200, 136, {station:'ATL01'}),
+    mainFlowRow('ATL-R02', 3600, 94, {station:'ATL03'}),
+    mainFlowRow('SFO-R03', 2600, 68, {station:'SFO03'}),
+    mainFlowRow('IAH-R04', 1100, 29, {station:'IAH02'}),
+    mainFlowRow('其他目的区域', 500, 13, {station:'其他站点'})
+  ],
+  channel: [
+    mainFlowRow('LAX.H-USPS(TT)', 2500, 65),
+    mainFlowRow('LAX.H-USPS(PM)', 1400, 37),
+    mainFlowRow('LAX.H-FEDEX(IP)', 700, 18),
+    mainFlowRow('其他', 223, 10)
+  ]
+};
+
+const mainFlowTypeLabels = { all:'全部', hub:'HUB分拣', station:'站点分拣', road:'路区分拣', channel:'服务渠道分拣' };
+const mainFlowOrgLabels = { hub:'HUB维度', station:'站点维度', channel:'服务渠道维度' };
+const mainFlowTypeTabs = [
+  {key:'all',label:'全部'}, {key:'hub',label:'HUB'}, {key:'station',label:'站点'},
+  {key:'road',label:'路区'}, {key:'channel',label:'服务渠道'}
+];
+const mainFlowOrgTabs = [
+  {key:'hub',label:'HUB维度'}, {key:'station',label:'站点维度'}, {key:'channel',label:'服务渠道维度'}
+];
+
+function mainFlowSumRows(rows) {
+  return {
+    tickets:rows.reduce((sum,row)=>sum+(row.tickets||0),0),
+    bags:rows.reduce((sum,row)=>sum+(row.bags||0),0),
+    hours:mainFlowHours.map((_,index)=>rows.reduce((sum,row)=>sum+(row.hours?.[index]||0),0))
+  };
+}
+
+function mainFlowTypeSummaryRows() {
+  return ['hub','station','road','channel'].map(type => ({
+    name:mainFlowTypeLabels[type],
+    typeKey:type,
+    ...mainFlowSumRows(mainFlowData[type])
+  }));
+}
+
+function mainFlowChannelBreakdown(parentRow) {
+  if (!parentRow) return [];
+  const names = ['LAX.H-USPS(TT)','LAX.H-USPS(PM)','LAX.H-FEDEX(IP)','其他'];
+  const ticketParts = mainFlowSplit(parentRow.tickets, [0.45,0.32,0.15]);
+  const bagParts = mainFlowSplit(parentRow.bags, [0.45,0.32,0.15]);
+  const hourParts = parentRow.hours.map(value => mainFlowSplit(value, [0.45,0.32,0.15]));
+  return names.map((name,index)=>({
+    name,
+    tickets:ticketParts[index],
+    bags:bagParts[index],
+    hours:hourParts.map(parts=>parts[index])
+  }));
+}
+
+function mainFlowStationDimensionRows() {
+  const map = new Map();
+  const ensure = name => {
+    if (!map.has(name)) map.set(name, {
+      name,
+      stationTickets:0, roadTickets:0, stationBags:0, roadBags:0,
+      stationHours:mainFlowHours.map(()=>0), roadHours:mainFlowHours.map(()=>0)
+    });
+    return map.get(name);
+  };
+  mainFlowData.station.forEach(row => {
+    const target = ensure(row.name);
+    target.stationTickets += row.tickets;
+    target.stationBags += row.bags;
+    target.stationHours = target.stationHours.map((value,index)=>value+row.hours[index]);
+  });
+  mainFlowData.road.forEach(row => {
+    const target = ensure(row.station || row.name);
+    target.roadTickets += row.tickets;
+    target.roadBags += row.bags;
+    target.roadHours = target.roadHours.map((value,index)=>value+row.hours[index]);
+  });
+  return [...map.values()].map(row => ({
+    ...row,
+    tickets:row.stationTickets+row.roadTickets,
+    bags:row.stationBags+row.roadBags,
+    hours:row.stationHours.map((value,index)=>value+row.roadHours[index])
+  })).sort((a,b)=>b.tickets-a.tickets);
+}
+
+function mainFlowStationChannelRows(stationName) {
+  const stationSource = mainFlowData.station.find(row=>row.name===stationName);
+  const roadSources = mainFlowData.road.filter(row=>row.station===stationName);
+  const map = new Map(['LAX.H-USPS(TT)','LAX.H-USPS(PM)','LAX.H-FEDEX(IP)','其他'].map(name=>[name,{
+    name, stationTickets:0, roadTickets:0, stationBags:0, roadBags:0,
+    stationHours:mainFlowHours.map(()=>0), roadHours:mainFlowHours.map(()=>0)
+  }]));
+  mainFlowChannelBreakdown(stationSource).forEach(row=>{
+    const target=map.get(row.name); target.stationTickets+=row.tickets; target.stationBags+=row.bags;
+    target.stationHours=target.stationHours.map((value,index)=>value+row.hours[index]);
+  });
+  roadSources.forEach(source=>{
+    mainFlowChannelBreakdown(source).forEach(row=>{
+      const target=map.get(row.name); target.roadTickets+=row.tickets; target.roadBags+=row.bags;
+      target.roadHours=target.roadHours.map((value,index)=>value+row.hours[index]);
+    });
+  });
+  return [...map.values()].map(row=>({
+    ...row,
+    tickets:row.stationTickets+row.roadTickets,
+    bags:row.stationBags+row.roadBags,
+    hours:row.stationHours.map((value,index)=>value+row.roadHours[index])
+  })).filter(row=>row.tickets>0);
+}
+
+function mainFlowChannelDimensionRows() {
+  const names=['LAX.H-USPS(TT)','LAX.H-USPS(PM)','LAX.H-FEDEX(IP)','其他'];
+  const map=new Map(names.map(name=>[name,{name,tickets:0,bags:0,hours:mainFlowHours.map(()=>0)}]));
+  ['hub','station','road'].forEach(type=>{
+    mainFlowData[type].forEach(source=>{
+      mainFlowChannelBreakdown(source).forEach(row=>{
+        const target=map.get(row.name);
+        target.tickets+=row.tickets; target.bags+=row.bags;
+        target.hours=target.hours.map((value,index)=>value+row.hours[index]);
+      });
+    });
+  });
+  mainFlowData.channel.forEach(row=>{
+    const target=map.get(row.name);
+    target.tickets+=row.tickets; target.bags+=row.bags;
+    target.hours=target.hours.map((value,index)=>value+row.hours[index]);
+  });
+  return [...map.values()];
+}
+
+function mainFlowLabel() {
+  return mainFlowState.perspective === 'type'
+    ? (mainFlowTypeLabels[mainFlowState.type] || '全部')
+    : (mainFlowOrgLabels[mainFlowState.type] || '站点维度');
+}
+
+function mainFlowRows() {
+  if (mainFlowState.perspective === 'org') {
+    if (mainFlowState.type === 'station') {
+      return mainFlowState.level === 'channel' && mainFlowState.parentStation
+        ? mainFlowStationChannelRows(mainFlowState.parentStation)
+        : mainFlowStationDimensionRows();
+    }
+    if (mainFlowState.type === 'channel') return mainFlowChannelDimensionRows();
+    return mainFlowData.hub;
+  }
+  if (mainFlowState.type === 'all') return mainFlowTypeSummaryRows();
+  if (mainFlowState.level === 'channel' && mainFlowState.parentStation) {
+    return mainFlowChannelBreakdown((mainFlowData[mainFlowState.type]||[]).find(row=>row.name===mainFlowState.parentStation));
+  }
+  return mainFlowData[mainFlowState.type] || [];
+}
+
+function mainFlowDisplayHours(values) {
+  if (mainFlowState.timeMode !== 'cumulative') return values;
+  let sum=0;
+  return values.map(value=>(sum+=value));
+}
+
+function mainFlowColumnName() {
+  if (mainFlowState.level === 'channel' || mainFlowState.type === 'channel') return '服务渠道';
+  if (mainFlowState.perspective === 'type' && mainFlowState.type === 'all') return '分拣类型';
+  if (mainFlowState.type === 'hub') return '目的中心';
+  if (mainFlowState.perspective === 'org' && mainFlowState.type === 'station') return '目的站点';
+  if (mainFlowState.type === 'road') return '目的区域';
+  return '目的站点';
+}
+
+function mainFlowCanDrill() {
+  // 主界面的站点名称不再进入服务渠道层级；票数、袋数仍保留明细入口。
+  return false;
+}
+
+function mainFlowStaticName(row) {
+  const stationSummary = mainFlowState.level === 'summary' && mainFlowState.type === 'station';
+  if (stationSummary) return `<span class="main-flow-name-static">${row.name}</span>`;
+  return '';
+}
+
+function mainFlowScopeText(name, suffix='') {
+  const perspective = mainFlowState.perspective === 'type' ? '按分拣类型' : '按组织维度';
+  const hierarchy = mainFlowState.level === 'channel' && mainFlowState.parentStation
+    ? `${mainFlowLabel()} > ${mainFlowState.parentStation} > 服务渠道`
+    : mainFlowLabel();
+  return `已分拣 · ${perspective}（${hierarchy}）：${name}${suffix}`;
+}
+
+let mainFlowChart=null;
+function ensureMainFlowChart() {
+  if (!mainFlowChart) mainFlowChart=echarts.init(document.getElementById('mainFlowChart'));
+  return mainFlowChart;
+}
+
+function renderMainFlowChart(rows) {
+  const chart=ensureMainFlowChart();
+  const isCumulative=mainFlowState.timeMode==='cumulative';
+  chart.clear();
+  chart.setOption({
+    animationDuration:420,
+    tooltip:{trigger:'axis',axisPointer:{type:'line'},formatter:params=>{
+      const title=params[0]?params[0].axisValueLabel:'';
+      return [title,...params.map(item=>`${item.marker}${item.seriesName}：${mainFlowFormat(item.value)} 票`)].join('<br/>');
+    }},
+    legend:{type:'scroll',top:0,textStyle:{fontSize:11,color:'#64718a'},itemWidth:18,itemHeight:3},
+    grid:{left:50,right:18,top:42,bottom:28},
+    xAxis:{type:'category',boundaryGap:false,data:mainFlowHours,axisTick:{show:false},axisLine:{lineStyle:{color:'#cbd3dd'}},axisLabel:{fontSize:10.5,color:'#64718a'}},
+    yAxis:{type:'value',axisLabel:{fontSize:10,color:'#64718a',formatter:v=>v>=1000?(v/1000)+'k':v},splitLine:{lineStyle:{color:'#eef2f6',type:'dashed'}}},
+    series:rows.map(row=>({
+      name:row.name,
+      type:'line',
+      smooth:false,
+      showSymbol:false,
+      symbol:'circle',
+      symbolSize:5,
+      lineStyle:{width:2},
+      emphasis:{focus:'series',lineStyle:{width:3}},
+      data:mainFlowDisplayHours(row.hours)
+    }))
+  });
+  chart.off('click');
+  chart.on('click', params=>{
+    const row = rows.find(item=>item.name===params.seriesName);
+    const count = Number(params.value || 0);
+    if (!row || count <= 0) return;
+    openLightbox(mainFlowScopeText(row.name, ` · ${params.name}`), mainFlowFormat(count), '已分拣 · 当前班次');
+  });
+  setTimeout(()=>chart.resize(),0);
+}
+
+function renderMainFlowTabs() {
+  const defs=mainFlowState.perspective==='type'?mainFlowTypeTabs:mainFlowOrgTabs;
+  document.getElementById('mainFlowTypeLabel').textContent=mainFlowState.perspective==='type'?'分拣类型':'组织维度';
+  document.getElementById('mainFlowTabs').innerHTML=defs.map(item=>`<button type="button" class="main-flow-tab ${item.key===mainFlowState.type?'on':''}" data-main-flow-type="${item.key}" role="tab" aria-selected="${item.key===mainFlowState.type?'true':'false'}">${item.label}</button>`).join('');
+}
+
+function renderMainFlow() {
+  renderMainFlowTabs();
+  const rows=mainFlowRows();
+  const totalTickets=rows.reduce((sum,row)=>sum+(row.tickets||0),0);
+  const totalBags=rows.reduce((sum,row)=>sum+(row.bags||0),0);
+  const totalHours=mainFlowHours.map((_,index)=>rows.reduce((sum,row)=>sum+(row.hours?.[index]||0),0));
+  const displayTotalHours=mainFlowDisplayHours(totalHours);
+  const modeLabel=mainFlowState.timeMode==='cumulative'?'累计':'小时';
+
+  document.querySelectorAll('#mainFlowPerspectiveTabs [data-main-flow-perspective]').forEach(tab=>{
+    const on=tab.dataset.mainFlowPerspective===mainFlowState.perspective;
+    tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+  });
+  document.querySelectorAll('#mainFlowTimeTabs [data-main-flow-time]').forEach(tab=>{
+    const on=tab.dataset.mainFlowTime===mainFlowState.timeMode;
+    tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+  });
+  document.querySelectorAll('#mainFlowViewTabs [data-main-flow-view]').forEach(tab=>{
+    const on=tab.dataset.mainFlowView===mainFlowState.viewMode;
+    tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+  });
+
+  const perspectiveLabel=mainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
+  document.getElementById('mainFlowSummary').innerHTML='';
+  document.getElementById('mainFlowBreadcrumb').innerHTML=mainFlowState.level==='channel'
+    ? `<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><span>${mainFlowLabel()}</span><span class="sep">›</span><b>${mainFlowState.parentStation}</b><span class="sep">›</span><b>渠道分布</b><button type="button" class="main-flow-back" id="mainFlowBackBtn">返回上一级</button>`
+    : `<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><b>${mainFlowLabel()}</b><span class="sep">›</span><span>${modeLabel}</span>`;
+
+  const hourHeaders=mainFlowHours.map(hour=>`<th>${hour}</th>`).join('');
+  const isStationDimension=mainFlowState.perspective==='org'&&mainFlowState.type==='station';
+  if (isStationDimension) {
+    document.getElementById('mainFlowTableHead').innerHTML=`<tr><th>${mainFlowColumnName()}</th><th>站点分拣票</th><th>路区分拣票</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr>`;
+    const totalStation=rows.reduce((sum,row)=>sum+(row.stationTickets||0),0);
+    const totalRoad=rows.reduce((sum,row)=>sum+(row.roadTickets||0),0);
+    const totalCells=displayTotalHours.map((count,index)=>`<td><button type="button" class="main-flow-number-btn main-flow-count" data-name="合计" data-count="${count}" data-suffix=" · ${mainFlowHours[index]}">${mainFlowFormat(count)}</button></td>`).join('');
+    const rowHtml=rows.map(row=>{
+      const nameCell=`<span class="main-flow-name-static">${row.name}</span>`;
+      const displayHours=mainFlowDisplayHours(row.hours);
+      const hourCells=displayHours.map((count,index)=>`<td><button type="button" class="main-flow-number-btn main-flow-count" data-name="${row.name}" data-count="${count}" data-suffix=" · ${mainFlowHours[index]}">${mainFlowFormat(count)}</button></td>`).join('');
+      return `<tr><td>${nameCell}</td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="${row.name} · 站点分拣" data-count="${row.stationTickets||0}">${mainFlowFormat(row.stationTickets||0)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="${row.name} · 路区分拣" data-count="${row.roadTickets||0}">${mainFlowFormat(row.roadTickets||0)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="${row.name} · 合计" data-count="${row.tickets}">${mainFlowFormat(row.tickets)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-bag" data-name="${row.name}" data-count="${row.bags}">${mainFlowFormat(row.bags)}</button></td>${hourCells}</tr>`;
+    }).join('');
+    document.getElementById('mainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="站点分拣合计" data-count="${totalStation}">${mainFlowFormat(totalStation)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="路区分拣合计" data-count="${totalRoad}">${mainFlowFormat(totalRoad)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="合计" data-count="${totalTickets}">${mainFlowFormat(totalTickets)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-bag" data-name="合计" data-count="${totalBags}">${mainFlowFormat(totalBags)}</button></td>${totalCells}</tr>${rowHtml||'<tr><td colspan="15" class="main-flow-empty">暂无数据</td></tr>'}`;
+  } else {
+    document.getElementById('mainFlowTableHead').innerHTML=`<tr><th>${mainFlowColumnName()}</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr>`;
+    const totalCells=displayTotalHours.map((count,index)=>`<td><button type="button" class="main-flow-number-btn main-flow-count" data-name="合计" data-count="${count}" data-suffix=" · ${mainFlowHours[index]}">${mainFlowFormat(count)}</button></td>`).join('');
+    const rowHtml=rows.map(row=>{
+      // 目的流向名称只用于识别分类，不承担下钻入口；明细统一从票数、袋数和小时数据进入。
+      const nameCell=`<span class="main-flow-name-static">${row.name}</span>`;
+      const displayHours=mainFlowDisplayHours(row.hours);
+      const hourCells=displayHours.map((count,index)=>`<td><button type="button" class="main-flow-number-btn main-flow-count" data-name="${row.name}" data-count="${count}" data-suffix=" · ${mainFlowHours[index]}">${mainFlowFormat(count)}</button></td>`).join('');
+      return `<tr><td>${nameCell}</td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="${row.name} · 合计" data-count="${row.tickets}">${mainFlowFormat(row.tickets)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-bag" data-name="${row.name}" data-count="${row.bags}">${mainFlowFormat(row.bags)}</button></td>${hourCells}</tr>`;
+    }).join('');
+    document.getElementById('mainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><button type="button" class="main-flow-number-btn main-flow-count" data-name="合计" data-count="${totalTickets}">${mainFlowFormat(totalTickets)}</button></td><td><button type="button" class="main-flow-number-btn main-flow-bag" data-name="合计" data-count="${totalBags}">${mainFlowFormat(totalBags)}</button></td>${totalCells}</tr>${rowHtml||'<tr><td colspan="13" class="main-flow-empty">暂无数据</td></tr>'}`;
+  }
+
+  const tableWrap=document.getElementById('mainFlowTableWrap');
+  const chartWrap=document.getElementById('mainFlowChartWrap');
+  tableWrap.classList.toggle('off',mainFlowState.viewMode!=='table');
+  chartWrap.classList.toggle('on',mainFlowState.viewMode==='chart');
+  if(mainFlowState.viewMode==='chart') renderMainFlowChart(rows);
+
+  let note='';
+  if(mainFlowState.perspective==='type') {
+    if(mainFlowState.type==='all') note='四种分拣类型互斥，“全部”按分拣类型汇总，每票只统计一次；名称不下钻，票数和袋数可查看明细。';
+    if(mainFlowState.type==='hub') note='仅统计分拣类型为 HUB 的运单，并按目的中心汇总；名称不下钻，票数和袋数可查看明细。';
+    if(mainFlowState.type==='station') note='仅统计分拣类型为站点的运单，并按目的站点汇总；站点名称不再继续下钻，票数和袋数可查看明细。';
+    if(mainFlowState.type==='road') note='仅统计分拣类型为路区的运单，并按目的区域汇总；名称不下钻，票数和袋数可查看明细。';
+    if(mainFlowState.type==='channel') note='仅统计分拣类型为服务渠道的运单，并按服务渠道汇总；名称不下钻，票数和袋数可查看明细。';
+  } else {
+    if(mainFlowState.type==='station') note='站点维度 = 站点分拣 + 归属该站点的路区分拣；站点名称不再继续下钻，票数和袋数可查看明细。';
+    if(mainFlowState.type==='hub') note='HUB维度按目的中心汇总 HUB 分拣数据；名称不下钻，票数和袋数可查看明细。';
+    if(mainFlowState.type==='channel') note='服务渠道维度跨分拣类型汇总，按运单服务渠道统计，每票只计入一个渠道；名称不下钻，票数和袋数可查看明细。';
+  }
+  document.getElementById('mainFlowNote').textContent=note;
+}
+
+function activateMainFlowTab(tab) {
+  mainFlowState.type=tab.dataset.mainFlowType;
+  mainFlowState.level='summary';
+  mainFlowState.parentStation='';
+  renderMainFlow();
+}
+
+document.getElementById('mainFlowPerspectiveTabs').addEventListener('click',event=>{
+  const tab=event.target.closest('[data-main-flow-perspective]');
+  if(!tab) return;
+  mainFlowState.perspective=tab.dataset.mainFlowPerspective;
+  mainFlowState.type=mainFlowState.perspective==='type'?'all':'station';
+  mainFlowState.level='summary'; mainFlowState.parentStation='';
+  renderMainFlow();
+});
+document.getElementById('mainFlowTabs').addEventListener('click',event=>{
+  const tab=event.target.closest('.main-flow-tab'); if(tab) activateMainFlowTab(tab);
+});
+document.getElementById('mainFlowTimeTabs').addEventListener('click',event=>{
+  const tab=event.target.closest('[data-main-flow-time]'); if(!tab)return;
+  mainFlowState.timeMode=tab.dataset.mainFlowTime; renderMainFlow();
+});
+document.getElementById('mainFlowViewTabs').addEventListener('click',event=>{
+  const tab=event.target.closest('[data-main-flow-view]'); if(!tab)return;
+  mainFlowState.viewMode=tab.dataset.mainFlowView; renderMainFlow();
+});
+document.getElementById('mainFlowCard').addEventListener('keydown',event=>{
+  if((event.key==='Enter'||event.key===' ')&&event.target.matches('[role="tab"]')) { event.preventDefault(); event.target.click(); }
+});
+
+document.getElementById('mainFlowSummary').addEventListener('click',event=>{
+  const ticket=event.target.closest('.main-flow-summary-count');
+  if(ticket){openLightbox(mainFlowScopeText('合计'),mainFlowFormat(ticket.dataset.count),'已分拣 · 当前班次');return;}
+  const bag=event.target.closest('.main-flow-summary-bag');
+  if(bag)openSortedBagList(mainFlowScopeText('合计'),mainFlowFormat(bag.dataset.count),'已分拣 · 当前班次');
+});
+
+document.getElementById('mainFlowTableBody').addEventListener('click',event=>{
+  const count=event.target.closest('.main-flow-count');
+  if(count){openLightbox(mainFlowScopeText(count.dataset.name,count.dataset.suffix||''),mainFlowFormat(count.dataset.count),'已分拣 · 当前班次');return;}
+  const bag=event.target.closest('.main-flow-bag');
+  if(bag)openSortedBagList(mainFlowScopeText(bag.dataset.name),mainFlowFormat(bag.dataset.count),'已分拣 · 当前班次');
+});
+
+document.getElementById('mainFlowBreadcrumb').addEventListener('click',event=>{
+  if(!event.target.closest('#mainFlowBackBtn'))return;
+  mainFlowState.level='summary';mainFlowState.parentStation='';renderMainFlow();
+});
+
+document.getElementById('mainFlowExpandBtn').addEventListener('click',()=>{
+  const rows=mainFlowRows();
+  const total=rows.reduce((sum,row)=>sum+(row.tickets||0),0);
+  if(mainFlowState.perspective==='org') {
+    openLightbox(mainFlowScopeText('合计'),mainFlowFormat(total),'已分拣 · 当前班次');
+    return;
+  }
+  openDrawer('sorted',{flowType:mainFlowState.type,flowLevel:mainFlowState.level,parentStation:mainFlowState.parentStation});
+});
+
+renderMainFlow();
+
+/* ============== ECharts: Trend ============== */
+const hours = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+const trendSort    = [2000,4800,6200,7100,6600,8100,7900,6400,5600,5200];
+const trendMachine = [1600,3850,4950,5700,5300,6500,6300,5100,4500,4150];
+const trendManual  = [400,950,1250,1400,1300,1600,1600,1300,1100,1050];
+const trendWeek    = [1800,4300,5600,6400,6000,7300,7100,5800,5100,4700];
+
+const trendChart = echarts.init(document.getElementById('trendChart'));
+const trendCumulative = values => {
+  let total = 0;
+  return values.map(value => (total += value));
+};
+
+const trendHourlySeries = {
+  sort: trendSort,
+  machine: trendMachine,
+  manual: trendManual,
+  week: trendWeek
+};
+const trendCumulativeSeries = {
+  sort: trendCumulative(trendSort),
+  machine: trendCumulative(trendMachine),
+  manual: trendCumulative(trendManual),
+  week: trendCumulative(trendWeek)
+};
+
+function buildTrendMarkPoint(data, isCumulative) {
+  if (isCumulative) {
+    const lastIndex = data.length - 1;
+    return {
+      symbol: 'pin', symbolSize: 56, z: 10,
+      data: [{ name: '累计', value: data[lastIndex], coord: [hours[lastIndex], data[lastIndex]] }],
+      itemStyle: { color: '#e0921a', borderColor: '#fff', borderWidth: 1.5 },
+      label: {
+        fontSize: 10.5, color: '#1a1206', fontWeight: 700,
+        formatter: p => '累计 ' + Number(p.value).toLocaleString()
+      }
+    };
+  }
+  return {
+    symbol: 'pin', symbolSize: 52, z: 10,
+    data: [{ type: 'max' }, { type: 'min' }],
+    itemStyle: { color: '#e0921a', borderColor: '#fff', borderWidth: 1.5 },
+    label: {
+      fontSize: 10.5, color: '#1a1206', fontWeight: 700,
+      formatter: p => (p.data.type === 'max' ? '峰值 ' : '谷值 ') + Number(p.value).toLocaleString()
+    }
+  };
+}
+
+function buildTrendOption(mode = 'hourly') {
+  const isCumulative = mode === 'cumulative';
+  const data = isCumulative ? trendCumulativeSeries : trendHourlySeries;
+  return {
+    animationDuration: 450,
+    tooltip: {
+      trigger: 'axis',
+      valueFormatter: value => Number(value).toLocaleString() + ' 票'
+    },
+    legend: {
+      top: 0, type: 'scroll',
+      textStyle: { fontSize: 11.5, color: '#64718a' },
+      itemWidth: 16, itemHeight: 3,
+      selected: {
+        '分拣票数': true,
+        '分拣机分拣票数': false,
+        '人工分拣票数': false,
+        '分拣票数-同比上周': true,
+        '分拣票数-环比昨日': false,
+        '出库票数': false
+      }
+    },
+    grid: { left: 50, right: 16, top: 34, bottom: 26 },
+    xAxis: {
+      type: 'category', data: hours, boundaryGap: false,
+      axisLine: { lineStyle: { color: '#cbd3dd' } },
+      axisTick: { show: false },
+      axisLabel: { color: '#64718a', fontSize: 11 }
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        color: '#64718a', fontSize: 10,
+        formatter: value => value >= 1000 ? (value / 1000) + 'k' : value
+      },
+      splitLine: { lineStyle: { color: '#eef2f6', type: 'dashed' } }
+    },
+    series: [
+      {
+        name: '分拣票数', type: 'line', data: data.sort, smooth: true,
+        symbol: 'circle', symbolSize: 6, showSymbol: true,
+        lineStyle: { color: '#fc4c02', width: 2.8, type: 'solid' },
+        itemStyle: { color: '#fc4c02' },
+        markPoint: buildTrendMarkPoint(data.sort, isCumulative),
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(252,76,2,.16)' },
+            { offset: 1, color: 'rgba(252,76,2,0)' }
+          ])
+        }
+      },
+      {
+        name: '分拣机分拣票数', type: 'line', data: data.machine, smooth: true,
+        symbol: 'circle', symbolSize: 0, showSymbol: false,
+        lineStyle: { color: '#7c5cdb', width: 2, type: 'solid' },
+        itemStyle: { color: '#7c5cdb' }
+      },
+      {
+        name: '人工分拣票数', type: 'line', data: data.manual, smooth: true,
+        symbol: 'circle', symbolSize: 0, showSymbol: false,
+        lineStyle: { color: '#f97316', width: 2, type: 'solid' },
+        itemStyle: { color: '#f97316' }
+      },
+      {
+        name: '出库票数', type: 'line', data: [], smooth: true,
+        symbol: 'circle', symbolSize: 0, showSymbol: false,
+        lineStyle: { color: '#16a34a', width: 2, type: 'solid' },
+        itemStyle: { color: '#16a34a' }
+      },
+      {
+        name: '分拣票数-同比上周', type: 'line', data: data.week, smooth: true,
+        symbol: 'circle', symbolSize: 0, showSymbol: false,
+        lineStyle: { color: '#e0921a', width: 1.8, type: 'dashed' },
+        itemStyle: { color: '#e0921a' }
+      },
+      {
+        name: '分拣票数-环比昨日', type: 'line', data: [], smooth: true,
+        symbol: 'circle', symbolSize: 0, showSymbol: false,
+        lineStyle: { color: '#64748b', width: 1.8, type: 'dashed' },
+        itemStyle: { color: '#64748b' }
+      }
+    ]
+  };
+}
+
+function setTrendStat(index, label, value, sub) {
+  document.getElementById(`trendStat${index}Label`).textContent = label;
+  document.getElementById(`trendStat${index}Value`).textContent = value;
+  document.getElementById(`trendStat${index}Sub`).textContent = sub;
+}
+
+function updateTrendStats(mode) {
+  // 小时/累计仅切换趋势图口径；下方运营摘要始终保留小时维度，便于现场快速判断。
+  const maxValue = Math.max(...trendSort);
+  const minValue = Math.min(...trendSort);
+  const maxIndex = trendSort.indexOf(maxValue);
+  const minIndex = trendSort.indexOf(minValue);
+  // 原型数据按小时桶求平均；正式系统口径：当前班次累计已分拣票数 ÷ 当前班次已过时长（小时，精确到分钟），不计未来时段。
+  const avgValue = Math.round(trendSort.reduce((sum, value) => sum + value, 0) / trendSort.length);
+  const currentIndex = Math.max(0, hours.indexOf('14:00'));
+  setTrendStat(1, '峰值票数', maxValue.toLocaleString(), hours[maxIndex]);
+  setTrendStat(2, '谷值票数', minValue.toLocaleString(), hours[minIndex]);
+  setTrendStat(3, '小时均值', avgValue.toLocaleString(), '当前班次');
+  // 当前时速正式口径：当前小时截至当前时刻的已分拣票数 ÷ 当前小时已过分钟数 × 60；原型直接使用当前小时桶示例值。
+  setTrendStat(4, '当前时速', trendSort[currentIndex].toLocaleString(), hours[currentIndex]);
+}
+
+function switchTrendMode(mode) {
+  document.querySelectorAll('#trendModeTabs [data-mode]').forEach(tab => {
+    tab.classList.toggle('on', tab.dataset.mode === mode);
+    tab.setAttribute('aria-selected', tab.dataset.mode === mode ? 'true' : 'false');
+  });
+  trendChart.clear();
+  trendChart.setOption(buildTrendOption(mode));
+  updateTrendStats(mode);
+}
+
+document.querySelectorAll('#trendModeTabs [data-mode]').forEach(tab => {
+  const activate = () => switchTrendMode(tab.dataset.mode);
+  tab.addEventListener('click', activate);
+  tab.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      activate();
+    }
+  });
+});
+
+switchTrendMode('hourly');
+
+/* ============== ECharts: Pie ============== */
+const pieChart = echarts.init(document.getElementById('pieChart'));
+pieChart.setOption({
+  tooltip: {
+    trigger: 'item',
+    formatter: params => `${params.name}<br/>票数：${Number(params.value).toLocaleString('en-US')} 票<br/>袋数：${Number(params.data.bags).toLocaleString('en-US')} 袋<br/>票数占比：${params.percent}%`
+  },
+  graphic: [
+    { type:'text', left:'center', top:'37%', style:{ text:'已分拣', textAlign:'center', fill:'#64718a', fontSize:11, fontWeight:600 } },
+    { type:'text', left:'center', top:'49%', style:{ text:'50,000票', textAlign:'center', fill:'#16202e', fontSize:17, fontWeight:700 } }
+  ],
+  series: [{
+    type: 'pie',
+    radius: ['58%', '82%'],
+    center: ['50%', '50%'],
+    avoidLabelOverlap: true,
+    label: { show: false },
+    labelLine: { show: false },
+    data: [
+      { value: 40000, bags: 960, name: '分拣机分拣', itemStyle: { color: '#fc4c02' } },
+      { value: 10000, bags: 243, name: '人工分拣', itemStyle: { color: '#e0921a' } }
+    ]
+  }]
+});
+
+/* ============== ECharts: Sorter Status (Volume Bars + Reflow Rate Lines) ============== */
+const sorterVolumeYesterday = [1900, 4550, 5900, 6800, 6250, 7600, 7450, 6100, 5350, 4950];
+const sorterVolumeWeek = [1800, 4300, 5600, 6400, 6000, 7300, 7100, 5800, 5100, 4700];
+const sorterReflowCurrent = [3.2, 2.8, 2.1, 1.8, 3.5, 2.9, 2.4, 1.9, 2.2, 4.8];
+const sorterReflowYesterday = [3.5, 3.1, 2.6, 2.2, 3.8, 3.3, 2.8, 2.4, 2.7, 4.2];
+const sorterReflowWeek = [2.9, 2.7, 2.3, 2.0, 3.1, 2.8, 2.5, 2.1, 2.4, 3.7];
+
+const sorterChart = echarts.init(document.getElementById('sorterChart'));
+sorterChart.setOption({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: { type: 'cross' },
+    formatter: params => {
+      const title = params[0] ? params[0].axisValueLabel : '';
+      const rows = params.map(item => {
+        const isRate = item.seriesName.includes('回流率');
+        const value = isRate
+          ? Number(item.value).toFixed(1) + '%'
+          : Number(item.value).toLocaleString('en-US') + ' 票';
+        return `${item.marker}${item.seriesName}：${value}`;
+      });
+      return [title, ...rows].join('<br/>');
+    }
+  },
+  legend: {
+    type: 'plain',
+    top: 0,
+    left: 0,
+    right: 0,
+    itemGap: 10,
+    itemWidth: 15,
+    itemHeight: 3,
+    textStyle: { fontSize: 10.5, color: '#64718a' },
+    selected: {
+      '分拣量': true,
+      '环比昨日-分拣量': false,
+      '同比上周-分拣量': true,
+      '回流率': false,
+      '环比昨日-回流率': false,
+      '同比上周-回流率': false
+    }
+  },
+  grid: { left: 48, right: 48, top: 76, bottom: 28 },
+  xAxis: {
+    type: 'category',
+    data: hours,
+    axisLine: { lineStyle: { color: '#cbd3dd' } },
+    axisTick: { show: false },
+    axisLabel: { color: '#64718a', fontSize: 11 }
+  },
+  yAxis: [
+    {
+      type: 'value',
+      position: 'left',
+      name: '票',
+      nameTextStyle: { color: '#9aa6b6', fontSize: 10, padding: [0, 0, 2, 0] },
+      axisLabel: { color: '#64718a', fontSize: 10, formatter: v => v >= 1000 ? (v / 1000) + 'k' : v },
+      splitLine: { lineStyle: { color: '#eef2f6', type: 'dashed' } }
+    },
+    {
+      type: 'value',
+      position: 'right',
+      name: '%',
+      nameTextStyle: { color: '#9aa6b6', fontSize: 10, padding: [0, 0, 2, 0] },
+      axisLabel: { color: '#64718a', fontSize: 10, formatter: '{value}%' },
+      splitLine: { show: false },
+      min: 0,
+      max: 6
+    }
+  ],
+  series: [
+    {
+      name: '分拣量',
+      type: 'bar',
+      data: trendSort,
+      itemStyle: { color: '#fc4c02', borderRadius: [3, 3, 0, 0] },
+      barMaxWidth: 14,
+      barGap: '18%',
+      barCategoryGap: '34%',
+      z: 3
+    },
+    {
+      name: '环比昨日-分拣量',
+      type: 'bar',
+      data: sorterVolumeYesterday,
+      itemStyle: { color: '#9aa6b6', borderRadius: [3, 3, 0, 0] },
+      barMaxWidth: 14,
+      barGap: '18%',
+      barCategoryGap: '34%',
+      z: 2
+    },
+    {
+      name: '同比上周-分拣量',
+      type: 'bar',
+      data: sorterVolumeWeek,
+      itemStyle: { color: '#3867d6', borderRadius: [3, 3, 0, 0] },
+      barMaxWidth: 14,
+      barGap: '18%',
+      barCategoryGap: '34%',
+      z: 2
+    },
+    {
+      name: '回流率',
+      type: 'line',
+      yAxisIndex: 1,
+      data: sorterReflowCurrent,
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 5,
+      lineStyle: { color: '#e0921a', width: 2 },
+      itemStyle: { color: '#e0921a' }
+    },
+    {
+      name: '环比昨日-回流率',
+      type: 'line',
+      yAxisIndex: 1,
+      data: sorterReflowYesterday,
+      smooth: true,
+      symbol: 'none',
+      lineStyle: { color: '#a06cd5', width: 1.8, type: 'dashed' },
+      itemStyle: { color: '#a06cd5' }
+    },
+    {
+      name: '同比上周-回流率',
+      type: 'line',
+      yAxisIndex: 1,
+      data: sorterReflowWeek,
+      smooth: true,
+      symbol: 'none',
+      lineStyle: { color: '#16a34a', width: 1.8, type: 'dotted' },
+      itemStyle: { color: '#16a34a' }
+    }
+  ]
+});
+
+/* ============== ECharts: Reflow Reason (Dual Line 24h) ============== */
+const reflowChart = echarts.init(document.getElementById('reflowChart'));
+const reflowNoRead = [120,180,210,180,220,195,165,140,130,155,170,148,160,190,205,175,150,135,125,140,155,165,145,130];
+const reflowUnmatchedChute = [80,140,160,155,170,480,385,210,155,130,145,125,138,155,165,148,135,120,110,125,140,150,130,115];
+const reflowHours = Array.from({length:24}, (_,i) => String(i).padStart(2,'0'));
+reflowChart.setOption({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: { type: 'line', lineStyle: { color: '#cbd5e1', type: 'dashed' } },
+    valueFormatter: value => `${value} 票`
+  },
+  grid: { left: 0, right: 8, top: 16, bottom: 24 },
+  xAxis: {
+    type: 'category', data: reflowHours,
+    boundaryGap: false,
+    axisLine: { show: false },
+    axisTick: { show: false },
+    axisLabel: { color: '#64718a', fontSize: 10 }
+  },
+  yAxis: {
+    type: 'value', max: 700,
+    axisLine: { show: false }, axisTick: { show: false },
+    axisLabel: { show: false },
+    splitLine: { show: true, lineStyle: { color: '#edf1f5', type: 'dashed' } }
+  },
+  series: [
+    {
+      name: '无读', type: 'line', data: reflowNoRead,
+      smooth: true, symbol: 'circle', symbolSize: 5, showSymbol: false,
+      lineStyle: { color: '#fc4c02', width: 2.5 },
+      itemStyle: { color: '#fc4c02' },
+      emphasis: { focus: 'series', scale: true }
+    },
+    {
+      name: '未匹配格口', type: 'line', data: reflowUnmatchedChute,
+      smooth: true, symbol: 'circle', symbolSize: 5, showSymbol: false,
+      lineStyle: { color: '#e0921a', width: 2.5 },
+      itemStyle: { color: '#e0921a' },
+      emphasis: { focus: 'series', scale: true }
+    }
+  ]
+});
+
+/* ============== Resize Handler ============== */
+window.addEventListener('resize', () => {
+  trendChart.resize();
+  pieChart.resize();
+  sorterChart.resize();
+  reflowChart.resize();
+  if (mainFlowChart) mainFlowChart.resize();
+});
+
+/* ============== Cutoff countdown ============== */
+function updateCutoffCountdown() {
+  const valueEl = document.getElementById('cutoffCountdown');
+  if (!valueEl) return;
+
+  const now = new Date();
+  const cutoff = new Date(now);
+  cutoff.setHours(3, 0, 0, 0);
+  if (cutoff <= now) cutoff.setDate(cutoff.getDate() + 1);
+
+  const diffMs = Math.max(0, cutoff.getTime() - now.getTime());
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const two = n => String(n).padStart(2, '0');
+  valueEl.textContent = `${days ? days + 'D ' : ''}${two(hours)}:${two(minutes)}:${two(seconds)}`;
+
+  const tag = valueEl.closest('.cutoff-countdown-tag');
+  if (tag) {
+    tag.classList.toggle('is-danger', diffMs <= 2 * 60 * 60 * 1000);
+    tag.classList.toggle('is-warning', diffMs > 2 * 60 * 60 * 1000 && diffMs <= 6 * 60 * 60 * 1000);
+  }
+}
+updateCutoffCountdown();
+setInterval(updateCutoffCountdown, 1000);
+
+/* ============== Live value simulation ============== */
+setInterval(() => {
+  const cur = 5600 + Math.floor((Math.random() - 0.5) * 200);
+  const el = document.getElementById('lv-cur');
+  if (el) el.textContent = cur.toLocaleString();
+}, 3000);
+</script>
+</body>
+</html>
