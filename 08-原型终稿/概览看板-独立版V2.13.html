@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>中心运营实时看板 · 概况（视觉优化版）</title>
+<title>中心运营实时看板 · 概况（卡片下钻版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -285,10 +285,10 @@
     margin-top:7px !important;overflow:hidden;position:relative;
   }
   .backlog-item{padding:1px 0 3px;}
-  .backlog-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:7px;}
+  .backlog-top{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;align-items:center;column-gap:18px;margin-bottom:7px;}
   .backlog-title{font-size:13px;color:#536579;font-weight:700;min-width:0;}
   .backlog-title .hint{font-size:10.5px;color:#98a5b3;margin-left:5px;font-weight:500;}
-  .split-values{display:flex;align-items:center;gap:18px;margin-bottom:6px;min-width:0;}
+  .split-values{display:flex;align-items:center;justify-content:flex-end;gap:18px;margin:0;min-width:0;}
   .split-value{display:flex;align-items:baseline;gap:5px;min-width:0;font-size:12px;color:#647487;}
   .split-value::before{content:"";width:7px;height:7px;border-radius:50%;flex:0 0 auto;align-self:center;}
   .split-value.now::before{background:var(--screen-blue);}
@@ -312,8 +312,16 @@
     background:rgba(20,31,43,.94);color:#fff;border-radius:6px;padding:7px 10px;font-size:11.5px;
     line-height:1.5;box-shadow:0 6px 18px rgba(15,25,38,.2);transition:opacity .12s,transform .12s;white-space:nowrap;}
   .split-tooltip.on{opacity:1;transform:translateY(0);}
-  @media(max-width:1180px){
+  @media(max-width:1400px){
+    .backlog-top{grid-template-columns:minmax(155px,1fr) auto auto;column-gap:10px;}
     .split-values{gap:10px;}
+    .split-value{gap:3px;}
+    .split-value .value{font-size:13px;}
+    .split-value .unit,.split-value .pct{font-size:10px;}
+  }
+  @media(max-width:1180px){
+    .backlog-top{grid-template-columns:1fr auto;row-gap:6px;}
+    .split-values{grid-column:1 / -1;grid-row:2;justify-content:flex-start;gap:10px;}
     .split-value-separator{display:none;}
     .split-value{flex-wrap:wrap;row-gap:1px;}
   }
@@ -422,6 +430,78 @@
     #chart-trend{height:210px !important;}
   }
 
+
+  /* ===== 指标卡片下钻页面 ===== */
+  .drawer-backdrop{padding:18px !important;align-items:stretch !important;}
+  .drawer-panel{
+    width:1180px !important;max-width:calc(100vw - 36px) !important;max-height:calc(100vh - 36px) !important;
+    margin:auto;border-radius:10px !important;
+  }
+  .drawer-head{min-height:54px;padding:12px 18px !important;}
+  .drawer-head h3{font-size:16px !important;letter-spacing:.1px;}
+  .drawer-body{background:#eef2f6;padding:14px 16px 18px !important;}
+  .drill-page{display:flex;flex-direction:column;gap:12px;}
+  .drill-banner{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    padding:13px 16px;border:1px solid #dce3ea;border-left:4px solid var(--gofo-primary);
+    border-radius:8px;background:#fff;box-shadow:0 2px 8px rgba(13,34,56,.05);
+  }
+  .drill-banner-main{min-width:0;}
+  .drill-breadcrumb{font-size:11px;color:#8a98a8;margin-bottom:4px;}
+  .drill-banner-title{font-size:17px;font-weight:800;color:#172536;}
+  .drill-banner-desc{font-size:12px;color:#6f7f91;margin-top:4px;line-height:1.5;}
+  .drill-status{flex:0 0 auto;padding:6px 10px;border-radius:14px;background:#fff3ec;color:#d94b0b;border:1px solid #ffd3bf;font-size:11.5px;font-weight:700;}
+  .drill-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;}
+  .drill-kpi{position:relative;overflow:hidden;background:#fff;border:1px solid #dce3ea;border-radius:8px;padding:12px 14px;min-height:88px;box-shadow:0 2px 8px rgba(13,34,56,.04);}
+  .drill-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#365f86;}
+  .drill-kpi.warning::before{background:#c98213;}.drill-kpi.danger::before{background:#d74343;}.drill-kpi.success::before{background:#16835c;}.drill-kpi.primary::before{background:#fc4c02;}
+  .drill-kpi-label{font-size:11.5px;color:#6f7f91;font-weight:650;}
+  .drill-kpi-value{margin-top:7px;font-size:24px;font-weight:850;line-height:1;color:#172536;letter-spacing:-.7px;}
+  .drill-kpi-value .unit{font-size:11px;font-weight:500;color:#8a98a8;margin-left:3px;letter-spacing:0;}
+  .drill-kpi-sub{font-size:10.5px;color:#9aa6b6;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .drill-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+  .drill-mini{background:#fff;border:1px solid #dce3ea;border-radius:8px;padding:11px 13px;box-shadow:0 2px 8px rgba(13,34,56,.035);}
+  .drill-mini-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:750;color:#45586b;}
+  .drill-mini-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:#f1f5f8;color:#6f7f91;font-weight:650;}
+  .drill-mini-value{font-size:19px;font-weight:850;color:#172536;margin-top:8px;}
+  .drill-mini-meta{display:flex;justify-content:space-between;gap:10px;margin-top:7px;padding-top:7px;border-top:1px dashed #e2e8ee;font-size:10.5px;color:#7f8d9c;}
+  .drill-section-card{background:#fff;border:1px solid #dce3ea;border-radius:8px;padding:13px 14px;box-shadow:0 2px 8px rgba(13,34,56,.04);}
+  .drill-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .drill-section-title{font-size:13.5px;font-weight:800;color:#1b2939;}
+  .drill-section-note{font-size:11px;color:#8a98a8;}
+  .drill-filter-card .dbar{margin-bottom:0;}
+  .drill-table table{font-size:11.8px;}
+  .drill-table th,.drill-table td{padding:8px 10px;}
+  .drill-state{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;}
+  .drill-state.warn{background:#fff4df;color:#a86d0b;}.drill-state.danger{background:#fff0f0;color:#bd3535;}.drill-state.ok{background:#eaf8f1;color:#157651;}.drill-state.info{background:#eaf1f8;color:#365f86;}
+  .backlog-item[data-drawer]{cursor:pointer;border-radius:6px;padding:7px 8px 8px;margin:0 -8px;transition:background .15s,transform .15s;}
+  .backlog-item[data-drawer]:hover{background:#f6f8fa;transform:translateX(2px);}
+  @media(max-width:1200px){.drill-kpis{grid-template-columns:repeat(3,1fr)}.drill-card-grid{grid-template-columns:repeat(2,1fr)}}
+
+  /* ===== 下钻占位符 ===== */
+  .key-panel .aux-card{min-height:82px;display:flex;flex-direction:column;justify-content:center;}
+  .aux-card.no-drill{cursor:default !important;box-shadow:none !important;}
+  .aux-card.no-drill:hover{transform:none !important;border-color:#f3d2cf !important;box-shadow:none !important;}
+  .simple-detail-page{display:flex;flex-direction:column;gap:12px;min-height:300px;}
+  .simple-detail-card{background:#fff;border:1px solid #dce3ea;border-radius:8px;padding:14px;box-shadow:0 2px 8px rgba(13,34,56,.04);}
+  .simple-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .simple-detail-title{font-size:15px;font-weight:800;color:#172536;}
+  .simple-detail-note{font-size:11.5px;color:#8a98a8;}
+  .simple-route-page{min-height:330px;display:flex;align-items:center;justify-content:center;}
+  .simple-route-box{width:100%;padding:44px 28px;text-align:center;background:#fff;border:2px dashed #cbd5df;border-radius:12px;}
+  .simple-route-label{font-size:12px;color:#8a98a8;margin-bottom:10px;}
+  .simple-route-target{font-size:20px;font-weight:800;color:#172536;}
+  .simple-route-arrow{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;margin-right:10px;border-radius:50%;background:#fff1e8;color:#fc4c02;vertical-align:middle;}
+  .simple-empty-row{text-align:center !important;color:#9aa6b6 !important;padding:30px 10px !important;}
+  .drawer-panel.placeholder-mode{width:760px !important;max-width:calc(100vw - 40px) !important;height:auto !important;max-height:calc(100vh - 40px) !important;}
+  .drawer-panel.placeholder-mode .drawer-body{padding:18px !important;background:#f3f6f9;}
+  .drill-placeholder-page{min-height:380px;display:flex;align-items:center;justify-content:center;}
+  .drill-placeholder-box{width:100%;min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:2px dashed #cbd5df;border-radius:12px;background:#fff;padding:42px 28px;box-shadow:0 2px 8px rgba(13,34,56,.035);}
+  .drill-placeholder-icon{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#fff1e8;color:#fc4c02;font-size:28px;font-weight:800;margin-bottom:18px;}
+  .drill-placeholder-title{font-size:20px;font-weight:800;color:#172536;}
+  .drill-placeholder-desc{margin-top:9px;font-size:13px;color:#7d8b99;}
+  .drill-placeholder-tag{margin-top:18px;padding:5px 12px;border-radius:14px;background:#f1f4f7;color:#697887;font-size:11.5px;border:1px solid #e0e6ec;}
+
 </style>
 </head>
 <body>
@@ -441,10 +521,7 @@
       <span class="tabh" style="padding:8px 15px;border-radius:8px;font-size:13.5px;color:#7c899a;cursor:pointer;">异常区</span>
     </div>
     <div style="flex:1;"></div>
-    <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#16a34a;">
-      <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.6s infinite;"></span>
-      数据实时 <span class="num" style="color:#9aa6b6;">14:32:08</span>
-    </div>
+
   </div>
   <div class="filter-bar" style="display:flex;align-items:center;gap:12px;padding:10px 26px;border-top:1px solid #f0f3f7;background:#fafbfd;">
     <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;background:#fff;border:1px solid #e3e8ee;font-size:13px;cursor:pointer;">LAX H <span style="color:#9aa6b6;">▾</span></div>
@@ -459,13 +536,6 @@
       <span style="padding:7px 10px;border-radius:9px;background:#fff5d9;border:1px solid #ffe2ad;color:#6b4e10;">距本班次截单 <b class="num" style="color:#b3760a;font-weight:600;">2h18m</b></span>
     </div>
     <div style="flex:1;"></div>
-    <span style="font-size:12px;color:#9aa6b6;">概况班次</span>
-    <div class="seg">
-      <span class="on">全天</span>
-      <span class="disabled">早班</span>
-      <span class="disabled">中班</span>
-      <span class="disabled">晚班</span>
-    </div>
     <button style="background:#fc4c02;color:#fff;border:none;border-radius:9px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">查询</button>
   </div>
 </div>
@@ -502,7 +572,7 @@
         <div style="font-size:13px;color:#16202e;font-weight:600;">应分拣</div>
         <div style="margin-top:12px;">
           <span class="num dd" style="font-size:32px;font-weight:800;color:#b3760a;line-height:1;">42,000</span>
-          <span style="font-size:12px;color:#9aa6b6;margin-left:4px;">件</span>
+          <span style="font-size:12px;color:#9aa6b6;margin-left:4px;">票</span>
         </div>
       </div>
       <div class="chain-arrow"><div class="ar">→</div></div>
@@ -510,7 +580,7 @@
         <div style="font-size:13px;color:#16202e;font-weight:600;">待签出</div>
         <div style="margin-top:12px;">
           <span class="num dd" style="font-size:32px;font-weight:800;color:#b3760a;line-height:1;">108,909</span>
-          <span style="font-size:12px;color:#9aa6b6;margin-left:4px;">件</span>
+          <span style="font-size:12px;color:#9aa6b6;margin-left:4px;">票</span>
         </div>
       </div>
       <div class="chain-arrow"><div class="ar">→</div></div>
@@ -534,60 +604,60 @@
         <div style="font-size:17px;font-weight:700;">积压拆分 · 本班次 vs 历史</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <div class="backlog-item" data-current="6" data-history="10" data-unit="辆">
+        <div class="backlog-item" data-current="6" data-history="10" data-unit="辆" data-drawer="unload">
           <div class="backlog-top">
             <span class="backlog-title">已到未卸 <b class="num">16</b> 辆</span>
-            <span class="dd" data-drawer="unload" style="font-size:12px;">查看明细 ›</span>
-          </div>
-          <div class="split-values">
+            <div class="split-values">
             <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
             <span class="split-value-separator"></span>
             <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+            <span class="dd" data-drawer="unload" style="font-size:12px;">查看明细 ›</span>
           </div>
           <div class="split" aria-label="已到未卸积压拆分">
             <span class="split-segment now"><span class="bar-label"></span></span>
             <span class="split-segment old"><span class="bar-label"></span></span>
           </div>
         </div>
-        <div class="backlog-item" data-current="25000" data-history="17000" data-unit="件">
+        <div class="backlog-item" data-current="25000" data-history="17000" data-unit="票" data-drawer="presort">
           <div class="backlog-top">
-            <span class="backlog-title">应分拣 <b class="num">42,000</b> 件 <span class="hint">截单前必分</span></span>
-            <span class="dd" data-drawer="presort" style="font-size:12px;">查看明细 ›</span>
-          </div>
-          <div class="split-values">
+            <span class="backlog-title">应分拣 <b class="num">42,000</b> 票 <span class="hint">截单前必分</span></span>
+            <div class="split-values">
             <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
             <span class="split-value-separator"></span>
             <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+            <span class="dd" data-drawer="presort" style="font-size:12px;">查看明细 ›</span>
           </div>
           <div class="split" aria-label="应分拣积压拆分">
             <span class="split-segment now"><span class="bar-label"></span></span>
             <span class="split-segment old"><span class="bar-label"></span></span>
           </div>
         </div>
-        <div class="backlog-item" data-current="42000" data-history="18000" data-unit="件">
+        <div class="backlog-item" data-current="42000" data-history="18000" data-unit="票" data-drawer="waitsort">
           <div class="backlog-top">
-            <span class="backlog-title">待分拣 <b class="num">60,000</b> 件 <span class="hint">全部待分</span></span>
-            <span class="dd" data-drawer="presort" style="font-size:12px;">查看明细 ›</span>
-          </div>
-          <div class="split-values">
+            <span class="backlog-title">待分拣 <b class="num">60,000</b> 票 <span class="hint">全部待分</span></span>
+            <div class="split-values">
             <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
             <span class="split-value-separator"></span>
             <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+            <span class="dd" data-drawer="waitsort" style="font-size:12px;">查看明细 ›</span>
           </div>
           <div class="split" aria-label="待分拣积压拆分">
             <span class="split-segment now"><span class="bar-label"></span></span>
             <span class="split-segment old"><span class="bar-label"></span></span>
           </div>
         </div>
-        <div class="backlog-item" data-current="60000" data-history="48909" data-unit="件">
+        <div class="backlog-item" data-current="60000" data-history="48909" data-unit="票" data-drawer="toload">
           <div class="backlog-top">
-            <span class="backlog-title">待签出 <b class="num">108,909</b> 件</span>
-            <span class="dd" data-drawer="toload" style="font-size:12px;">查看明细 ›</span>
-          </div>
-          <div class="split-values">
+            <span class="backlog-title">待签出 <b class="num">108,909</b> 票</span>
+            <div class="split-values">
             <span class="split-value now"><span class="name">本班次</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
             <span class="split-value-separator"></span>
             <span class="split-value old"><span class="name">历史积压</span><b class="value num"></b><span class="unit"></span><span class="pct"></span></span>
+          </div>
+            <span class="dd" data-drawer="toload" style="font-size:12px;">查看明细 ›</span>
           </div>
           <div class="split" aria-label="待签出积压拆分">
             <span class="split-segment now"><span class="bar-label"></span></span>
@@ -597,11 +667,11 @@
       </div>
     </div>
 
-    <!-- FR-2 需要立刻关注 -->
+    <!-- FR-2 重点关注 -->
     <div class="panel risk-panel" style="flex:1;background:#fff;border:1px solid #f6cdc8;border-radius:14px;box-shadow:0 1px 2px rgba(16,32,64,.04);padding:16px 22px;">
       <div class="section-heading" style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
         <span style="width:4px;height:18px;border-radius:2px;background:#e5484d;"></span>
-        <div style="font-size:17px;font-weight:700;">需要立刻关注</div>
+        <div style="font-size:17px;font-weight:700;">重点关注</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
         <div class="aux-card status-danger" data-drawer="unload" style="border-color:#f3d2cf;">
@@ -610,7 +680,7 @@
         </div>
         <div class="aux-card status-warning" data-drawer="presort" style="border-color:#ffe2ad;">
           <div class="al" style="color:#b3760a;">应分拣</div>
-          <div class="av" style="color:#b3760a;"><span class="num dd">42,000</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
+          <div class="av" style="color:#b3760a;"><span class="num dd">42,000</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div>
         </div>
         <div class="aux-card status-warning" data-drawer="dispatch" style="border-color:#ffe2ad;">
           <div class="al" style="color:#b3760a;">发车预警</div>
@@ -629,33 +699,27 @@
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
       <div class="aux-card status-success" data-drawer="inbound">
         <div class="al">今日已入库</div>
-        <div class="av" style="color:#16a34a;"><span class="num dd">299,454</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
-        <div class="as">清关 52,528 · 中转 6,193 · 揽收 1,011</div>
+        <div class="av" style="color:#16a34a;"><span class="num dd">299,454</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div>
       </div>
-      <div class="aux-card status-warning" data-drawer="presort">
+      <div class="aux-card status-warning" data-drawer="waitsort">
         <div class="al">待分拣</div>
-        <div class="av" style="color:#b3760a;"><span class="num dd">59,977</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
-        <div class="as">来源：清关 52,528 · 中转 6,193 · 揽收 1,011</div>
+        <div class="av" style="color:#b3760a;"><span class="num dd">59,977</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div>
       </div>
       <div class="aux-card status-success" data-drawer="sorted">
         <div class="al">已分拣</div>
-        <div class="av" style="color:#16a34a;"><span class="num dd">234,024</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
-        <div class="as">待签出 108,909 · 已装未发 46,514 · 已装已发 78,601</div>
+        <div class="av" style="color:#16a34a;"><span class="num dd">234,024</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div>
       </div>
-      <div class="aux-card status-neutral" data-drawer="toload">
+      <div class="aux-card status-neutral" data-drawer="boxtransfer">
         <div class="al">箱中转</div>
-        <div class="av" style="color:#b3760a;"><span class="num dd">4,813</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
-        <div class="as">路区 57% · hub 38% · 服务渠道 5%</div>
+        <div class="av" style="color:#b3760a;"><span class="num dd">4,813</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div>
       </div>
-      <div class="aux-card status-success" data-drawer="dispatch">
+      <div class="aux-card status-success" data-drawer="todaysignout">
         <div class="al">今日签出</div>
-        <div class="av" style="color:#16a34a;"><span class="num dd">108,909</span><span style="font-size:11px;color:#9aa6b6;"> 件</span></div>
-        <div class="as">待发车 1 辆 · 今日计划发车 23 辆</div>
+        <div class="av" style="color:#16a34a;"><span class="num dd">108,909</span><span style="font-size:11px;color:#9aa6b6;"> 票</span></div>
       </div>
-      <div class="aux-card status-danger" data-drawer="abnormal" style="border-color:#f3d2cf;">
+      <div class="aux-card status-danger no-drill" style="border-color:#f3d2cf;" aria-disabled="true">
         <div class="al" style="color:#cf1322;">异常在库数</div>
-        <div class="av" style="color:#e5484d;"><span class="num dd">24,357</span><span style="font-size:11px;color:#bd7d7d;"> 件</span></div>
-        <div class="as">地址异常 9,820 · 面单破损 6,240</div>
+        <div class="av" style="color:#e5484d;"><span class="num">24,357</span><span style="font-size:11px;color:#bd7d7d;"> 票</span></div>
       </div>
     </div>
   </section>
@@ -668,11 +732,11 @@
         <div style="font-size:17px;font-weight:700;">全流程票数趋势</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <span id="trend-mode-tip" style="font-size:12px;color:#9aa6b6;">并列柱对比每小时处理节奏</span>
+        <span id="trend-mode-tip" style="font-size:12px;color:#9aa6b6;">三条折线对比每小时处理节奏</span>
         <div class="seg" id="seg-trend-mode"><span class="on" data-mode="hour">单小时</span><span data-mode="cum">累计</span></div>
       </div>
     </div>
-    <div id="chart-trend" role="img" aria-label="入库、分拣、装车全流程票数趋势合成图" style="width:100%;height:220px;"></div>
+    <div id="chart-trend" role="img" aria-label="入库、分拣、出库全流程票数趋势折线图" style="width:100%;height:220px;"></div>
   </section>
 
   <!-- 颜色规范图例 -->
@@ -685,7 +749,7 @@
       <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e5484d;margin-right:4px;"></span>重点关注</span>
       <span><span style="color:#fc4c02;text-decoration:underline;">下划线</span>＝可下钻</span>
     </div>
-    <span style="font-size:12px;color:#9aa6b6;">视觉优化版 v3 · 合成趋势图 · 保留原交互与下钻</span>
+    <span style="font-size:12px;color:#9aa6b6;">卡片下钻版 v2.05 · 各指标独立下钻界面</span>
   </footer>
 
 </main>
@@ -702,7 +766,7 @@
 </div>
 
 <script>
-// 全流程票数趋势 · 合成图
+// 全流程票数趋势 · 折线图
 (function(){
   var el=document.getElementById('chart-trend'); if(!el||typeof echarts==='undefined') return;
   var chart=echarts.init(el);
@@ -716,7 +780,7 @@
   var meta={
     inbound:{name:'入库',color:'#2f6bff'},
     sort:{name:'分拣',color:'#fc4c02'},
-    load:{name:'装车',color:'#16a34a'}
+    load:{name:'出库',color:'#16a34a'}
   };
   var state={mode:'hour'};
   function cum(a){var s=0;return a.map(function(v){s+=v;return s;});}
@@ -730,18 +794,18 @@
     if(!params||!params.length) return '';
     var values={};
     params.forEach(function(p){values[p.seriesName]=Number(p.value||0);});
-    var inbound=values['入库']||0, sort=values['分拣']||0, load=values['装车']||0;
+    var inbound=values['入库']||0, sort=values['分拣']||0, load=values['出库']||0;
     var prefix=state.mode==='cum'?'累计':'';
     var html='<div style="min-width:220px;font-size:12px;">'
       +'<div style="font-weight:700;margin-bottom:7px;color:#fff;">'+params[0].axisValue+'</div>';
-    ['入库','分拣','装车'].forEach(function(name){
+    ['入库','分拣','出库'].forEach(function(name){
       var color=name==='入库'?meta.inbound.color:(name==='分拣'?meta.sort.color:meta.load.color);
       html+='<div style="display:flex;justify-content:space-between;gap:28px;line-height:22px;">'
         +'<span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+color+';margin-right:7px;"></i>'+prefix+name+'</span>'
         +'<b style="font-family:IBM Plex Mono,monospace;">'+fmt(values[name])+' 票</b></div>';
     });
     html+=gapText(prefix+'入库未消化',inbound-sort);
-    html+=gapText(prefix+'分拣待装车',sort-load);
+    html+=gapText(prefix+'分拣待出库',sort-load);
     return html+'</div>';
   }
   function commonOption(){
@@ -752,17 +816,17 @@
       tooltip:{
         trigger:'axis',confine:true,backgroundColor:'rgba(22,32,46,.94)',borderWidth:0,
         padding:[10,12],textStyle:{color:'#fff',fontSize:12},extraCssText:'box-shadow:0 10px 26px rgba(16,32,64,.22);border-radius:9px;',
-        axisPointer:{type:state.mode==='hour'?'shadow':'line',lineStyle:{color:'#aab6c5'},shadowStyle:{color:'rgba(47,107,255,.045)'}},
+        axisPointer:{type:'line',lineStyle:{color:'#aab6c5'}},
         formatter:tooltipFormatter
       },
       legend:{
         top:0,left:'center',itemWidth:10,itemHeight:10,itemGap:28,icon:'roundRect',selectedMode:true,
         textStyle:{fontSize:12,color:'#64718a',padding:[0,0,0,3]},
-        data:['入库','分拣','装车']
+        data:['入库','分拣','出库']
       },
       grid:{left:58,right:28,top:42,bottom:30,containLabel:false},
       xAxis:{
-        type:'category',data:hours,boundaryGap:state.mode==='hour',
+        type:'category',data:hours,boundaryGap:false,
         axisLine:{lineStyle:{color:'#d6dde6'}},axisTick:{show:false},axisLabel:{color:'#8b98aa',fontSize:11}
       },
       yAxis:{
@@ -777,21 +841,21 @@
     var option=commonOption();
     if(state.mode==='hour'){
       option.series=[
-        {name:'入库',type:'bar',data:data.inbound,barMaxWidth:24,barGap:'18%',itemStyle:{color:meta.inbound.color,borderRadius:[4,4,0,0]},emphasis:{focus:'series'}},
-        {name:'分拣',type:'bar',data:data.sort,barMaxWidth:24,itemStyle:{color:meta.sort.color,borderRadius:[4,4,0,0]},emphasis:{focus:'series'}},
-        {name:'装车',type:'bar',data:data.load,barMaxWidth:24,itemStyle:{color:meta.load.color,borderRadius:[4,4,0,0]},emphasis:{focus:'series'}}
+        {name:'入库',type:'line',data:data.inbound,smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.inbound.color},itemStyle:{color:meta.inbound.color},emphasis:{focus:'series'}},
+        {name:'分拣',type:'line',data:data.sort,smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.sort.color},itemStyle:{color:meta.sort.color},emphasis:{focus:'series'}},
+        {name:'出库',type:'line',data:data.load,smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.load.color},itemStyle:{color:meta.load.color},emphasis:{focus:'series'}}
       ];
     }else{
       option.series=[
         {name:'入库',type:'line',data:cum(data.inbound),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.inbound.color},itemStyle:{color:meta.inbound.color},emphasis:{focus:'series'}},
         {name:'分拣',type:'line',data:cum(data.sort),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.sort.color},itemStyle:{color:meta.sort.color},emphasis:{focus:'series'}},
-        {name:'装车',type:'line',data:cum(data.load),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.load.color},itemStyle:{color:meta.load.color},emphasis:{focus:'series'}}
+        {name:'出库',type:'line',data:cum(data.load),smooth:.25,showSymbol:false,symbol:'circle',symbolSize:6,lineStyle:{width:2.6,color:meta.load.color},itemStyle:{color:meta.load.color},emphasis:{focus:'series'}}
       ];
     }
     return option;
   }
   function render(){
-    if(modeTip) modeTip.textContent=state.mode==='hour'?'并列柱对比每小时处理节奏':'三条折线对比全流程累计进度';
+    if(modeTip) modeTip.textContent=state.mode==='hour'?'三条折线对比每小时处理节奏':'三条折线对比全流程累计进度';
     chart.setOption(build(),true);
   }
   render();
@@ -811,8 +875,9 @@
   var backdrop=document.getElementById('drawer-backdrop');
   var title=document.getElementById('drawer-title');
   var body=document.getElementById('drawer-body');
+  var panel=document.getElementById('drawer-panel');
   var closeBtn=document.getElementById('drawer-close');
-  function closeDrawer(){backdrop.classList.remove('on');document.body.style.overflow='';}
+  function closeDrawer(){backdrop.classList.remove('on');panel.classList.remove('placeholder-mode');document.body.style.overflow='';}
   closeBtn.addEventListener('click',closeDrawer);
   backdrop.addEventListener('click',function(e){if(e.target===backdrop)closeDrawer();});
 
@@ -845,17 +910,147 @@
     return head+b+foot+'</tbody></table></div></div>';
   }
 
+  function rawValue(v){
+    if(v===null||v===undefined) return '';
+    if(typeof v==='number') return v.toLocaleString('zh-CN');
+    return String(v);
+  }
+  function drillKpi(label,value,unit,tone,sub){
+    return '<div class="drill-kpi '+(tone||'')+'"><div class="drill-kpi-label">'+label+'</div>'
+      +'<div class="drill-kpi-value num">'+rawValue(value)+'<span class="unit">'+(unit||'')+'</span></div>'
+      +'<div class="drill-kpi-sub">'+(sub||'')+'</div></div>';
+  }
+  function drillMini(name,value,badge,meta1,meta2){
+    return '<div class="drill-mini"><div class="drill-mini-head"><span>'+name+'</span><span class="drill-mini-badge">'+(badge||'')+'</span></div>'
+      +'<div class="drill-mini-value num">'+rawValue(value)+'</div>'
+      +'<div class="drill-mini-meta"><span>'+meta1+'</span><span>'+meta2+'</span></div></div>';
+  }
+  function drillState(text,tone){return '<span class="drill-state '+(tone||'info')+'">'+text+'</span>';}
+  function drillTable(sectionTitle,note,headers,rows){
+    var h='<div class="drill-section-card drill-table"><div class="drill-section-head"><div class="drill-section-title">'+sectionTitle+'</div><div class="drill-section-note">'+(note||'')+'</div></div>'
+      +'<div class="scroll"><table><thead><tr>'+headers.map(function(x){return '<th>'+x+'</th>';}).join('')+'</tr></thead><tbody>';
+    var b=rows.map(function(row){return '<tr>'+row.map(function(v,i){return '<td'+(i===0?' class="key-col"':'')+'>'+rawValue(v)+'</td>';}).join('')+'</tr>';}).join('');
+    return h+b+'</tbody></table></div></div>';
+  }
+  function drillPage(cfg){
+    var kpis=cfg.kpis.map(function(x){return drillKpi(x[0],x[1],x[2],x[3],x[4]);}).join('');
+    var minis=(cfg.minis||[]).map(function(x){return drillMini(x[0],x[1],x[2],x[3],x[4]);}).join('');
+    var filters=cfg.filters&&cfg.filters.length?'<div class="drill-section-card drill-filter-card">'+filterBar(cfg.filters)+'</div>':'';
+    var table=drillTable(cfg.tableTitle||'明细列表',cfg.tableNote||'',cfg.headers||[],cfg.rows||[]);
+    return '<div class="drill-page">'
+      +'<div class="drill-banner"><div class="drill-banner-main"><div class="drill-breadcrumb">概览看板 / '+cfg.area+' / 指标下钻</div><div class="drill-banner-title">'+cfg.title+'</div><div class="drill-banner-desc">'+cfg.desc+'</div></div><div class="drill-status">'+cfg.status+'</div></div>'
+      +'<div class="drill-kpis">'+kpis+'</div>'
+      +(minis?'<div class="drill-card-grid">'+minis+'</div>':'')+filters+table+'</div>';
+  }
+
+  function placeholderPage(cfg){
+    return '<div class="drill-placeholder-page"><div class="drill-placeholder-box">'
+      +'<div class="drill-placeholder-icon">◇</div>'
+      +'<div class="drill-placeholder-title">'+cfg.title+'下钻页面</div>'
+      +'<div class="drill-placeholder-tag">占位符</div>'
+      +'</div></div>';
+  }
+
+  function inboundDetailPage(){
+    return '<div class="simple-detail-page"><div class="simple-detail-card">'
+      +'<div class="simple-detail-head"><div class="simple-detail-title">运单明细</div><div class="simple-detail-note">今日已入库仅展示运单明细</div></div>'
+      +'<div class="scroll"><table><thead><tr><th>运单号</th><th>入库时间</th><th>来源</th><th>目的地</th><th>状态</th></tr></thead>'
+      +'<tbody><tr><td class="simple-empty-row" colspan="5">运单明细占位</td></tr></tbody></table></div>'
+      +'</div></div>';
+  }
+
+  function routePlaceholder(target){
+    return '<div class="simple-route-page"><div class="simple-route-box">'
+      +'<div class="simple-route-label">点击后跳转至</div>'
+      +'<div class="simple-route-target"><span class="simple-route-arrow">→</span>'+target+'</div>'
+      +'</div></div>';
+  }
+
+  function todaySignoutPage(){
+    return '<div class="simple-detail-page">'
+      +'<div class="simple-detail-card"><div class="dbar" style="margin-bottom:0;">'
+      +'<div class="dfilters"><div class="fld"><label>一站</label><select><option>请选择</option></select></div></div>'
+      +'<div style="display:flex;gap:8px;"><button class="dquery">查询</button><button class="dreset">重置</button></div>'
+      +'</div></div>'
+      +'<div class="simple-detail-card"><div class="simple-detail-head"><div class="simple-detail-title">今日签出明细</div></div>'
+      +'<div class="scroll"><table><thead><tr><th>下一站类型</th><th>下一站</th><th>运单数</th><th>袋数</th></tr></thead>'
+      +'<tbody><tr><td class="simple-empty-row" colspan="4">明细数据占位</td></tr></tbody></table></div>'
+      +'</div></div>';
+  }
+
+  function targetDrill(type){
+    var map={
+      eta:{title:'预计到车',area:'卸车区'},
+      unload:{title:'已到未卸',area:'卸车区'},
+      presort:{title:'应分拣',area:'分拣区'},
+      toload:{title:'待签出',area:'装车区'},
+      dispatch:{title:'待驶出电子围栏',area:'装车区'}
+    };
+    return map[type]||null;
+  }
+
   function openDrawer(type){
     var t='',content='';
+    panel.classList.remove('placeholder-mode');
+    if(type==='inbound'){
+      t='今日已入库';
+      content=placeholderPage({title:'分拣区 - 待分拣'});
+      panel.classList.add('placeholder-mode');
+      title.textContent=t;body.innerHTML=content;
+      backdrop.classList.add('on');document.body.style.overflow='hidden';
+      return;
+    }
+    if(type==='waitsort'){
+      t='待分拣';
+      content=routePlaceholder('分拣区 - 待分拣下钻页面');
+      panel.classList.add('placeholder-mode');
+      title.textContent=t;body.innerHTML=content;
+      backdrop.classList.add('on');document.body.style.overflow='hidden';
+      return;
+    }
+    if(type==='sorted'){
+      t='已分拣';
+      content=routePlaceholder('分拣区 - 已分拣下钻页面');
+      panel.classList.add('placeholder-mode');
+      title.textContent=t;body.innerHTML=content;
+      backdrop.classList.add('on');document.body.style.overflow='hidden';
+      return;
+    }
+    if(type==='boxtransfer'){
+      t='箱中转';
+      content=placeholderPage({title:'箱中转'});
+      panel.classList.add('placeholder-mode');
+      title.textContent=t;body.innerHTML=content;
+      backdrop.classList.add('on');document.body.style.overflow='hidden';
+      return;
+    }
+    if(type==='todaysignout'){
+      t='今日签出';
+      content=placeholderPage({title:'今日签出'});
+      panel.classList.add('placeholder-mode');
+      title.textContent=t;body.innerHTML=content;
+      backdrop.classList.add('on');document.body.style.overflow='hidden';
+      return;
+    }
+    var target=targetDrill(type);
+    if(target){
+      t='查看明细 - '+target.title;
+      content=placeholderPage(target);
+      panel.classList.add('placeholder-mode');
+      title.textContent=t;body.innerHTML=content;
+      backdrop.classList.add('on');document.body.style.overflow='hidden';
+      return;
+    }
+    panel.classList.remove('placeholder-mode');
     if(type==='riskall'){
-      t='需要立刻关注 · 风险汇总';
+      t='重点关注 · 风险汇总';
       content='<div class="drawer-stats">'
         +'<div class="drawer-stat"><div class="l">超时未到</div><div class="v" style="color:#e5484d;">4<span class="u">辆</span></div></div>'
         +'<div class="drawer-stat"><div class="l">预计最晚到车</div><div class="v" style="color:#e0921a;">2<span class="u">辆</span></div></div>'
         +'<div class="drawer-stat"><div class="l">距截单剩余</div><div class="v">2h18m</div></div>'
-        +'<div class="drawer-stat"><div class="l">异常在库</div><div class="v" style="color:#e5484d;">24,357<span class="u">件</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">异常在库</div><div class="v" style="color:#e5484d;">24,357<span class="u">票</span></div></div>'
         +'</div>'
-        +'<div class="drawer-section"><h4>建议操作</h4><div class="drawer-sub">1. 优先安排已到未卸 16 辆车的卸车；2. 跟进超时未到 4 辆车；3. 加速待分拣 59,977 件处理。</div></div>';
+        +'<div class="drawer-section"><h4>建议操作</h4><div class="drawer-sub">1. 优先安排已到未卸 16 辆车的卸车；2. 跟进超时未到 4 辆车；3. 加速待分拣 59,977 票处理。</div></div>';
     } else if(type==='overdue'||type==='eta'){
       t='查看明细-超时未到 / 异常未到';
       content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')],['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']])
@@ -895,8 +1090,8 @@
       t='查看明细-入库';
       content=expBar()
         +'<div class="drawer-stats">'
-          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#16a34a;">234,454<span class="u">件</span></div></div>'
-          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#b3760a;">65,000<span class="u">件</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#16a34a;">234,454<span class="u">票</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#b3760a;">65,000<span class="u">票</span></div></div>'
         +'</div>'
         +statTable('时间分布',['运单数','袋数'],[
           ['合计',299454,8200],
@@ -909,8 +1104,8 @@
       t='查看明细-待分拣';
       content=filterBar([['来源',selHtml('请选择')],['流向',selHtml('请选择')]])
         +'<div class="drawer-stats">'
-          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#b3760a;">42,000<span class="u">件</span></div></div>'
-          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#b3760a;">17,977<span class="u">件</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#b3760a;">42,000<span class="u">票</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#b3760a;">17,977<span class="u">票</span></div></div>'
         +'</div>'
         +statTable('来源',['运单数','占比'],[
           ['合计',59977,'100%'],
@@ -924,8 +1119,8 @@
       t='查看明细-已分拣';
       content=filterBar([['装发车状态',selHtml('请选择')],['流向',selHtml('请选择')]])
         +'<div class="drawer-stats">'
-          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#16a34a;">180,024<span class="u">件</span></div></div>'
-          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#16a34a;">54,000<span class="u">件</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#16a34a;">180,024<span class="u">票</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#16a34a;">54,000<span class="u">票</span></div></div>'
         +'</div>'
         +statTable('装发车状态',['运单数','占比'],[
           ['合计',234024,'100%'],
@@ -937,8 +1132,8 @@
       t='查看明细-箱中转';
       content=filterBar([['流向',selHtml('请选择')]])
         +'<div class="drawer-stats">'
-          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#b3760a;">3,500<span class="u">件</span></div></div>'
-          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#b3760a;">1,313<span class="u">件</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">今日</div><div class="v" style="color:#b3760a;">3,500<span class="u">票</span></div></div>'
+          +'<div class="drawer-stat"><div class="l">历史留仓</div><div class="v" style="color:#b3760a;">1,313<span class="u">票</span></div></div>'
         +'</div>'
         +statTable('流向',['运单数','占比'],[
           ['合计',4813,'100%'],
@@ -956,7 +1151,7 @@
     } else if(type==='abnormal'){
       t='查看明细-异常在库库存';
       content=filterBar([['异常类型',selHtml('请选择')],['流向',selHtml('请选择')]])
-        +statTable('异常类型',['件数','占比'],[
+        +statTable('异常类型',['票数','占比'],[
           ['合计',24357,'100%'],
           ['地址异常',9820,'40.3%'],
           ['面单破损 / 无法识别',6240,'25.6%'],
@@ -966,7 +1161,7 @@
         +'<div class="drawer-section"><div class="drawer-sub">异常库存需客服介入处理，拆分口径与"待交接 / 待处理"待研发提供。</div></div>';
     } else if(type==='boxtransfer'){
       t='查看明细-箱中转';
-      content=statTable('状态',['件数','占比'],[
+      content=statTable('状态',['票数','占比'],[
         ['合计',4813,'100%'],
         ['待签出',1031,'21.4%'],
         ['已装未发',1135,'23.6%'],
@@ -997,7 +1192,7 @@
     var d=new Date(); clock.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
   }
   tick(); setInterval(tick,1000);
-  document.querySelectorAll('.chain-node,.aux-card,[data-drawer]').forEach(function(el){
+  document.querySelectorAll('[data-drawer]').forEach(function(el){
     if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
     el.addEventListener('keydown',function(e){
       if((e.key==='Enter'||e.key===' ') && this.getAttribute('data-drawer')){
@@ -1057,7 +1252,7 @@
   items.forEach(function(item){
     var current=Number(item.dataset.current||0);
     var history=Number(item.dataset.history||0);
-    var unit=item.dataset.unit||'件';
+    var unit=item.dataset.unit||'票';
     var total=current+history;
     var currentPct=total?current/total*100:0;
     var historyPct=total?history/total*100:0;
