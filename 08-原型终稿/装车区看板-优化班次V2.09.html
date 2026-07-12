@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中心看板 · 装车区（独立版）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{--gofo-primary:#fc4c02;--gofo-primary-hover:#f76121;--gofo-primary-active:#e84702;--gofo-primary-light:#fff1e6;--gofo-header-bg:#001529;--gofo-page-bg:#f0f2f5;--gofo-accent:#fc4c02;--gofo-accent-soft:#fff1e6;}
+  body{font-family:"Roboto","PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#16202e;}
+  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-0.4px;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes pnIn{from{opacity:0;transform:scale(.97) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  .tabh{transition:color .15s;}
+  .tabh:hover{color:#fff!important;}
+  .kpi{transition:box-shadow .15s,transform .15s;}
+  .kpi:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .rowhover:hover{background:#fafafa!important;}
+  .abn:hover{background:#fff!important;border-color:#f3c0bc!important;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,140,170,.3);border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  /* 预警条 */
+  .alert-bar{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff5f4,#fff);border:1px solid #f6cdc8;border-left:4px solid #e5484d;border-radius:8px;padding:14px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .alert-bar .ico{font-size:20px;}
+  .alert-bar .tx{flex:1;font-size:14px;color:#5b1a16;}
+  .alert-bar .tx b{color:#cf1322;}
+  .alert-bar .act{background:#e5484d;color:#fff;border:none;border-radius:2px;padding:8px 16px;cursor:pointer;font-size:13px;white-space:nowrap;font-weight:600;font-family:inherit;}
+  /* 链节点 */
+  .chain-node{flex:1;border-radius:8px;padding:14px 17px;border:1px solid #f0f0f0;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .chain-node:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .chain-node.core{border-color:#f3d2cf;background:#fff;}
+  .chain-node.done{border-color:#d6efe3;background:linear-gradient(135deg,#f4fbf8,#fff);}
+  .chain-arrow{flex:0 0 60px;text-align:center;color:#c2cbd6;font-size:12px;}
+  .chain-arrow .ar{font-size:20px;line-height:1;margin-top:2px;}
+  /* 辅助卡 */
+  .aux-card{border-radius:8px;padding:14px 17px;background:#fff;border:1px solid #f0f0f0;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .aux-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .aux-card .al{font-size:12px;color:#64718a;font-weight:600;}
+  .aux-card .av{font-size:24px;font-weight:700;margin-top:6px;}
+  .aux-card .as{font-size:11px;color:#9aa6b6;margin-top:5px;line-height:1.4;}
+  /* seg */
+  .seg{display:inline-flex;border:1px solid #d6dde6;border-radius:9px;overflow:hidden;font-size:12.5px;background:#fff;}
+  .seg span{padding:7px 12px;cursor:pointer;color:#64718a;}
+  .seg .on{background:var(--gofo-accent-soft,#fff1e6);color:var(--gofo-accent,#fc4c02);font-weight:500;}
+  .seg .disabled{color:#c0c4cc;cursor:not-allowed;pointer-events:none;}
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+  th,td{padding:9px 12px;text-align:right;border-bottom:1px solid #f0f0f0;white-space:nowrap;}
+  th:first-child,td:first-child{text-align:left;}
+  thead th{color:#64718a;font-weight:600;border-bottom:2px solid #f0f0f0;background:#fafbfd;font-family:'Roboto',sans-serif;}
+  .tot{font-weight:700;}
+  .key-col{font-weight:700;color:#16202e;}
+  .scroll{overflow-x:auto;}
+  .numlink{color:#e5484d;cursor:pointer;}
+  .numlink:hover{text-decoration:underline;}
+  .mtlink{color:var(--gofo-accent,#fc4c02);cursor:pointer;}
+  .dd{color:var(--gofo-accent,#fc4c02);cursor:pointer;}
+  /* 徽标 */
+  .lbadge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:8px;font-weight:600;}
+  .lb-trunk{background:#fff1e6;color:#fc4c02;}
+  .lb-branch{background:#eef7f0;color:#3a9d5d;}
+  .stsplit{font-size:11px;color:#9aa6b6;margin-top:3px;}
+  /* 分期标签 */
+  .ph{font-size:11px;padding:1px 7px;border-radius:8px;margin-left:6px;vertical-align:middle;font-weight:600;}
+  .ph1{background:#e7f7f0;color:#1a8c63;}
+  .ph2{background:#fff4e0;color:#b3760a;}
+  .warnflag{font-size:11px;background:#fff4e0;color:#b3760a;padding:1px 6px;border-radius:8px;}
+  /* 下钻 */
+  .dbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+  .dexport{background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dquery{background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dreset{background:#fff;color:#64718a;border:1px solid #d6dde6;border-radius:2px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dreset:hover{background:#f5f6f8;}
+  .dfilters{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
+  .dfilters .fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#64718a;}
+  .dfilters select,.dfilters input{border:1px solid #d6dde6;border-radius:2px;padding:6px 10px;font-size:12px;min-width:170px;background:#fff;color:#64718a;font-family:inherit;}
+  .dpager{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;font-size:12px;color:#64718a;}
+  .dpager select,.dpager input{border:1px solid #d6dde6;border-radius:6px;padding:4px 6px;font-size:12px;color:#64718a;font-family:inherit;background:#fff;}
+  .dpager input{width:46px;text-align:center;}
+  .dpager button{border:1px solid #d6dde6;background:#fff;color:#64718a;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;font-size:12px;}
+  .dpager button:disabled{opacity:.45;cursor:default;}
+  .dpager .pg-no.on{background:#fc4c02;color:#fff;border-color:#fc4c02;}
+  .dpager .pg-step{border:none;background:transparent;color:#9aa6b6;font-size:16px;padding:0 4px;}
+  .dpager .pg-step:disabled{color:#d6dde6;}
+  /* 抽屉层级 */
+  .drawer-stack{position:fixed;inset:0;pointer-events:none;z-index:1000;}
+  .drawer-layer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:30px;pointer-events:auto;}
+  .drawer-layer.on{display:flex;}
+  .drawer-layer .drawer-backdrop{position:absolute;inset:0;background:rgba(12,20,32,.4);backdrop-filter:blur(3px);}
+  .drawer-layer.level-2 .drawer-backdrop{background:rgba(12,20,32,.28);backdrop-filter:blur(2px);}
+  .drawer-layer.level-3 .drawer-backdrop{background:rgba(12,20,32,.16);backdrop-filter:blur(1px);}
+  .drawer-panel{position:relative;width:880px;max-width:94vw;max-height:86vh;background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 30px 80px rgba(12,20,32,.28);overflow:hidden;animation:pnIn .22s ease;display:flex;flex-direction:column;}
+  .drawer-layer.level-2 .drawer-panel{width:820px;max-width:90vw;max-height:82vh;box-shadow:0 20px 60px rgba(12,20,32,.22);}
+  .drawer-layer.level-3 .drawer-panel{width:760px;max-width:86vw;max-height:78vh;box-shadow:0 14px 40px rgba(12,20,32,.16);}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #f0f0f0;flex:0 0 auto;}
+  .drawer-head h3{font-size:15.5px;margin:0;font-weight:600;}
+  .drawer-head .drawer-close{width:30px;height:30px;border-radius:2px;border:1px solid #e3e8ee;background:#f7f9fc;cursor:pointer;font-size:15px;color:#64718a;}
+  .drawer-head .drawer-close:hover{background:#f0f0f0;color:#16202e;}
+  .drawer-body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .drawer-body .drawer-stats{display:flex;gap:16px;margin-bottom:16px;}
+  .drawer-body .drawer-stat{flex:1;background:#fafbfd;border:1px solid #f0f0f0;border-radius:8px;padding:12px 16px;text-align:center;}
+  .drawer-body .drawer-stat .l{font-size:12px;color:#9aa6b6;margin-bottom:4px;}
+  .drawer-body .drawer-stat .v{font-size:20px;font-weight:800;color:#16202e;}
+  .drawer-body .drawer-stat .v .u{font-size:12px;color:#9aa6b6;font-weight:normal;}
+  .drawer-body .drawer-section{margin-bottom:20px;}
+  .drawer-body .drawer-section h4{font-size:13px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;}
+  .drawer-body .drawer-sub{font-size:12px;color:#9aa6b6;margin-bottom:6px;}
+  .drawer-tabs{display:flex;gap:0;border-bottom:2px solid #f0f0f0;margin-bottom:16px;}
+  .drawer-tabs .dt{flex:1;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9aa6b6;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;}
+  .drawer-tabs .dt.on{color:#fc4c02;border-bottom-color:#fc4c02;}
+  .drawer-tab-panel{display:none;}
+  .drawer-tab-panel.on{display:block;}
+  /* 信息提示条 */
+  .info2{display:flex;align-items:center;gap:10px;background:#fff8eb;border:1px solid #ffe2ad;border-left:4px solid #f5a623;border-radius:8px;padding:10px 14px;margin-bottom:14px;}
+  .info2 .ico{font-size:18px;line-height:1;}
+  .info2 .tx{flex:1;font-size:13px;color:#6b4e10;}
+  .info2 .tx b{color:#b3760a;}
+
+
+  /* ===== UI 优化版覆盖样式 ===== */
+  :root{
+    --brand:#fc4c02;
+    --brand-dark:#d93f00;
+    --brand-soft:#fff4ed;
+    --ink:#172033;
+    --muted:#667085;
+    --muted-2:#98a2b3;
+    --line:#e7eaf0;
+    --surface:#ffffff;
+    --surface-2:#f8fafc;
+    --page:#f3f5f8;
+    --success:#12a36d;
+    --success-soft:#ecfdf5;
+    --warning:#d97706;
+    --warning-soft:#fff7e6;
+    --danger:#dc3545;
+    --danger-soft:#fff1f2;
+    --info:#2563eb;
+    --info-soft:#eff6ff;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.04),0 1px 4px rgba(16,24,40,.03);
+    --shadow-md:0 10px 30px rgba(16,24,40,.08);
+  }
+  html{background:var(--page);}
+  body{background:var(--page);color:var(--ink);min-width:1080px;}
+  button,select,input{outline:none;}
+  button{transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease;}
+  button:active{transform:translateY(1px);}
+
+  .app-header{position:sticky;top:0;z-index:30;background:#111827;box-shadow:0 8px 24px rgba(15,23,42,.12);}
+  .topbar{height:58px;display:flex;align-items:center;gap:24px;padding:0 28px;background:linear-gradient(110deg,#111827 0%,#162033 55%,#111827 100%);}
+  .brand{display:flex;align-items:center;gap:11px;white-space:nowrap;}
+  .brand-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#ff6b2c,var(--brand));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;box-shadow:0 6px 16px rgba(252,76,2,.28);}
+  .brand-name{font-size:15px;font-weight:700;letter-spacing:.3px;color:#fff;}
+  .nav-tabs{display:flex;align-items:center;gap:4px;}
+  .nav-tabs span{position:relative;padding:9px 14px;border-radius:8px;font-size:13.5px;color:#94a3b8;cursor:pointer;transition:all .15s ease;}
+  .nav-tabs span:hover{color:#fff!important;background:rgba(255,255,255,.07);}
+  .nav-tabs .active{font-weight:700;color:#fff;background:rgba(252,76,2,.16);box-shadow:inset 0 0 0 1px rgba(252,76,2,.3);}
+  .nav-tabs .active:after{content:"";position:absolute;left:14px;right:14px;bottom:-8px;height:2px;background:var(--brand);border-radius:2px;}
+  .realtime{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#d0d5dd;white-space:nowrap;}
+  .realtime-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.12);animation:pulse 1.6s infinite;}
+  .realtime .num{color:#fff;font-weight:600;}
+
+  .filterbar{display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 28px;background:rgba(255,255,255,.98);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02);}
+  .filter-control,.cutoff-chip{height:38px;display:flex;align-items:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:12.5px;color:var(--muted);white-space:nowrap;box-shadow:0 1px 2px rgba(16,24,40,.02);}
+  .filter-control strong,.cutoff-chip strong{color:var(--ink);font-weight:650;}
+  .filter-control.site{font-size:13px;color:var(--ink);font-weight:700;cursor:pointer;min-width:82px;justify-content:space-between;}
+  .filter-label{font-size:11px;color:var(--muted-2);}
+  .day-switch{display:inline-flex;height:38px;padding:3px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);}
+  .day-switch span{display:flex;align-items:center;padding:0 13px;border-radius:7px;font-size:12.5px;color:var(--muted);cursor:pointer;}
+  .day-switch .on{background:#fff;color:var(--brand);font-weight:700;box-shadow:0 1px 4px rgba(16,24,40,.09);}
+  .cutoff-group{display:flex;gap:8px;}
+  .cutoff-chip strong{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+  .cutoff-chip.urgent{background:var(--warning-soft);border-color:#fed7aa;color:#9a6700;}
+  .cutoff-chip.urgent strong{color:#b45309;}
+  .filter-spacer{flex:1;min-width:8px;}
+  .shift-label{font-size:12px;color:var(--muted-2);white-space:nowrap;}
+  .filterbar .seg{height:38px;padding:3px;border-color:var(--line);border-radius:9px;background:var(--surface-2);}
+  .filterbar .seg span{display:flex;align-items:center;padding:0 11px;border-radius:7px;}
+  .filterbar .seg .on{background:#fff;color:var(--brand);box-shadow:0 1px 4px rgba(16,24,40,.08);font-weight:700;}
+  .query-btn{height:38px;padding:0 20px;border:0;border-radius:8px;background:linear-gradient(135deg,#ff6b2c,var(--brand));color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(252,76,2,.2);}
+  .query-btn:hover{box-shadow:0 8px 20px rgba(252,76,2,.28);transform:translateY(-1px);}
+
+  .dashboard-shell{max-width:1800px;margin:0 auto;padding:20px 28px 48px;display:flex;flex-direction:column;gap:16px;}
+  .page-intro{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:2px 2px 0;}
+  .page-intro h1{font-size:22px;line-height:1.3;font-weight:760;color:var(--ink);letter-spacing:-.3px;}
+  .page-intro p{margin-top:5px;font-size:12.5px;color:var(--muted);}
+
+  .panel{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:var(--shadow-sm)!important;padding:18px 20px!important;}
+  .panel:hover{box-shadow:0 6px 22px rgba(16,24,40,.06)!important;}
+  .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;}
+  .panel-title{display:flex;align-items:flex-start;gap:10px;}
+  .panel-title:before{content:"";width:4px;height:20px;margin-top:1px;border-radius:999px;background:linear-gradient(180deg,#ff7b3d,var(--brand));box-shadow:0 0 0 4px var(--brand-soft);}
+  .panel-title.alert:before{background:var(--danger);box-shadow:0 0 0 4px var(--danger-soft);}
+  .panel-title h2{font-size:16px;line-height:1.3;font-weight:750;color:var(--ink);}
+  .panel-title p{margin-top:4px;font-size:11.5px;color:var(--muted-2);font-weight:400;}
+  .panel-tools{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;}
+
+  .pipeline{display:grid;grid-template-columns:minmax(0,1fr) 74px minmax(0,1fr) 74px minmax(0,1fr);align-items:stretch;gap:0;}
+  .chain-node{position:relative;min-height:118px;border-radius:11px!important;padding:16px 18px!important;border:1px solid var(--line)!important;background:linear-gradient(180deg,#fff,#fbfcfe)!important;box-shadow:none!important;overflow:hidden;}
+  .chain-node:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#cbd5e1;}
+  .chain-node:hover{border-color:#ffd2bf!important;box-shadow:0 10px 24px rgba(16,24,40,.08)!important;transform:translateY(-2px);}
+  .chain-node.core:before{background:var(--danger);}
+  .chain-node.loading:before{background:var(--brand);}
+  .chain-node.done:before{background:var(--success);}
+  .chain-node .node-label{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink);}
+  .chain-node .node-label .status-dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1;}
+  .chain-node.core .node-label .status-dot{background:var(--danger);box-shadow:0 0 0 4px var(--danger-soft);}
+  .chain-node.loading .node-label .status-dot{background:var(--brand);box-shadow:0 0 0 4px var(--brand-soft);}
+  .node-value{margin-top:12px;display:flex;align-items:baseline;gap:5px;}
+  .node-value .num{font-size:30px!important;font-weight:780!important;line-height:1;color:var(--ink)!important;}
+  .node-value .unit{font-size:11px;color:var(--muted-2)!important;}
+  .node-sub{margin-top:10px;font-size:11.5px!important;color:var(--muted)!important;}
+  /* 装车中指标卡 */
+  .chain-node.loading-card{padding:0!important;display:block!important;min-height:132px!important;background:#fff!important;}
+  .loading-card-head{height:42px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);font-size:13px;font-weight:750;color:var(--ink);}
+  .loading-card-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:15px 0 14px;}
+  .loading-metric{position:relative;padding:0 15px;min-width:0;}
+  .loading-metric+.loading-metric:before{content:"";position:absolute;left:0;top:8px;width:1px;height:34px;background:var(--line);}
+  .loading-metric-label{font-size:11.5px;font-weight:650;color:var(--muted);white-space:nowrap;}
+  .loading-metric-value{margin-top:8px;display:flex;align-items:baseline;gap:5px;white-space:nowrap;}
+  .loading-metric-value .num{font-size:27px;font-weight:780;line-height:1;color:var(--ink);}
+  .loading-metric-value .unit{font-size:11px;color:var(--muted-2);}
+  .loading-metric.clickable{cursor:pointer;border-radius:8px;transition:background .15s ease;}
+  .loading-metric.clickable:hover{background:var(--brand-soft);}
+  .loading-metric.clickable:hover .num,.loading-metric.clickable:hover .loading-metric-label{color:var(--brand);}
+  .loading-metric.clickable .num{text-decoration:underline;text-decoration-color:rgba(252,76,2,.35);text-underline-offset:3px;}
+  .drawer-panel.loading-detail-panel{width:1240px;max-width:97vw;}
+  .loading-overview-card{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  .loading-overview-card .loading-card-head{height:46px;padding:0 18px;font-size:14px;}
+  .loading-overview-card .loading-card-metrics{padding:18px 0;}
+  .loading-overview-card .loading-metric{padding:0 18px;}
+  .datetime-input{min-width:205px!important;}
+  .chain-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:0 0 auto!important;color:var(--muted-2)!important;font-size:11px!important;}
+  .chain-arrow .ar{width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin:0!important;border:1px solid var(--line);border-radius:50%;background:var(--surface-2);font-size:18px!important;color:#94a3b8;}
+  .aux-toggle-wrap{margin-top:13px;display:flex;justify-content:center;}
+  #aux-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-size:11.5px!important;font-weight:650;color:var(--muted)!important;text-decoration:none;}
+  #aux-toggle:hover{color:var(--brand)!important;border-color:#ffd2bf;background:var(--brand-soft);}
+  #aux-cards{margin-top:12px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;}
+
+  .content-split{display:grid!important;grid-template-columns:minmax(0,1fr) 360px;gap:16px!important;align-items:stretch!important;}
+  .flow-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;}
+  .aux-card{position:relative;border-radius:10px!important;padding:14px 16px!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important;overflow:hidden;}
+  .aux-card:after{content:"›";position:absolute;right:14px;top:14px;color:#cbd5e1;font-size:18px;transition:transform .15s,color .15s;}
+  .aux-card:hover{border-color:#ffd2bf!important;box-shadow:0 8px 20px rgba(16,24,40,.07)!important;transform:translateY(-2px);}
+  .aux-card:hover:after{color:var(--brand);transform:translateX(2px);}
+  .aux-card .al{font-size:12px!important;color:var(--muted)!important;font-weight:650!important;}
+  .aux-card .av{font-size:24px!important;font-weight:760!important;color:var(--ink);margin-top:9px!important;}
+  .aux-card .av .dd{color:var(--ink)!important;text-decoration:none;}
+  .aux-card .as{font-size:11.5px!important;color:var(--muted-2)!important;margin-top:7px!important;line-height:1.5!important;}
+  .aux-card .as.dd{color:var(--brand)!important;font-weight:650;}
+  .flow-grid .aux-card:first-child{background:linear-gradient(145deg,#fff,#fff8f4)!important;border-color:#ffdac9!important;}
+  .flow-grid .aux-card:first-child .av .dd{color:var(--brand)!important;}
+
+  .alert-panel{border-color:#fecdd3!important;background:linear-gradient(180deg,#fff,#fffafb)!important;}
+  .alert-content{display:flex;flex-direction:column;gap:10px;}
+  .alert-main{position:relative;padding:16px;border-radius:10px;background:linear-gradient(135deg,#fff1f2,#fff);border:1px solid #fecdd3;overflow:hidden;}
+  .alert-main:after{content:"";position:absolute;right:-32px;top:-32px;width:100px;height:100px;border-radius:50%;background:rgba(220,53,69,.06);}
+  .alert-kicker{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:750;color:#b42318;}
+  .alert-kicker .clock{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#fff;color:var(--danger);box-shadow:var(--shadow-sm);}
+  .alert-desc{position:relative;z-index:1;margin:9px 0 13px;font-size:12px;color:#7a271a;line-height:1.65;}
+  .alert-desc b{color:#b42318;font-size:13px;}
+  .alert-action{position:relative;z-index:1;width:100%;height:36px;border:0;border-radius:8px;background:var(--danger);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .alert-action:hover{background:#c92b3c;box-shadow:0 6px 14px rgba(220,53,69,.18);}
+  .alert-empty{display:flex;align-items:center;justify-content:center;min-height:54px;border:1px dashed #e5e7eb;border-radius:9px;color:var(--muted-2);font-size:11.5px;background:rgba(255,255,255,.6);}
+
+  .chart-link{display:inline-flex;align-items:center;gap:5px;font-size:12px!important;font-weight:700!important;color:var(--brand)!important;padding:6px 9px;border-radius:7px;background:var(--brand-soft);}
+  .chart-link:hover{background:#ffe8da;}
+  .metric-note{font-size:11.5px;color:var(--muted-2);}
+  .metric-note b{color:var(--ink);font-weight:700;}
+  .quality-list{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;}
+  .quality-list .aux-card{text-align:left!important;min-height:78px;display:flex;align-items:center;justify-content:space-between;padding-right:44px!important;}
+  .quality-list .aux-card .av{margin-top:0!important;}
+  .quality-list .aux-card.danger{background:var(--danger-soft)!important;border-color:#fecdd3!important;}
+  .quality-list .aux-card.danger .al,.quality-list .aux-card.danger .av .dd{color:var(--danger)!important;}
+
+  .legend-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:4px 4px 0;color:var(--muted-2);font-size:11.5px;}
+  .legend-items{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .legend-items span{display:inline-flex;align-items:center;gap:6px;}
+  .legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .version-note{white-space:nowrap;}
+
+  .seg{border-color:var(--line);border-radius:8px;}
+  .seg span{transition:all .15s ease;}
+  .seg .on{background:var(--brand-soft);color:var(--brand);font-weight:700;}
+  .dd,.mtlink,.numlink{color:var(--brand)!important;text-decoration:none;}
+  .dd:hover,.mtlink:hover,.numlink:hover{text-decoration:underline;}
+
+  table{font-family:"Roboto","PingFang SC","Microsoft YaHei",sans-serif;font-size:12px;}
+  th,td{padding:10px 12px;border-bottom:1px solid #edf0f4;}
+  thead th{position:sticky;top:0;z-index:1;background:#f8fafc;color:var(--muted);border-bottom:1px solid var(--line);font-size:11.5px;}
+  tbody tr:hover{background:#fffaf7;}
+  .scroll{border:1px solid var(--line);border-radius:9px;overflow:auto;}
+
+  .drawer-layer{padding:24px;}
+  .drawer-panel{width:980px;max-width:96vw;max-height:90vh;border:1px solid rgba(255,255,255,.7);border-radius:14px;box-shadow:0 32px 90px rgba(15,23,42,.26);}
+  .drawer-layer.level-2 .drawer-panel{width:900px;max-width:93vw;max-height:86vh;}
+  .drawer-layer.level-3 .drawer-panel{width:820px;max-width:90vw;max-height:82vh;}
+  .drawer-head{padding:16px 22px;background:#fff;border-bottom:1px solid var(--line);}
+  .drawer-head h3{font-size:16px;font-weight:750;}
+  .drawer-head .drawer-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);}
+  .drawer-body{padding:18px 22px 22px;background:#fff;}
+  .drawer-body .drawer-stats{gap:10px;}
+  .drawer-body .drawer-stat{border-radius:10px;background:var(--surface-2);border-color:var(--line);padding:13px 14px;text-align:left;}
+  .drawer-body .drawer-stat .v{margin-top:5px;font-size:22px;}
+  .dbar{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);}
+  .dfilters .fld{gap:5px;color:var(--muted);}
+  .dfilters select,.dfilters input{height:34px;border-radius:7px;border-color:#dfe3ea;}
+  .dexport,.dquery,.dreset{height:34px;border-radius:7px;padding:0 14px;}
+  .dexport,.dquery{background:var(--brand);}
+  .dpager button,.dpager select,.dpager input{border-radius:7px;}
+
+  @media(max-width:1380px){
+    .filterbar{flex-wrap:wrap;}
+    .filter-spacer{display:none;}
+    .content-split{grid-template-columns:minmax(0,1fr) 320px;}
+    .cutoff-group{order:3;}
+  }
+  @media(max-width:1180px){
+    body{min-width:960px;}
+    .nav-tabs span{padding-left:10px;padding-right:10px;}
+    .content-split{grid-template-columns:1fr;}
+    .quality-list{grid-template-columns:repeat(3,1fr)!important;}
+    .quality-list .aux-card{display:block;text-align:center!important;padding-right:16px!important;}
+    .quality-list .aux-card .av{margin-top:8px!important;}
+    .pipeline{grid-template-columns:minmax(190px,.75fr) 48px minmax(460px,1.65fr) 48px minmax(190px,.75fr);}
+  }
+
+
+  /* V2：移除标签下说明后的紧凑布局 */
+  .page-intro h1{margin-bottom:0;}
+  .panel-head{align-items:center;}
+  .chain-node{min-height:96px!important;display:flex;flex-direction:column;justify-content:center;}
+  .chain-node .node-value{margin-top:13px!important;}
+  .aux-card{min-height:82px;display:flex;flex-direction:column;justify-content:center;}
+  .flow-grid .aux-card{min-height:88px;}
+  .alert-main{display:flex;flex-direction:column;justify-content:center;min-height:112px;}
+  .alert-action{margin-top:16px;}
+
+
+  /* V7：待签出首页与下钻优化 */
+  .stock-home-card{min-height:104px!important;justify-content:flex-start!important;gap:0;}
+  .stock-home-card .al{margin-bottom:7px;}
+  .stock-primary{display:flex;align-items:baseline;gap:5px;line-height:1;}
+  .stock-primary .num{font-size:28px;font-weight:790;color:var(--ink)!important;text-decoration:none!important;}
+  .stock-unit{font-size:11px;color:var(--muted-2);}
+  .stock-secondary{display:flex;align-items:baseline;gap:4px;margin-top:9px;font-size:11.5px;color:var(--muted);}
+  .stock-secondary .num{font-size:13px;font-weight:700;color:var(--muted)!important;}
+  .stock-home-grid .stock-home-card:first-child .stock-primary .num{color:var(--brand)!important;}
+
+  .signout-source-block{margin-bottom:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);}
+  .signout-source-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .signout-source-title{font-size:13px;font-weight:750;color:var(--ink);}
+  .signout-all-btn{height:30px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--muted);font-size:12px;font-weight:650;cursor:pointer;}
+  .signout-all-btn:hover,.signout-all-btn.active{border-color:#ffc4a8;background:var(--brand-soft);color:var(--brand);}
+  .source-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  .source-filter-card{position:relative;padding:13px 15px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;}
+  .source-filter-card:hover{border-color:#ffc4a8;box-shadow:0 6px 16px rgba(16,24,40,.06);transform:translateY(-1px);}
+  .source-filter-card.active{border-color:var(--brand);background:linear-gradient(145deg,#fff,#fff7f2);box-shadow:0 0 0 2px rgba(252,76,2,.08);}
+  .source-filter-card.active:after{content:"✓";position:absolute;right:12px;top:10px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-size:11px;font-weight:800;}
+  .source-card-name{font-size:12px;font-weight:700;color:var(--muted);}
+  .source-card-main{display:flex;align-items:baseline;gap:5px;margin-top:8px;}
+  .source-card-main strong{font-size:25px;line-height:1;font-weight:790;color:var(--ink);}
+  .source-card-main span{font-size:11px;color:var(--muted-2);}
+  .source-card-sub{margin-top:7px;font-size:11.5px;color:var(--muted);}
+  .source-card-sub .num{font-weight:700;color:var(--muted)!important;}
+
+  .current-stock-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;padding:12px 14px;border:1px solid #ffe0d0;border-radius:10px;background:#fff9f5;}
+  .current-stock-summary .summary-label{font-size:12px;font-weight:700;color:var(--brand);}
+  .current-stock-summary .summary-values{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .current-stock-summary .summary-values strong{font-size:22px;color:var(--ink);}
+  .current-stock-summary .summary-values span{font-size:11.5px;color:var(--muted);}
+  .current-stock-summary .summary-values .summary-bills{padding-left:9px;border-left:1px solid #f2cdbb;}
+
+  .distribution-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px;}
+  .distribution-card{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;}
+  .distribution-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line);background:#fbfcfe;}
+  .distribution-card-head h4{margin:0!important;padding:0!important;border:0!important;font-size:13px!important;}
+  .distribution-card-head span{font-size:11px;color:var(--muted-2);}
+  .dist-list{padding:5px 10px 9px;}
+  .dist-row{padding:10px 7px;border-bottom:1px solid #eef1f5;cursor:pointer;border-radius:8px;transition:background .15s;}
+  .dist-row:last-child{border-bottom:0;}
+  .dist-row:hover{background:#fff8f4;}
+  .dist-row.alert{background:#fff9ed;}
+  .dist-row.alert:hover{background:#fff3d6;}
+  .dist-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .dist-name{font-size:12px;font-weight:720;color:var(--ink);}
+  .dist-metrics{display:flex;align-items:baseline;gap:5px;white-space:nowrap;}
+  .dist-metrics strong{font-size:16px;color:var(--ink);}
+  .dist-metrics .unit{font-size:10.5px;color:var(--muted-2);}
+  .dist-bills{font-size:11px;color:var(--brand);font-weight:680;cursor:pointer;padding-left:7px;margin-left:2px;border-left:1px solid var(--line);}
+  .dist-bills:hover{text-decoration:underline;}
+  .dist-bar{height:6px;margin-top:8px;border-radius:99px;background:#eef1f5;overflow:hidden;}
+  .dist-bar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ff9a65,var(--brand));}
+  .dist-row.alert .dist-bar span{background:linear-gradient(90deg,#f9c74f,#f59e0b);}
+  .dist-foot{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:10.5px;color:var(--muted-2);}
+  .dist-foot .aging-risk{color:#b3760a;font-weight:700;}
+  @media(max-width:980px){.distribution-layout{grid-template-columns:1fr;}.source-card-grid{grid-template-columns:1fr 1fr 1fr;}}
+  @media(max-width:680px){.source-card-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部导航 ============ -->
+<header class="app-header">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">装</div>
+      <div class="brand-name">中心实时看板</div>
+    </div>
+    <nav class="nav-tabs">
+      <span>概况</span>
+      <span>卸车区</span>
+      <span>分拣区</span>
+      <span class="active">装车区</span>
+      <span>异常区</span>
+    </nav>
+    <div style="flex:1;"></div>
+    <div class="realtime">
+      <span class="realtime-dot"></span>
+      数据实时更新 <span class="num">14:32:08</span>
+    </div>
+  </div>
+
+  <div class="filterbar">
+    <div class="filter-control site">LAX H <span style="color:#98a2b3;">▾</span></div>
+    <div class="filter-control"><span class="filter-label">操作日</span><strong class="num">06-16 04:00 ~ 06-17 04:00</strong></div>
+    <div class="day-switch"><span class="on">今日</span><span>明日</span></div>
+    <div class="cutoff-group">
+      <div class="cutoff-chip"><span>集货截单</span><strong>0D 20:00</strong></div>
+      <div class="cutoff-chip"><span>散货截单</span><strong>1D 03:00</strong></div>
+      <div class="cutoff-chip urgent"><span>距离截单</span><strong>03:28:15</strong></div>
+    </div>
+    <div class="filter-spacer"></div>
+    <span class="shift-label">装车班次</span>
+    <div class="seg">
+      <span class="on">全天</span>
+      <span class="disabled">班次1</span>
+      <span class="disabled">班次2</span>
+      <span class="disabled">班次3</span>
+    </div>
+    <button class="query-btn">查询</button>
+  </div>
+</header>
+
+<!-- ============ 内容区 ============ -->
+<main class="dashboard-shell">
+  <!-- FR-2 发车进度链 -->
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div><h2>发车进度</h2></div>
+      </div>
+    </div>
+    <div class="pipeline">
+      <div class="chain-node core" data-drawer="progress-pending">
+        <div class="node-label"><span>待装车</span><span class="status-dot"></span></div>
+        <div class="node-value"><span class="num dd">0</span><span class="unit">辆</span></div>
+      </div>
+      <div class="chain-arrow"><span>装车</span><div class="ar">→</div></div>
+      <div class="chain-node loading" data-drawer="progress-loading">
+        <div class="node-label"><span>装车中</span><span class="status-dot"></span></div>
+        <div class="node-value"><span class="num dd">2</span><span class="unit">辆</span></div>
+      </div>
+      <div class="chain-arrow"><span>发车</span><div class="ar">→</div></div>
+      <div class="chain-node core" data-drawer="progress-fenced">
+        <div class="node-label"><span>已发未驶离围栏</span><span class="status-dot"></span></div>
+        <div class="node-value"><span class="num dd">0</span><span class="unit">辆</span></div>
+      </div>
+    </div>
+    <div class="aux-toggle-wrap"><span class="dd" id="aux-toggle">展开辅助卡（待靠台 / 已装未发 / 已发车）▾</span></div>
+    <div id="aux-cards" style="display:none;">
+      <div class="aux-card" data-drawer="progress-todock">
+        <div class="al">待靠台</div>
+        <div class="av"><span class="num dd">1</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+      </div>
+      <div class="aux-card" data-drawer="progress-towait">
+        <div class="al">已装未发</div>
+        <div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+      </div>
+      <div class="aux-card" data-drawer="progress-sent">
+        <div class="al">已发车</div>
+        <div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FR-9 待签出库存 + 发车预警 -->
+  <div class="content-split">
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><div><h2>待签出</h2></div></div>
+      </div>
+      <div class="flow-grid stock-home-grid">
+        <div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'all'})">
+          <div class="al">全部</div>
+          <div class="stock-primary"><span class="num dd">2,270</span><span class="stock-unit">袋</span></div>
+          <div class="stock-secondary"><span class="num">77,600</span><span>票</span></div>
+        </div>
+        <div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'trunk'})">
+          <div class="al">干线</div>
+          <div class="stock-primary"><span class="num dd">1,700</span><span class="stock-unit">袋</span></div>
+          <div class="stock-secondary"><span class="num">55,800</span><span>票</span></div>
+        </div>
+        <div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'branch'})">
+          <div class="al">支线</div>
+          <div class="stock-primary"><span class="num dd">570</span><span class="stock-unit">袋</span></div>
+          <div class="stock-secondary"><span class="num">21,800</span><span>票</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel alert-panel">
+      <div class="panel-head">
+        <div class="panel-title alert"><div><h2>发车预警</h2></div></div>
+      </div>
+      <div class="alert-content">
+        <div class="alert-main">
+          <div class="alert-kicker"><span class="clock">⏳</span>1小时内待发车</div>
+          <button class="alert-action" data-drawer="towait">查看待发车车辆</button>
+        </div>
+        <div class="alert-empty">暂无其他预警</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FR-3 计划发车 -->
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title"><div><h2>计划发车</h2></div></div>
+      <div class="panel-tools"><span>显示</span><div class="seg" id="seg-fc-mode"><span class="on" data-mode="hour">小时段</span><span data-mode="cum">累计</span></div></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:-6px;margin-bottom:6px;"><span class="dd chart-link" data-drawer="forecast">查看车辆明细 ›</span></div>
+    <div id="chart-fc" style="width:100%;height:286px;"></div>
+  </section>
+
+  <!-- FR-4 装车效率 + FR-5 发运质量 -->
+  <div class="content-split">
+    <section class="panel" style="display:flex;flex-direction:column;">
+      <div class="panel-head">
+        <div class="panel-title"><div><h2>装车效率</h2></div></div>
+      </div>
+      <div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:4px;font-size:11.5px;color:#98a2b3;">
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#ff9a4d;margin-right:5px;"></span>待装量（票）</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#fc4c02;margin-right:5px;"></span>装车量（票）</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb;margin-right:5px;"></span>装车速度（票/时）</span>
+      </div>
+      <div id="chart-eff" style="width:100%;height:306px;flex:1;"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><div><h2>发运质量监控</h2></div></div>
+      </div>
+      <div class="quality-list">
+        <div class="aux-card" onclick="openDrawer('tagbind')">
+          <div class="al">已绑定 TAG</div>
+          <div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+        </div>
+        <div class="aux-card" onclick="openDrawer('tagbind')">
+          <div class="al">未绑定 TAG</div>
+          <div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+        </div>
+        <div class="aux-card danger" onclick="openDrawer('missing')">
+          <div class="al">晚发</div>
+          <div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#c65b66;"> 辆</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="legend-footer">
+    <div class="legend-items">
+      <span><i class="legend-dot" style="background:#172033;"></i>正常</span>
+      <span><i class="legend-dot" style="background:#12a36d;"></i>达标</span>
+      <span><i class="legend-dot" style="background:#d97706;"></i>接近阈值</span>
+      <span><i class="legend-dot" style="background:#dc3545;"></i>重点关注</span>
+      <span><i class="legend-dot" style="background:#fc4c02;"></i>可点击下钻</span>
+    </div>
+    <span class="version-note">装车区独立版 · UI 优化稿</span>
+  </footer>
+</main>
+
+<!-- 多级抽屉叠层容器 -->
+<div class="drawer-stack" id="drawer-stack"></div>
+
+<script>
+// 计划发车柱状图
+(function(){
+  var chart = echarts.init(document.getElementById('chart-fc'));
+  var hours = ['14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','00:00','01:00'];
+  var planHour = [2,3,4,3,3,2,2,1,1,1,0,1];
+  var actualHour = [2,3,3,3,2,2,1,1,0,0,0,0];
+  function cum(a){var s=0;return a.map(function(v){s+=v;return s;});}
+
+  var state={day:'today',mode:'hour'};
+  function build(){
+    var plan = state.day==='today'?planHour:[1,2,3,3,3,2,2,2,1,1,0,1];
+    var actual = state.day==='today'?actualHour:[0,0,0,0,0,0,0,0,0,0,0,0];
+    if(state.mode==='cum'){plan=cum(plan);actual=cum(actual);}
+    return {
+      tooltip:{trigger:'axis'},
+      legend:{top:0,textStyle:{fontSize:12,color:'#9aa6b6'},itemWidth:16,itemHeight:3},
+      grid:{left:55,right:30,top:35,bottom:30},
+      xAxis:{type:'category',data:hours,boundaryGap:true,axisLine:{lineStyle:{color:'#d6dde6'}},axisTick:{show:false},axisLabel:{color:'#9aa6b6',fontSize:11}},
+      yAxis:{type:'value',name:'辆',nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:10},splitLine:{lineStyle:{color:'#f0f0f0',type:'dashed'}}},
+      series:[
+        {name:'计划发车（辆）',type:'bar',data:plan,itemStyle:{color:'#fc4c02'},barWidth:14},
+        {name:'实际发车（辆）',type:'bar',data:actual,itemStyle:{color:'#16a34a'},barWidth:14}
+      ]
+    };
+  }
+  chart.setOption(build());
+  function bindSeg(id,key,attr){
+    document.querySelectorAll('#'+id+' span').forEach(function(s){
+      s.addEventListener('click',function(){
+        document.querySelectorAll('#'+id+' span').forEach(function(x){x.classList.remove('on');});
+        this.classList.add('on');
+        state[key]=this.getAttribute('data-'+attr);
+        chart.setOption(build(),true);
+      });
+    });
+  }
+  bindSeg('seg-fc-mode','mode','mode');
+  chart.on('click',function(){ if(window.kbOpenDrawer) window.kbOpenDrawer('forecast'); });
+  chart.getZr().on('mousemove',function(){ chart.getZr().setCursorStyle('pointer'); });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 装车效率：待装量 vs 装车量（柱）+ 装车速度（线）
+(function(){
+  var chart = echarts.init(document.getElementById('chart-eff'));
+  var hours = ['04-05','05-06','06-07','07-08','08-09','09-10','10-11','11-12','12-13','13-14','14-15'];
+  chart.setOption({
+    tooltip:{trigger:'axis'},
+    legend:{top:0,textStyle:{fontSize:12,color:'#9aa6b6'}},
+    grid:{left:60,right:60,top:40,bottom:35},
+    xAxis:{type:'category',data:hours,boundaryGap:true,axisLine:{lineStyle:{color:'#d6dde6'}},axisLabel:{color:'#9aa6b6',fontSize:11}},
+    yAxis:[
+      {type:'value',name:'票',nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:10,formatter:function(v){return v>=1000?(v/1000)+'k':v;}},splitLine:{lineStyle:{color:'#f0f0f0',type:'dashed'}}},
+      {type:'value',name:'票/时',nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:10,formatter:function(v){return v>=1000?(v/1000)+'k':v;}},splitLine:{show:false}}
+    ],
+    series:[
+      {name:'待装量（票）',type:'bar',data:[2800,5200,6800,8200,8800,7600,6800,6000,4800,3600,2400],itemStyle:{color:'#ff9a4d'},barWidth:9},
+      {name:'装车量（票）',type:'bar',data:[1900,3800,5200,6400,6600,6200,5800,5000,3900,2900,1800],itemStyle:{color:'#fc4c02'},barWidth:9},
+      {name:'装车速度（票/时）',type:'line',yAxisIndex:1,data:[1900,3800,5200,6400,6600,6200,5800,5000,3900,2900,1800],smooth:true,lineStyle:{color:'#2563eb',width:2},itemStyle:{color:'#2563eb'},symbol:'circle',symbolSize:5}
+    ]
+  });
+  chart.getZr().on('mousemove',function(){ chart.getZr().setCursorStyle('pointer'); });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 多级抽屉叠层
+(function(){
+  var stack=document.getElementById('drawer-stack');
+  var drawerLayers=[];
+
+  function createLayerEl(level){
+    var layer=document.createElement('div');
+    layer.className='drawer-layer level-'+level;
+    layer.innerHTML='<div class="drawer-backdrop"></div>'
+      +'<div class="drawer-panel">'
+      +'<div class="drawer-head"><h3 class="drawer-title">明细</h3><button class="drawer-close">✕</button></div>'
+      +'<div class="drawer-body"></div>'
+      +'</div>';
+    stack.appendChild(layer);
+    var closeBtn=layer.querySelector('.drawer-close');
+    var backdrop=layer.querySelector('.drawer-backdrop');
+    closeBtn.addEventListener('click',function(){closeTopDrawer();});
+    backdrop.addEventListener('click',function(e){if(e.target===backdrop)closeTopDrawer();});
+    return layer;
+  }
+
+  function closeTopDrawer(){
+    if(drawerLayers.length===0) return;
+    var top=drawerLayers.pop();
+    top.el.classList.remove('on');
+    setTimeout(function(){if(top.el.parentNode)top.el.parentNode.removeChild(top.el);},250);
+    if(drawerLayers.length===0){document.body.style.overflow='';}
+  }
+
+  function closeAllDrawers(){
+    while(drawerLayers.length>0){
+      var top=drawerLayers.pop();
+      top.el.classList.remove('on');
+      setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}(top.el),250);
+    }
+    document.body.style.overflow='';
+  }
+
+  function openDrawer(type,arg){
+    if(drawerLayers.length>=3){closeTopDrawer();}
+    var level=drawerLayers.length+1;
+    var layerEl=createLayerEl(level);
+    var titleEl=layerEl.querySelector('.drawer-title');
+    var bodyEl=layerEl.querySelector('.drawer-body');
+
+    var t='',content='',afterRender=null;
+    function fmt(n){return (typeof n==='number'?n:(parseInt(n,10)||0)).toLocaleString();}
+    function split75(n){var t=Math.round(n*0.75);return {trunk:t,branch:n-t};}
+    function pagerHtml(total,pageSize,current,totalPages){
+      var sizes=[10,20,50,100],opts=sizes.map(function(s){return '<option value="'+s+'"'+(s===pageSize?' selected':'')+'>'+s+'条/页</option>';}).join('');
+      var nums=''; for(var p=1;p<=Math.min(totalPages,5);p++){ nums+='<button class="pg-no '+(p===current?'on':'')+'">'+p+'</button>'; }
+      if(totalPages>5) nums+='<span>…</span><button class="pg-no">'+totalPages+'</button>';
+      return '<div class="dpager">'
+        +'<button class="pg-step" disabled>&lt;&lt;</button>'
+        +'<button class="pg-step" disabled>&lt;</button>'
+        +nums
+        +'<button class="pg-step">&gt;</button>'
+        +'<button class="pg-step">&gt;&gt;</button>'
+        +'<select>'+opts+'</select>'
+        +'<span>前往</span><input value="'+current+'"/><span>页</span>'
+        +'<button>前往</button>'
+        +'<span>共'+total+'条记录</span>'
+        +'</div>';
+    }
+    function timeDistSelect(defaultVal){ var opts='<option value="">全部</option>'; var buckets=['≤0.5H','1H','2H','3H','4H','>4H']; buckets.forEach(function(b){ opts+='<option value="'+b+'"'+(defaultVal===b?' selected':'')+'>'+b+'</option>'; }); return '<select>'+opts+'</select>'; }
+    function navLink(text,type){ var label=type==='vehicleMonitor'?'车辆监控台':type==='tms'?'TMS出发到达管理':type==='dispatchMonitor'?'调度监控工作台':type==='bagQuery'?'袋号查询':'派件运单管理中的基本信息'; return '<span class="mtlink" onclick="event.stopPropagation();kbNavTo(\''+type+'\',\''+text+'\')" title="跳转至'+label+'">'+text+'</span>'; }
+    function filterBar(fields){
+      var f=fields.map(function(x){return '<div class="fld"><label>'+x[0]+'</label>'+x[1]+'</div>';}).join('');
+      return '<div class="dbar"><div class="dfilters">'+f+'</div>'
+        +'<div style="display:flex;gap:8px;"><button class="dexport">导出</button><button class="dquery">查询</button><button class="dreset">重置</button></div></div>';
+    }
+    function expBar(){ return '<div class="dbar"><div></div><button class="dexport">导出</button></div>'; }
+    function selHtml(ph){ return '<select><option>'+(ph||'请选择')+'</option></select>'; }
+    function statTable(dim,rows,opts){
+      opts=opts||{};
+      var drillVeh=opts.drillVeh||null;
+      var drillBag=opts.drillBag||null;
+      var drillBill=opts.drillBill||null;
+      var h='<div class="scroll"><table><thead><tr><th>'+dim+'</th><th>车辆数</th><th>袋数</th><th>运单数</th></tr></thead><tbody>';
+      rows.forEach(function(r,i){
+        var isTotal=i===0;
+        var bucket=r[0];
+        if(isTotal){
+          h+='<tr class="tot"><td>合计</td><td class="tot">'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td class="tot">'+fmt(r[3])+'</td></tr>';
+        } else {
+          var vehOnclick=drillVeh?'onclick="kbOpenDrawer(\''+drillVeh+'\',{bucket:\''+bucket+'\'})"':'';
+          var bagOnclick=drillBag?'onclick="kbOpenDrawer(\''+drillBag+'\',{bucket:\''+bucket+'\'})"':'';
+          var billOnclick=drillBill?'onclick="kbOpenDrawer(\''+drillBill+'\',{bucket:\''+bucket+'\'})"':'';
+          h+='<tr><td class="key-col">'+bucket+'</td>'
+            +'<td><span class="numlink" '+vehOnclick+'>'+r[1]+'</span></td>'
+            +'<td><span class="numlink" '+bagOnclick+'>'+fmt(r[2])+'</span></td>'
+            +'<td><span class="numlink" '+billOnclick+'>'+fmt(r[3])+'</span></td></tr>';
+        }
+      });
+      return h+'</tbody></table></div>';
+    }
+    function etaTimeTable(rows){
+      var h='<div class="scroll"><table><thead><tr><th>时间分布</th><th>总车辆数</th><th>总袋数</th><th>总运单数</th></tr></thead><tbody>';
+      rows.forEach(function(r,i){
+        var isTotal=i===0;
+        h+='<tr'+(isTotal?' class="tot"':'')+'>'
+          +'<td'+(isTotal?'':' class="key-col"')+'>'+r[0]+'</td>'
+          +'<td class="tot"><span class="numlink" data-drill="etaveh" data-bucket="'+r[0]+'" data-col="veh">'+r[1]+'</span></td>'
+          +'<td class="tot"><span class="numlink" data-drill="etabag" data-bucket="'+r[0]+'" data-col="bag">'+fmt(r[2])+'</span></td>'
+          +'<td class="tot"><span class="numlink" data-drill="etabill" data-bucket="'+r[0]+'" data-col="bill">'+fmt(r[3])+'</span></td></tr>';
+      });
+      return h+'</tbody></table></div>';
+    }
+
+    if(type==='progress-pending'){
+      t='查看明细-待装车';
+      content='<div style="padding:64px 24px;text-align:center;color:#98a2b3;font-size:14px;">保持现状不变</div>';
+    } else if(type==='progress-loading'){
+      t='查看明细-装车中';
+      content='<div style="padding:64px 24px;text-align:center;color:#98a2b3;font-size:14px;">保持现状不变</div>';
+    } else if(type==='progress-fenced'){
+      t='查看明细-已发未驶离围栏';
+      content='<div style="padding:64px 24px;text-align:center;color:#98a2b3;font-size:14px;">保持现状不变</div>';
+    } else if(type==='progress-todock'){
+      t='查看明细-待靠台';
+      content='<div style="padding:64px 24px;text-align:center;color:#98a2b3;font-size:14px;">保持现状不变</div>';
+    } else if(type==='progress-towait'){
+      t='查看明细-已装未发';
+      content='<div style="padding:64px 24px;text-align:center;color:#98a2b3;font-size:14px;">保持现状不变</div>';
+    } else if(type==='progress-sent'){
+      t='查看明细-已发车';
+      content='<div style="padding:64px 24px;text-align:center;color:#98a2b3;font-size:14px;">保持现状不变</div>';
+    } else if(type==='towait'){
+      t='查看明细-已装未发';
+      content='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">车辆数</div><div class="v"><span class="numlink" onclick="kbOpenDrawer(\'towait\')">5</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v"><span class="numlink" onclick="kbOpenDrawer(\'bag-detail\',\'towait\')">'+fmt(122)+'</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">运单数</div><div class="v"><span class="numlink" onclick="kbOpenDrawer(\'wb-detail\',\'towait\')">'+fmt(36200)+'</span></div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><h4>时间分布</h4>'
+        +etaTimeTable([
+          ['合计',5,122,36200],
+          ['14:00-15:00',2,50,15200],
+          ['15:00-16:00',2,42,12400],
+          ['16:00-17:00',1,30,8600]
+        ])
+        +'</div>'
+        +'<div class="drawer-section"><h4>车辆明细</h4>'
+        +filterBar([['目的站点',selHtml('请选择')],['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']])
+        +'<div class="scroll"><table><thead><tr><th>任务编码</th><th>任务名称</th><th>计划发车时间</th><th>封车时间</th><th>目的地</th><th>装车袋数</th><th>装车运单数</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('MT-91011','tms')+'</td><td>LAX→LAX01 站点</td><td>06-16 14:00</td><td>06-16 13:45</td><td>LAX01</td><td><span class="numlink" onclick="kbOpenDrawer(\'bag-detail\',\'towait-MT91011\')">28</span></td><td><span class="numlink" onclick="kbOpenDrawer(\'wb-detail\',\'towait-MT91011\')">'+fmt(8200)+'</span></td></tr>'
+        +'<tr><td class="key-col">'+navLink('MT-91025','tms')+'</td><td>LAX→LAX03 站点</td><td>06-16 15:00</td><td>06-16 14:50</td><td>LAX03</td><td><span class="numlink" onclick="kbOpenDrawer(\'bag-detail\',\'towait-MT91025\')">42</span></td><td><span class="numlink" onclick="kbOpenDrawer(\'wb-detail\',\'towait-MT91025\')">'+fmt(12400)+'</span></td></tr>'
+        +'<tr><td class="key-col">'+navLink('MT-91033','tms')+'</td><td>LAX→ATL 干线</td><td>06-16 16:00</td><td>06-16 15:55</td><td>ATL</td><td><span class="numlink" onclick="kbOpenDrawer(\'bag-detail\',\'towait-MT91033\')">52</span></td><td><span class="numlink" onclick="kbOpenDrawer(\'wb-detail\',\'towait-MT91033\')">'+fmt(15600)+'</span></td></tr>'
+        +'<tr><td class="key-col" colspan="5">… 共 5 辆</td><td class="tot">122</td><td class="tot">'+fmt(36200)+'</td></tr>'
+        +'</tbody></table></div></div>';
+    } else if(type==='sent'){
+      t='查看明细-已发车';
+      content=filterBar([['目的地',selHtml('请选择')]])
+        +statTable('目的地',[
+          ['合计',0,0,0]
+        ],{drillVeh:'veh-sent',drillBag:'bag-detail',drillBill:'wb-detail'});
+    } else if(type==='forecast'){
+      t='查看明细-预计/计划发车';
+      content=filterBar([
+          ['目的站点',selHtml('请选择')],
+          ['流向',selHtml('请选择')],
+          ['运输类型',selHtml('请选择')],
+          ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+        ])
+        +'<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划发车时间</th><th>实际发车时间</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>应发袋数</th><th>应发票数</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('MT-91011','tms')+'</td><td>06-16 14:00</td><td>—</td><td>LAX→LAX01 站点</td><td>LAX H</td><td>LAX01</td><td class="tot">28</td><td class="tot">8,200</td></tr>'
+        +'<tr><td class="key-col">'+navLink('MT-91025','tms')+'</td><td>06-16 15:00</td><td>—</td><td>LAX→LAX03 站点</td><td>LAX H</td><td>LAX03</td><td class="tot">42</td><td class="tot">12,400</td></tr>'
+        +'<tr><td class="key-col">'+navLink('MT-91033','tms')+'</td><td>06-16 16:00</td><td>—</td><td>LAX→ATL 干线</td><td>LAX H</td><td>ATL</td><td class="tot">52</td><td class="tot">15,600</td></tr>'
+        +'<tr><td class="key-col">'+navLink('MT-91048','tms')+'</td><td>06-16 17:00</td><td>—</td><td>LAX→LAX01 站点</td><td>LAX H</td><td>LAX01</td><td class="tot">40</td><td class="tot">11,800</td></tr>'
+        +'<tr><td class="key-col" colspan="6">… 共 23 辆</td><td class="tot">3,380</td><td class="tot">108,909</td></tr>'
+        +'</tbody></table></div>';
+    } else if(type==='tagbind'){
+      t='查看明细-Tag 绑定';
+      content='<div style="padding:40px;text-align:center;color:#9aa6b6;font-size:14px;">保持现状不变</div>';
+    } else if(type==='missing'){
+      t='查看明细-缺发（应发未发）';
+      content='<div class="info2"><span class="ico">⚠️</span><div class="tx">缺发现状为 <b>0</b>（数据待核）。修复后缺发&gt;阈值即在页面预警，此处下钻应发未发的 Bag/票与流向，便于补发。</div></div>'
+        +filterBar([['应发流向',selHtml('请选择')],['任务编码','<input placeholder="请输入"/>']])
+        +statTable('应发流向',[
+          ['合计',0,0,0]
+        ])
+        +'<div class="drawer-section"><h4>缺发清单（应发未发）</h4>'
+        +'<div class="scroll"><table><thead><tr><th>Bag 号</th><th>应发流向</th><th>票数</th><th>对应车次</th><th>状态</th></tr></thead><tbody>'
+        +'<tr><td class="key-col" colspan="5" style="text-align:center;color:#b0b5bc;">取数修复后填充</td></tr>'
+        +'</tbody></table></div></div>';
+    } else if(type==='fenced'){
+      t='查看明细-已发车未驶出电子围栏';
+      content=filterBar([['目的地',selHtml('请选择')]])
+        +statTable('目的地',[
+          ['合计',0,0,0]
+        ],{drillVeh:'veh-fenced',drillBag:'bag-detail',drillBill:'wb-detail'});
+    } else if(type==='tosignout'){
+      var stockFlow=(arg&&arg.flow)?arg.flow:'all';
+      var stockScope=(arg&&arg.scope)?arg.scope:'all';
+      var flowLabel={all:'全部',trunk:'干线',branch:'支线'}[stockFlow]||'全部';
+      t='查看明细-待签出 · '+flowLabel;
+      layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
+
+      var flowTotals={
+        all:{all:{bags:2270,bills:77600},today:{bags:1790,bills:65100},history:{bags:480,bills:12500}},
+        trunk:{all:{bags:1700,bills:55800},today:{bags:1320,bills:45600},history:{bags:380,bills:10200}},
+        branch:{all:{bags:570,bills:21800},today:{bags:470,bills:19500},history:{bags:100,bills:2300}}
+      };
+      var baseScopeData={
+        all:{
+          aging:[
+            {key:'0-4H',name:'0–4H',bags:780,bills:29800,extra:'6 个目的地'},
+            {key:'4-8H',name:'4–8H',bags:620,bills:22600,extra:'7 个目的地'},
+            {key:'8-24H',name:'8–24H',bags:390,bills:12700,extra:'5 个目的地'},
+            {key:'24H以上',name:'24H以上',bags:480,bills:12500,extra:'4 个目的地',alert:true}
+          ],
+          destination:[
+            {key:'LAX01',name:'LAX01',bags:980,bills:31200,extra:'最长 18H'},
+            {key:'LAX03',name:'LAX03',bags:720,bills:24600,extra:'最长 12H'},
+            {key:'ATL',name:'ATL',bags:300,bills:11400,extra:'最长 29H',alert:true},
+            {key:'ORD',name:'ORD',bags:180,bills:6200,extra:'最长 9H'},
+            {key:'JFK',name:'JFK',bags:90,bills:4200,extra:'最长 36H',alert:true}
+          ]
+        },
+        today:{
+          aging:[
+            {key:'0-4H',name:'0–4H',bags:780,bills:29800,extra:'6 个目的地'},
+            {key:'4-8H',name:'4–8H',bags:620,bills:22600,extra:'7 个目的地'},
+            {key:'8-24H',name:'8–24H',bags:390,bills:12700,extra:'5 个目的地'},
+            {key:'24H以上',name:'24H以上',bags:0,bills:0,extra:'0 个目的地'}
+          ],
+          destination:[
+            {key:'LAX01',name:'LAX01',bags:760,bills:26500,extra:'最长 8H'},
+            {key:'LAX03',name:'LAX03',bags:600,bills:21800,extra:'最长 7H'},
+            {key:'ATL',name:'ATL',bags:230,bills:9200,extra:'最长 13H'},
+            {key:'ORD',name:'ORD',bags:140,bills:5100,extra:'最长 6H'},
+            {key:'JFK',name:'JFK',bags:60,bills:2500,extra:'最长 9H'}
+          ]
+        },
+        history:{
+          aging:[
+            {key:'0-4H',name:'0–4H',bags:0,bills:0,extra:'0 个目的地'},
+            {key:'4-8H',name:'4–8H',bags:0,bills:0,extra:'0 个目的地'},
+            {key:'8-24H',name:'8–24H',bags:0,bills:0,extra:'0 个目的地'},
+            {key:'24H以上',name:'24H以上',bags:480,bills:12500,extra:'4 个目的地',alert:true}
+          ],
+          destination:[
+            {key:'LAX01',name:'LAX01',bags:220,bills:4700,extra:'最长 18H'},
+            {key:'LAX03',name:'LAX03',bags:120,bills:2800,extra:'最长 12H'},
+            {key:'ATL',name:'ATL',bags:70,bills:2200,extra:'最长 29H',alert:true},
+            {key:'ORD',name:'ORD',bags:40,bills:1100,extra:'最长 22H'},
+            {key:'JFK',name:'JFK',bags:30,bills:1700,extra:'最长 36H',alert:true}
+          ]
+        }
+      };
+      function scaledRows(rows,targetBags,targetBills){
+        var baseBags=rows.reduce(function(a,r){return a+r.bags;},0)||1;
+        var baseBills=rows.reduce(function(a,r){return a+r.bills;},0)||1;
+        var usedBags=0,usedBills=0;
+        return rows.map(function(r,i){
+          var last=i===rows.length-1;
+          var bags=last?Math.max(0,targetBags-usedBags):Math.round(r.bags/baseBags*targetBags);
+          var bills=last?Math.max(0,targetBills-usedBills):Math.round(r.bills/baseBills*targetBills);
+          usedBags+=bags; usedBills+=bills;
+          return {key:r.key,name:r.name,bags:bags,bills:bills,extra:r.extra,alert:r.alert};
+        });
+      }
+      function dataFor(scope){
+        var totals=flowTotals[stockFlow][scope];
+        var base=baseScopeData[scope];
+        return {totals:totals,aging:scaledRows(base.aging,totals.bags,totals.bills),destination:scaledRows(base.destination,totals.bags,totals.bills)};
+      }
+      var selectedTransport='<select><option'+(stockFlow==='all'?' selected':'')+'>全部</option><option'+(stockFlow==='trunk'?' selected':'')+'>干线</option><option'+(stockFlow==='branch'?' selected':'')+'>支线</option></select>';
+      var allTotals=flowTotals[stockFlow].all;
+      var todayTotals=flowTotals[stockFlow].today;
+      var historyTotals=flowTotals[stockFlow].history;
+
+      content='<div class="signout-source-block">'
+        +'<div class="source-card-grid">'
+        +'<div class="source-filter-card" data-signout-scope="all"><div class="source-card-name">全部</div><div class="source-card-main"><strong class="num">'+fmt(allTotals.bags)+'</strong><span>袋</span></div><div class="source-card-sub"><span class="num">'+fmt(allTotals.bills)+'</span> 票</div></div>'
+        +'<div class="source-filter-card" data-signout-scope="today"><div class="source-card-name">今日已入库</div><div class="source-card-main"><strong class="num">'+fmt(todayTotals.bags)+'</strong><span>袋</span></div><div class="source-card-sub"><span class="num">'+fmt(todayTotals.bills)+'</span> 票</div></div>'
+        +'<div class="source-filter-card" data-signout-scope="history"><div class="source-card-name">历史留仓</div><div class="source-card-main"><strong class="num">'+fmt(historyTotals.bags)+'</strong><span>袋</span></div><div class="source-card-sub"><span class="num">'+fmt(historyTotals.bills)+'</span> 票</div></div>'
+        +'</div></div>'
+        +filterBar([
+          ['库存时长','<select><option selected>全部</option><option>0-4H</option><option>4-8H</option><option>8-24H</option><option>24H以上</option></select>'],
+          ['目的地',selHtml('请选择')],
+          ['运输类型',selectedTransport],
+          ['袋号','<input placeholder="请输入袋号"/>'],
+          ['运单号','<input placeholder="请输入运单号"/>']
+        ])
+        +'<div class="distribution-layout">'
+        +'<div class="distribution-card"><div class="distribution-card-head"><h4>时长分布</h4><span id="aging-scope-note">全部</span></div><div class="dist-list" id="signout-aging-list"></div></div>'
+        +'<div class="distribution-card"><div class="distribution-card-head"><h4>目的组织</h4><span id="destination-scope-note">全部</span></div><div class="dist-list" id="signout-destination-list"></div></div>'
+        +'</div>'
+        +pagerHtml(12,10,1,2);
+
+      afterRender=function(){
+        var currentScope=stockScope;
+        var scopeLabels={all:'全部',today:'今日已入库',history:'历史留仓'};
+        var agingList=bodyEl.querySelector('#signout-aging-list');
+        var destinationList=bodyEl.querySelector('#signout-destination-list');
+        function pct(v,total){return total?Math.round(v/total*1000)/10:0;}
+        function rowHtml(row,total,kind){
+          var ratio=pct(row.bags,total.bags);
+          return '<div class="dist-row'+(row.alert?' alert':'')+'" data-kind="'+kind+'" data-key="'+row.key+'">'
+            +'<div class="dist-top"><span class="dist-name">'+row.name+'</span><div class="dist-metrics"><strong class="num">'+fmt(row.bags)+'</strong><span class="unit">袋</span><span class="dist-bills" data-bills="1"><span class="num">'+fmt(row.bills)+'</span> 票</span></div></div>'
+            +'<div class="dist-bar"><span style="width:'+ratio+'%"></span></div>'
+            +'<div class="dist-foot"><span>袋量占比 '+ratio+'%</span><span class="'+(row.alert?'aging-risk':'')+'">'+row.extra+'</span></div>'
+            +'</div>';
+        }
+        function bindRows(container,kind){
+          container.querySelectorAll('.dist-row').forEach(function(row){
+            row.addEventListener('click',function(){
+              var key=this.getAttribute('data-key');
+              var detailArg={scope:currentScope,flow:stockFlow};
+              if(kind==='aging') detailArg.aging=key; else detailArg.destination=key;
+              openDrawer('tosignout-bag',detailArg);
+            });
+            var bills=row.querySelector('[data-bills]');
+            if(bills) bills.addEventListener('click',function(e){
+              e.stopPropagation();
+              var key=row.getAttribute('data-key');
+              var detailArg={scope:currentScope,flow:stockFlow};
+              if(kind==='aging') detailArg.aging=key; else detailArg.destination=key;
+              openDrawer('tosignout-wb',detailArg);
+            });
+          });
+        }
+        function renderScope(scope){
+          currentScope=scope;
+          var data=dataFor(scope);
+          bodyEl.querySelector('#aging-scope-note').textContent=scopeLabels[scope];
+          bodyEl.querySelector('#destination-scope-note').textContent=scopeLabels[scope];
+          bodyEl.querySelectorAll('[data-signout-scope]').forEach(function(el){el.classList.toggle('active',el.getAttribute('data-signout-scope')===scope);});
+          agingList.innerHTML=data.aging.slice().reverse().map(function(r){return rowHtml(r,data.totals,'aging');}).join('');
+          destinationList.innerHTML=data.destination.map(function(r){return rowHtml(r,data.totals,'destination');}).join('');
+          bindRows(agingList,'aging');
+          bindRows(destinationList,'destination');
+        }
+        bodyEl.querySelectorAll('[data-signout-scope]').forEach(function(el){
+          el.addEventListener('click',function(){renderScope(this.getAttribute('data-signout-scope'));});
+        });
+        renderScope(currentScope);
+      };
+    } else if(type==='tosignout-bag'){
+      t='查看明细-待签出-袋号';
+      layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
+      var bagScope=(arg&&arg.scope)?arg.scope:'all';
+      var bagFlow=(arg&&arg.flow)?arg.flow:'all';
+      var bagAging=(arg&&arg.aging)?arg.aging:'全部';
+      var bagDestination=(arg&&arg.destination)?arg.destination:'请选择';
+      content=filterBar([
+          ['袋号','<input placeholder="请输入袋号"/>'],
+          ['库存来源','<select><option'+(bagScope==='all'?' selected':'')+'>全部</option><option'+(bagScope==='today'?' selected':'')+'>今日已入库</option><option'+(bagScope==='history'?' selected':'')+'>历史留仓</option></select>'],
+          ['库存时长','<select><option'+(bagAging==='全部'?' selected':'')+'>全部</option><option'+(bagAging==='0-4H'?' selected':'')+'>0-4H</option><option'+(bagAging==='4-8H'?' selected':'')+'>4-8H</option><option'+(bagAging==='8-24H'?' selected':'')+'>8-24H</option><option'+(bagAging==='24H以上'?' selected':'')+'>24H以上</option></select>'],
+          ['目的地','<select><option'+(bagDestination==='请选择'?' selected':'')+'>请选择</option><option'+(bagDestination==='LAX01'?' selected':'')+'>LAX01</option><option'+(bagDestination==='LAX03'?' selected':'')+'>LAX03</option><option'+(bagDestination==='ATL'?' selected':'')+'>ATL</option></select>'],
+          ['运输类型','<select><option'+(bagFlow==='all'?' selected':'')+'>全部</option><option'+(bagFlow==='trunk'?' selected':'')+'>干线</option><option'+(bagFlow==='branch'?' selected':'')+'>支线</option></select>'],
+          ['任务编码','<input placeholder="请输入任务编码"/>']
+        ])
+        +'<div class="scroll"><table><thead><tr><th>袋号</th><th>运单数</th><th>入库时间</th><th>库存时长</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>集包类型</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('BAG202607130101','bagQuery')+'</td><td><span class="numlink" onclick="kbOpenDrawer(\'tosignout-wb\',{bag:\'BAG202607130101\',scope:\''+bagScope+'\',flow:\''+bagFlow+'\'})">38</span></td><td>12:18:00 13/07/2026</td><td>2H</td><td>LAX01</td><td>LAX Hub</td><td>West</td><td>标准</td><td>集包</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG202607120088','bagQuery')+'</td><td><span class="numlink" onclick="kbOpenDrawer(\'tosignout-wb\',{bag:\'BAG202607120088\',scope:\''+bagScope+'\',flow:\''+bagFlow+'\'})">42</span></td><td>21:10:00 12/07/2026</td><td>17H</td><td>LAX01</td><td>LAX Hub</td><td>West</td><td>标准</td><td>集包</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG202607110036','bagQuery')+'</td><td><span class="numlink" onclick="kbOpenDrawer(\'tosignout-wb\',{bag:\'BAG202607110036\',scope:\''+bagScope+'\',flow:\''+bagFlow+'\'})">29</span></td><td>02:30:00 11/07/2026</td><td><span class="warnflag">36H</span></td><td>ATL</td><td>ATL Hub</td><td>East</td><td>加急</td><td>散包</td></tr>'
+        +'<tr class="tot"><td>合计</td><td>109</td><td colspan="7">当前示例共 3 袋</td></tr>'
+        +'</tbody></table></div>'
+        +pagerHtml(2270,10,1,227);
+    } else if(type==='tosignout-wb'){
+      t='查看明细-待签出-票数';
+      layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
+      var wbScope=(arg&&arg.scope)?arg.scope:'all';
+      var wbFlow=(arg&&arg.flow)?arg.flow:'all';
+      var wbAging=(arg&&arg.aging)?arg.aging:'全部';
+      var wbDestination=(arg&&arg.destination)?arg.destination:'请选择';
+      var wbBag=(arg&&arg.bag)?arg.bag:'';
+      content=filterBar([
+          ['运单号','<input placeholder="请输入运单号"/>'],
+          ['袋号','<input value="'+wbBag+'" placeholder="请输入袋号"/>'],
+          ['库存来源','<select><option'+(wbScope==='all'?' selected':'')+'>全部</option><option'+(wbScope==='today'?' selected':'')+'>今日已入库</option><option'+(wbScope==='history'?' selected':'')+'>历史留仓</option></select>'],
+          ['库存时长','<select><option'+(wbAging==='全部'?' selected':'')+'>全部</option><option'+(wbAging==='0-4H'?' selected':'')+'>0-4H</option><option'+(wbAging==='4-8H'?' selected':'')+'>4-8H</option><option'+(wbAging==='8-24H'?' selected':'')+'>8-24H</option><option'+(wbAging==='24H以上'?' selected':'')+'>24H以上</option></select>'],
+          ['运输类型','<select><option'+(wbFlow==='all'?' selected':'')+'>全部</option><option'+(wbFlow==='trunk'?' selected':'')+'>干线</option><option'+(wbFlow==='branch'?' selected':'')+'>支线</option></select>'],
+          ['目的中心',selHtml('请选择')],
+          ['目的站点','<select><option'+(wbDestination==='请选择'?' selected':'')+'>请选择</option><option'+(wbDestination==='LAX01'?' selected':'')+'>LAX01</option><option'+(wbDestination==='LAX03'?' selected':'')+'>LAX03</option><option'+(wbDestination==='ATL'?' selected':'')+'>ATL</option></select>'],
+          ['目的路区',selHtml('请选择')],
+          ['服务渠道',selHtml('请选择')]
+        ])
+        +'<div class="scroll"><table><thead><tr><th>运单号</th><th>库存状态</th><th>入库时间</th><th>库存时长</th><th>客户</th><th>接单站点</th><th>始发中心</th><th>目的中心</th><th>目的站点</th><th>目的路区</th><th>服务渠道</th><th>袋号</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('WB202607130001','billQuery')+'</td><td><span class="lbadge lb-trunk">待签出</span></td><td>12:18:00 13/07/2026</td><td>2H</td><td>客户A</td><td>LAX站</td><td>LAX.H</td><td>LAX Hub</td><td>LAX01</td><td>R-12</td><td>标准</td><td>'+navLink('BAG202607130101','bagQuery')+'</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB202607120188','billQuery')+'</td><td><span class="lbadge lb-trunk">待签出</span></td><td>21:10:00 12/07/2026</td><td>17H</td><td>客户B</td><td>LAX站</td><td>LAX.H</td><td>LAX Hub</td><td>LAX01</td><td>R-12</td><td>加急</td><td>'+navLink('BAG202607120088','bagQuery')+'</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB202607110036','billQuery')+'</td><td><span class="lbadge lb-trunk">待签出</span></td><td>02:30:00 11/07/2026</td><td><span class="warnflag">36H</span></td><td>客户C</td><td>LAX站</td><td>LAX.H</td><td>ATL Hub</td><td>ATL</td><td>R-08</td><td>标准</td><td>'+navLink('BAG202607110036','bagQuery')+'</td></tr>'
+        +'<tr class="tot"><td colspan="2">合计</td><td colspan="10">当前示例共 3 票</td></tr>'
+        +'</tbody></table></div>'
+        +pagerHtml(77600,10,1,7760);
+    } else if(type==='loading-vehicles'){
+      t='查看明细-装车中-车辆数';
+      layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
+      content=filterBar([
+          ['状态','<select><option>全部</option><option selected>待发车</option><option>装车中</option></select>'],
+          ['目的地',selHtml('请选择')],
+          ['运输类型','<select><option>全部</option><option>干线</option><option selected>支线</option></select>'],
+          ['任务编码','<input placeholder="请输入任务编码"/>'],
+          ['计划抵达始发站时间','<input class="datetime-input" placeholder="开始时间 ~ 结束时间"/>'],
+          ['实际抵达始发站时间','<input class="datetime-input" placeholder="开始时间 ~ 结束时间"/>'],
+          ['计划发车时间','<input class="datetime-input" placeholder="开始时间 ~ 结束时间"/>']
+        ])
+        +'<div class="scroll"><table><thead><tr>'
+        +'<th>计划抵达始发站时间</th><th>实际抵达始发站时间</th><th>计划发车时间</th><th>任务编码</th><th>任务名称</th><th>车辆状态</th><th>车牌号</th><th>车型</th><th>始发地</th><th>目的地</th><th>装车袋数</th><th>装车运单数</th>'
+        +'</tr></thead><tbody>'
+        +'<tr><td>02:00:00 13/07/2026</td><td>09:33:44 12/07/2026</td><td>03:00:00 13/07/2026</td><td class="key-col">'+navLink('MT2026071300463','tms')+'</td><td>LAX.H-LAX01</td><td><span class="lbadge lb-trunk">待发车</span></td><td>1130</td><td>53FT</td><td>LAX.H</td><td>LAX01</td><td><span class="numlink" onclick="kbOpenDrawer(\'loading-bags\',{task:\'MT2026071300463\'})">36</span></td><td><span class="numlink" onclick="kbOpenDrawer(\'loading-waybills\',{task:\'MT2026071300463\'})">1,320</span></td></tr>'
+        +'<tr><td>02:00:00 13/07/2026</td><td>03:19:29 12/07/2026</td><td>03:00:00 13/07/2026</td><td class="key-col">'+navLink('MT2026071300433','tms')+'</td><td>LAX.H-LAX01</td><td><span class="lbadge lb-trunk">待发车</span></td><td>071201</td><td>53FT</td><td>LAX.H</td><td>LAX01</td><td><span class="numlink" onclick="kbOpenDrawer(\'loading-bags\',{task:\'MT2026071300433\'})">28</span></td><td><span class="numlink" onclick="kbOpenDrawer(\'loading-waybills\',{task:\'MT2026071300433\'})">1,150</span></td></tr>'
+        +'<tr class="tot"><td colspan="10">合计</td><td>64</td><td>2,470</td></tr>'
+        +'</tbody></table></div>'
+        +pagerHtml(2,10,1,1);
+    } else if(type==='loading-bags'){
+      t='查看明细-装车中-袋数';
+      layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
+      var bagTask=(arg&&arg.task)?arg.task:'MT2026071300463';
+      content=filterBar([
+          ['袋号','<input placeholder="请输入袋号"/>'],
+          ['目的地',selHtml('请选择')],
+          ['运输类型','<select><option>全部</option><option>干线</option><option selected>支线</option></select>'],
+          ['任务编码','<input value="'+bagTask+'" placeholder="请输入任务编码"/>']
+        ])
+        +'<div class="scroll"><table><thead><tr><th>袋号</th><th>运单数</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>任务编码</th><th>卸车地</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('BAG202607130001','bagQuery')+'</td><td>42</td><td>LAX01</td><td>LAX01</td><td>West</td><td>标准</td><td>'+navLink(bagTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG202607130002','bagQuery')+'</td><td>38</td><td>LAX01</td><td>LAX01</td><td>West</td><td>标准</td><td>'+navLink(bagTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG202607130003','bagQuery')+'</td><td>35</td><td>LAX01</td><td>LAX01</td><td>West</td><td>加急</td><td>'+navLink(bagTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG202607130004','bagQuery')+'</td><td>41</td><td>LAX01</td><td>LAX01</td><td>West</td><td>标准</td><td>'+navLink(bagTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col" colspan="8">… 共 64 袋</td></tr>'
+        +'</tbody></table></div>'
+        +pagerHtml(64,10,1,7);
+    } else if(type==='loading-waybills'){
+      t='查看明细-装车中-运单数';
+      layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
+      var wbTask=(arg&&arg.task)?arg.task:'MT2026071300463';
+      content=filterBar([
+          ['运单号','<input placeholder="请输入运单号"/>'],
+          ['目的地',selHtml('请选择')],
+          ['运输类型','<select><option>全部</option><option>干线</option><option selected>支线</option></select>'],
+          ['任务编码','<input value="'+wbTask+'" placeholder="请输入任务编码"/>']
+        ])
+        +'<div class="scroll"><table><thead><tr><th>运单号</th><th>任务编码</th><th>目的地</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300001','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300002','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300003','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300004','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300005','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300006','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300007','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300008','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300009','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB2026071300010','billQuery')+'</td><td>'+navLink(wbTask,'tms')+'</td><td>LAX01</td></tr>'
+        +'</tbody></table></div>'
+        +pagerHtml(2470,10,1,247);
+    } else if(type==='loading'){
+      t='查看明细-装车中';
+      content='<div class="loading-overview-card">'
+        +'<div class="loading-card-head">装车中</div>'
+        +'<div class="loading-card-metrics">'
+        +'<div class="loading-metric clickable" onclick="kbOpenDrawer(\'loading-vehicles\')" title="查看装车中车辆数明细">'
+        +'<div class="loading-metric-label">车辆数</div><div class="loading-metric-value"><span class="num">2</span><span class="unit">辆</span></div></div>'
+        +'<div class="loading-metric"><div class="loading-metric-label">路向</div><div class="loading-metric-value"><span class="num">1</span><span class="unit">个</span></div></div>'
+        +'<div class="loading-metric clickable" onclick="kbOpenDrawer(\'loading-bags\')" title="查看装车中袋数明细">'
+        +'<div class="loading-metric-label">袋数</div><div class="loading-metric-value"><span class="num">64</span><span class="unit">袋</span></div></div>'
+        +'<div class="loading-metric clickable" onclick="kbOpenDrawer(\'loading-waybills\')" title="查看装车中运单数明细">'
+        +'<div class="loading-metric-label">运单数</div><div class="loading-metric-value"><span class="num">2,470</span><span class="unit">票</span></div></div>'
+        +'</div></div>';
+    } else if(type==='todock'){
+      t='查看明细-待靠台';
+      content='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">车辆总数</div><div class="v"><span class="numlink" onclick="kbOpenDrawer(\'veh-todock\')">1</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">始发车辆数</div><div class="v"><span class="numlink" onclick="kbOpenDrawer(\'veh-todock\',\'始发\')">1</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">经停车辆数</div><div class="v"><span class="numlink" onclick="kbOpenDrawer(\'veh-todock\',\'经停\')">0</span></div></div>'
+        +'</div>';
+    } else if(type==='bag-detail'){
+      t='查看明细-袋详情';
+      content=filterBar([['袋号','<input placeholder="请输入袋号"/>'],['目的组织',selHtml('请选择')],['任务编码','<input placeholder="请输入"/>']])
+        +'<div class="scroll"><table><thead><tr><th>袋号</th><th>运单数</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>任务编码</th><th>卸车地/始发地</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('BAG-24060101','bagQuery')+'</td><td>38</td><td>LAX01</td><td>LAX Hub</td><td>West</td><td>标准</td><td>'+navLink('MT-91011','tms')+'</td><td>LAX01 Dock</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG-24060102','bagQuery')+'</td><td>42</td><td>LAX03</td><td>LAX Hub</td><td>North</td><td>加急</td><td>'+navLink('MT-91025','tms')+'</td><td>LAX03 Dock</td></tr>'
+        +'<tr><td class="key-col">'+navLink('BAG-24060103','bagQuery')+'</td><td>29</td><td>ATL</td><td>ATL Hub</td><td>East</td><td>标准</td><td>'+navLink('MT-91033','tms')+'</td><td>ATL Dock</td></tr>'
+        +'<tr><td class="key-col" colspan="8">… 共 12 袋</td></tr>'
+        +'</tbody></table></div>';
+    } else if(type==='wb-detail'){
+      t='查看明细-运单详情';
+      content=filterBar([['运单号','<input placeholder="请输入运单号"/>'],['任务编码','<input placeholder="请输入"/>']])
+        +'<div class="scroll"><table><thead><tr><th>运单号</th><th>任务编码</th><th>卸车</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('WB-240601001','billQuery')+'</td><td>'+navLink('MT-91011','tms')+'</td><td>LAX01 Dock</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB-240601002','billQuery')+'</td><td>'+navLink('MT-91011','tms')+'</td><td>LAX01 Dock</td></tr>'
+        +'<tr><td class="key-col">'+navLink('WB-240601003','billQuery')+'</td><td>'+navLink('MT-91025','tms')+'</td><td>LAX03 Dock</td></tr>'
+        +'<tr><td class="key-col" colspan="3">… 共 36,200 票</td></tr>'
+        +'</tbody></table></div>';
+    } else if(type==='veh-loading'){
+      t='查看明细-装车中 · 车辆明细';
+      content=filterBar([['目的地',selHtml('请选择')],['任务编码','<input placeholder="请输入"/>']])
+        +'<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划发车时间</th><th>装车袋数</th><th>装车运单数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>计划抵达始发站时间</th><th>实际抵达始发站时间</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('MT-91011','tms')+'</td><td>06-16 14:00</td><td><span class="numlink" onclick="kbOpenDrawer(\'bag-detail\',\'veh-loading-MT91011\')">28</span></td><td><span class="numlink" onclick="kbOpenDrawer(\'wb-detail\',\'veh-loading-MT91011\')">'+fmt(8200)+'</span></td><td>LAX→LAX01 站点</td><td>LAX H</td><td>LAX01</td><td>06-16 12:00</td><td>06-16 12:05</td></tr>'
+        +'<tr><td class="key-col" colspan="9">… 共 1 辆</td></tr>'
+        +'</tbody></table></div>';
+    } else if(type==='veh-fenced'){
+      t='查看明细-已发车未驶出电子围栏 · 车辆明细';
+      content=filterBar([['目的地',selHtml('请选择')],['任务编码','<input placeholder="请输入"/>']])
+        +'<div class="scroll"><table><thead><tr><th>任务编码</th><th>是否始发</th><th>是否绑定TAG</th><th>实际发车时间</th><th>装车袋数</th><th>装车运单数</th><th>任务名称</th><th>始发地</th><th>目的地</th></tr></thead><tbody>'
+        +'<tr><td class="key-col" colspan="9" style="text-align:center;color:#b0b5bc;">暂无数据</td></tr>'
+        +'</tbody></table></div>';
+    } else if(type==='veh-todock'){
+      t='查看明细-待靠台 · 车辆明细';
+      content=filterBar([['目的地',selHtml('请选择')],['任务编码','<input placeholder="请输入"/>']])
+        +'<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划抵达始发站时间</th><th>计划发车时间</th><th>任务名称</th><th>始发地</th><th>目的地</th></tr></thead><tbody>'
+        +'<tr><td class="key-col">'+navLink('MT-91011','vehicleMonitor')+'</td><td>06-16 12:00</td><td>06-16 14:00</td><td>LAX→LAX01 站点</td><td>LAX H</td><td>LAX01</td></tr>'
+        +'<tr><td class="key-col" colspan="6">… 共 1 辆</td></tr>'
+        +'</tbody></table></div>';
+    } else if(type==='veh-sent'){
+      t='查看明细-已发车 · 车辆明细';
+      content=filterBar([['目的地',selHtml('请选择')],['任务编码','<input placeholder="请输入"/>']])
+        +'<div class="scroll"><table><thead><tr><th>任务编码</th><th>是否始发</th><th>是否绑定TAG</th><th>实际发车时间</th><th>装车袋数</th><th>装车运单数</th><th>任务名称</th><th>始发地</th><th>目的地</th></tr></thead><tbody>'
+        +'<tr><td class="key-col" colspan="9" style="text-align:center;color:#b0b5bc;">暂无数据</td></tr>'
+        +'</tbody></table></div>';
+    }
+    titleEl.textContent=t;
+    bodyEl.innerHTML=content;
+    if(afterRender) afterRender();
+    layerEl.classList.add('on');
+    drawerLayers.push({el:layerEl,type:type,arg:arg});
+    document.body.style.overflow='hidden';
+  }
+  window.kbOpenDrawer=openDrawer;
+  window.openDrawer=openDrawer;
+  window.kbNavTo=function(type,text){
+    var labels={'vehicleMonitor':'车辆监控台','tms':'TMS出发到达管理','dispatchMonitor':'调度监控工作台','bagQuery':'袋号查询','billQuery':'派件运单管理中的基本信息'};
+    alert('跳转至：'+labels[type]+'\n编码：'+text);
+  };
+  // 绑定 data-drawer 点击
+  document.querySelectorAll('[data-drawer]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
+      openDrawer(this.getAttribute('data-drawer'));
+    });
+  });
+  // data-drill 事件委托
+  document.addEventListener('click',function(e){
+    var target=e.target.closest('[data-drill]');
+    if(!target) return;
+    var drillType=target.getAttribute('data-drill');
+    var bucket=target.getAttribute('data-bucket');
+    if(drillType==='etaveh'){openDrawer('towait',{bucket:bucket});}
+    else if(drillType==='etabag'){openDrawer('bag-detail',{bucket:bucket});}
+    else if(drillType==='etabill'){openDrawer('wb-detail',{bucket:bucket});}
+    else if(drillType==='loadingveh'){openDrawer('veh-loading',{bucket:bucket});}
+    else if(drillType==='loadingbag'){openDrawer('bag-detail',{bucket:bucket});}
+    else if(drillType==='loadingbill'){openDrawer('wb-detail',{bucket:bucket});}
+    else if(drillType==='fencedveh'){openDrawer('veh-fenced',{bucket:bucket});}
+    else if(drillType==='fencedbag'){openDrawer('bag-detail',{bucket:bucket});}
+    else if(drillType==='fencedbill'){openDrawer('wb-detail',{bucket:bucket});}
+    else if(drillType==='sentveh'){openDrawer('veh-sent',{bucket:bucket});}
+    else if(drillType==='sentbag'){openDrawer('bag-detail',{bucket:bucket});}
+    else if(drillType==='sentbill'){openDrawer('wb-detail',{bucket:bucket});}
+  });
+  // 辅助卡展开/收起
+  (function(){
+    var tg=document.getElementById('aux-toggle');
+    var cards=document.getElementById('aux-cards');
+    if(tg&&cards){tg.addEventListener('click',function(){
+      var show=cards.style.display==='none';
+      cards.style.display=show?'grid':'none';
+      tg.textContent=show?'收起辅助卡（待靠台 / 已装未发 / 已发车）▴':'展开辅助卡（待靠台 / 已装未发 / 已发车）▾';
+    });}
+  })();
+  // ESC 关闭
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeTopDrawer();}
+  });
+})();
+</script>
+
+</body>
+</html>
