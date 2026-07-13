@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - 独立版 V2.50</title>
+<title>分拣区看板 - 独立版 V2.55</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -689,6 +689,49 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .cutoff-countdown-tag.is-danger b{color:var(--red);}
 </style>
 
+
+<style>
+/* ===== 应分拣：四级下钻（仅调整应分拣） ===== */
+.backlog-flow-overview{display:flex;flex-direction:column;gap:14px}
+.backlog-dimension-group{padding:14px 15px;border:1px solid var(--line-2);border-radius:12px;background:#fafbfd}
+.backlog-dimension-group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px}
+.backlog-dimension-group-title{font-size:13px;font-weight:700;color:var(--text)}
+.backlog-dimension-group-desc{margin-top:3px;font-size:10.5px;color:var(--faint);line-height:1.45}
+.backlog-dimension-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.backlog-dimension-card{position:relative;min-height:88px;padding:12px 13px;border:1px solid #e5eaf0;border-radius:10px;background:#fff;cursor:pointer;text-align:left;font-family:inherit;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.backlog-dimension-card:hover{transform:translateY(-2px);border-color:var(--accent-line);box-shadow:0 8px 18px rgba(31,45,61,.08)}
+.backlog-dimension-card:focus-visible{outline:3px solid rgba(255,90,31,.16);outline-offset:2px}
+.backlog-dimension-card.is-all{background:linear-gradient(145deg,var(--accent-soft),#fff);border-color:var(--accent-line)}
+.backlog-dimension-card .name{display:flex;align-items:center;justify-content:space-between;gap:6px;color:var(--muted);font-size:11.5px;font-weight:650}
+.backlog-dimension-card.is-all .name{color:var(--accent)}
+.backlog-dimension-card .arrow{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:5px;background:#f3f6fa;color:var(--accent);font-size:13px;line-height:1}
+.backlog-dimension-card .value{display:flex;align-items:baseline;gap:4px;margin-top:9px;color:var(--text)}
+.backlog-dimension-card .value b{font-family:'IBM Plex Mono',monospace;font-size:21px;line-height:1;font-weight:750}
+.backlog-dimension-card.is-all .value b{color:var(--accent)}
+.backlog-dimension-card .value small{font-size:10px;color:var(--faint)}
+.backlog-flow-path{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:13px;padding:9px 11px;border:1px solid #e5eaf0;border-radius:10px;background:#f8fafc;color:var(--muted);font-size:11.5px}
+.backlog-flow-path .sep{color:#b6c0cc}.backlog-flow-path b{color:var(--text)}
+.backlog-flow-back{display:inline-flex;align-items:center;gap:4px;margin-left:auto;padding:5px 9px;border:1px solid var(--accent-line);border-radius:7px;background:#fff;color:var(--accent);font-family:inherit;font-size:11px;font-weight:650;cursor:pointer}
+.backlog-flow-back:hover{background:var(--accent-soft);transform:none!important}
+.backlog-flow-hero{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr);gap:12px;margin-bottom:14px}
+.backlog-flow-selected{padding:16px 18px;border:1px solid var(--accent-line);border-radius:12px;background:linear-gradient(145deg,var(--accent-soft),#fff)}
+.backlog-flow-selected .l{font-size:11px;color:#a54827;font-weight:700}.backlog-flow-selected .v{display:flex;align-items:baseline;gap:5px;margin-top:7px}.backlog-flow-selected .v b{font-family:'IBM Plex Mono',monospace;font-size:31px;line-height:1;color:var(--accent)}.backlog-flow-selected .v span{font-size:11px;color:#a05c44}
+.backlog-flow-selected .s{margin-top:8px;color:#7a604f;font-size:10.5px;line-height:1.55}
+.backlog-flow-rule{padding:13px 15px;border:1px solid var(--line-2);border-radius:12px;background:#f8fafc;color:var(--muted);font-size:11px;line-height:1.65}.backlog-flow-rule b{color:var(--text)}
+.backlog-flow-table th:first-child,.backlog-flow-table td:first-child{text-align:left}
+.backlog-flow-table th:nth-child(2),.backlog-flow-table td:nth-child(2){text-align:left}
+.backlog-flow-type-pill{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:650}
+.backlog-flow-type-pill.hub{background:#fff1eb;color:#d94f1b}.backlog-flow-type-pill.station{background:#eef4ff;color:#3867d6}.backlog-flow-type-pill.road{background:#fff7e8;color:#b86c00}.backlog-flow-type-pill.channel{background:#f3efff;color:#7252b8}
+.backlog-flow-footnote{margin-top:8px;color:var(--faint);font-size:10.5px;line-height:1.55}
+.backlog-child-mask{z-index:86;background:rgba(12,20,32,.24);backdrop-filter:blur(2px)}
+.backlog-child-mask .drawer{width:1040px;max-width:94vw;max-height:84vh}
+.backlog-child-mask .drawer-hd{background:linear-gradient(180deg,#fff,#fafbfd)}
+.backlog-child-mask .backlog-flow-table{min-width:560px}
+.backlog-child-mask .backlog-flow-table th:first-child,.backlog-child-mask .backlog-flow-table td:first-child{text-align:left}
+.backlog-child-mask .backlog-flow-table th:not(:first-child),.backlog-child-mask .backlog-flow-table td:not(:first-child){text-align:right}
+@media(max-width:1280px){.backlog-dimension-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.backlog-flow-hero{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 
@@ -1039,7 +1082,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
     </div>
   </section>
 
-  <div class="footer">中心看板 · 分拣区 V2.50</div>
+  <div class="footer">中心看板 · 分拣区 V2.55</div>
 </main>
 
 <!-- ===== Drawer (二级弹框) ===== -->
@@ -1056,7 +1099,18 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
   </div>
 </div>
 
-<!-- ===== Lightbox (三级弹框) ===== -->
+<!-- ===== 应分拣 / 待分拣目的流向（当前层级独立关闭） ===== -->
+<div class="drawer-mask backlog-child-mask" id="backlogFlowMask" aria-hidden="true">
+  <div class="drawer drawer-wide" role="dialog" aria-modal="true" aria-labelledby="backlogFlowTitle">
+    <div class="drawer-hd">
+      <span class="ttl" id="backlogFlowTitle">目的流向汇总</span>
+      <button class="drawer-x" id="backlogFlowClose" aria-label="关闭当前目的流向层级">✕</button>
+    </div>
+    <div class="drawer-bd" id="backlogFlowBody"></div>
+  </div>
+</div>
+
+<!-- ===== Lightbox（运单/袋号明细） ===== -->
 <div class="lightbox" id="lightbox">
   <div class="lightbox-box">
     <div class="drawer-hd">
@@ -1074,6 +1128,10 @@ const drawerTitle = document.getElementById('drawerTitle');
 const drawerBody  = document.getElementById('drawerBody');
 const drawerClose = document.getElementById('drawerClose');
 const drawerExportBtn = document.getElementById('drawerExportBtn');
+const backlogFlowMask = document.getElementById('backlogFlowMask');
+const backlogFlowBody = document.getElementById('backlogFlowBody');
+const backlogFlowTitle = document.getElementById('backlogFlowTitle');
+const backlogFlowClose = document.getElementById('backlogFlowClose');
 const lightbox = document.getElementById('lightbox');
 const lightboxBody = document.getElementById('lightboxBody');
 const lightboxClose = document.getElementById('lightboxClose');
@@ -1104,6 +1162,8 @@ function getDrawerExportName(type, extra) {
 }
 
 function openDrawer(type, extra) {
+  if (backlogFlowMask) { backlogFlowMask.classList.remove('on'); backlogFlowMask.setAttribute('aria-hidden', 'true'); }
+  if (lightbox) lightbox.classList.remove('on');
   drawerTitle.textContent = drawerTitles[type] || '明细';
   drawerBody.innerHTML = buildDrawer(type, extra);
   const drawerPanel = drawerMask.querySelector('.drawer');
@@ -1116,9 +1176,28 @@ function openDrawer(type, extra) {
   }
   drawerMask.classList.add('on');
 }
-function closeDrawer() { drawerMask.classList.remove('on'); }
+function openBacklogFlowDrawer(context, extra) {
+  if (!backlogFlowMask || !backlogFlowBody) return;
+  const drawerContext = context === 'pending' ? 'pending' : 'backlog';
+  if (backlogFlowTitle) backlogFlowTitle.textContent = `${drawerContext === 'pending' ? '待分拣' : '应分拣'} · 目的流向汇总`;
+  backlogFlowBody.innerHTML = buildDrawer(drawerContext, { ...(extra || {}), stage:'destination' });
+  backlogFlowMask.classList.add('on');
+  backlogFlowMask.setAttribute('aria-hidden', 'false');
+}
+function closeBacklogFlowDrawer() {
+  if (!backlogFlowMask) return;
+  backlogFlowMask.classList.remove('on');
+  backlogFlowMask.setAttribute('aria-hidden', 'true');
+}
+function closeDrawer() {
+  if (lightbox) lightbox.classList.remove('on');
+  closeBacklogFlowDrawer();
+  drawerMask.classList.remove('on');
+}
 drawerClose.addEventListener('click', closeDrawer);
 drawerMask.addEventListener('click', (e) => { if (e.target === drawerMask) closeDrawer(); });
+if (backlogFlowClose) backlogFlowClose.addEventListener('click', closeBacklogFlowDrawer);
+if (backlogFlowMask) backlogFlowMask.addEventListener('click', (e) => { if (e.target === backlogFlowMask) closeBacklogFlowDrawer(); });
 
 function openLightbox(name, count, scope) {
   const currentScope = scope || '应分拣';
@@ -1287,9 +1366,9 @@ function openSortedBagList(name, count, scope) {
           <th style="text-align:left;">集包类型</th>
         </tr></thead>
         <tbody>
-          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-DFW-201 · 运单" data-waybill-count="36" data-waybill-scope="已分拣 · 袋号查询">36</a></td><td style="text-align:left;">DFW</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;">自动集包</td></tr>
-          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-ATL-216 · 运单" data-waybill-count="42" data-waybill-scope="已分拣 · 袋号查询">42</a></td><td style="text-align:left;">ATL</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;">人工集包</td></tr>
-          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-IAH-209 · 运单" data-waybill-count="31" data-waybill-scope="已分拣 · 袋号查询">31</a></td><td style="text-align:left;">IAH</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;">自动集包</td></tr>
+          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-DFW-201 · 运单" data-waybill-count="36" data-waybill-scope="${currentScope} · 袋号查询">36</a></td><td style="text-align:left;">DFW</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;">自动集包</td></tr>
+          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-ATL-216 · 运单" data-waybill-count="42" data-waybill-scope="${currentScope} · 袋号查询">42</a></td><td style="text-align:left;">ATL</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;">人工集包</td></tr>
+          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-IAH-209 · 运单" data-waybill-count="31" data-waybill-scope="${currentScope} · 袋号查询">31</a></td><td style="text-align:left;">IAH</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;">自动集包</td></tr>
         </tbody>
       </table>
     </div>
@@ -1342,6 +1421,198 @@ function openBagQuery(bagNo) {
 function closeLightbox() { lightbox.classList.remove('on'); }
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (lightbox.classList.contains('on')) { closeLightbox(); return; }
+  if (backlogFlowMask && backlogFlowMask.classList.contains('on')) { closeBacklogFlowDrawer(); return; }
+  if (drawerMask.classList.contains('on')) closeDrawer();
+});
+
+
+function buildUnsortedDrawer(type, extra) {
+  const isPending = type === 'pending';
+  const scope = (extra && extra.scope) || 'all';
+  const stage = (extra && extra.stage) || 'overview';
+  const dimensionGroup = (extra && extra.dimensionGroup) || '';
+  const dimensionKey = (extra && extra.dimensionKey) || '';
+  const baseLabel = isPending ? '待分拣' : '应分拣';
+  const scopeDataMap = {
+    backlog: {
+      all: {
+        label:'应分拣', count:'6,795', time:[['<24H','6,651'],['24-48H','120'],['48-72H','20'],['>72H','4']],
+        source:{all:'6,795',transit:'6,500',pickup:'180',customs:'85',self:'30'},
+        sort:{all:'6,795',hub:'900',station:'3,800',road:'1,800',channel:'295'},
+        destination:{
+          hub:[['DFW H','520'],['IAH H','260'],['SFO H','120']],
+          station:[['ATL01','1,450'],['ATL03','920'],['SFO03','780'],['其他站点','650']],
+          road:[['ATL-R01','620'],['ATL-R02','470'],['SFO-R03','390'],['其他目的区域','320']],
+          channel:[['LAX.H-USPS(TT)','120'],['LAX.H-USPS(PM)','85'],['LAX.H-FEDEX(IP)','50'],['其他','40']]
+        }
+      },
+      today: {
+        label:'今日已入库-应分拣', count:'6,311', time:[['<24H','6,220'],['24-48H','75'],['48-72H','13'],['>72H','3']],
+        source:{all:'6,311',transit:'6,030',pickup:'170',customs:'81',self:'30'},
+        sort:{all:'6,311',hub:'850',station:'3,520',road:'1,670',channel:'271'},
+        destination:{
+          hub:[['DFW H','490'],['IAH H','245'],['SFO H','115']],
+          station:[['ATL01','1,350'],['ATL03','850'],['SFO03','720'],['其他站点','600']],
+          road:[['ATL-R01','580'],['ATL-R02','435'],['SFO-R03','365'],['其他目的区域','290']],
+          channel:[['LAX.H-USPS(TT)','110'],['LAX.H-USPS(PM)','78'],['LAX.H-FEDEX(IP)','46'],['其他','37']]
+        }
+      },
+      history: {
+        label:'历史留仓-应分拣', count:'484', time:[['<24H','431'],['24-48H','45'],['48-72H','7'],['>72H','1']],
+        source:{all:'484',transit:'470',pickup:'10',customs:'4',self:'0'},
+        sort:{all:'484',hub:'50',station:'280',road:'130',channel:'24'},
+        destination:{
+          hub:[['DFW H','30'],['IAH H','15'],['SFO H','5']],
+          station:[['ATL01','100'],['ATL03','70'],['SFO03','60'],['其他站点','50']],
+          road:[['ATL-R01','40'],['ATL-R02','35'],['SFO-R03','25'],['其他目的区域','30']],
+          channel:[['LAX.H-USPS(TT)','10'],['LAX.H-USPS(PM)','7'],['LAX.H-FEDEX(IP)','4'],['其他','3']]
+        }
+      }
+    },
+    pending: {
+      all: {
+        label:'待分拣', count:'10,000', time:[['<24H','9,700'],['24-48H','240'],['48-72H','50'],['>72H','10']],
+        source:{all:'10,000',transit:'9,516',pickup:'260',customs:'160',self:'64'},
+        sort:{all:'10,000',hub:'1,500',station:'5,600',road:'2,400',channel:'500'},
+        destination:{
+          hub:[['DFW H','840'],['IAH H','420'],['SFO H','240']],
+          station:[['ATL01','2,100'],['ATL03','1,500'],['SFO03','1,100'],['其他站点','900']],
+          road:[['ATL-R01','850'],['ATL-R02','650'],['SFO-R03','500'],['其他目的区域','400']],
+          channel:[['LAX.H-USPS(TT)','200'],['LAX.H-USPS(PM)','140'],['LAX.H-FEDEX(IP)','90'],['其他','70']]
+        }
+      },
+      today: {
+        label:'今日已入库-待分拣', count:'9,516', time:[['<24H','9,450'],['24-48H','55'],['48-72H','10'],['>72H','1']],
+        source:{all:'9,516',transit:'9,060',pickup:'250',customs:'150',self:'56'},
+        sort:{all:'9,516',hub:'1,430',station:'5,330',road:'2,280',channel:'476'},
+        destination:{
+          hub:[['DFW H','800'],['IAH H','400'],['SFO H','230']],
+          station:[['ATL01','2,000'],['ATL03','1,420'],['SFO03','1,050'],['其他站点','860']],
+          road:[['ATL-R01','810'],['ATL-R02','620'],['SFO-R03','470'],['其他目的区域','380']],
+          channel:[['LAX.H-USPS(TT)','190'],['LAX.H-USPS(PM)','135'],['LAX.H-FEDEX(IP)','86'],['其他','65']]
+        }
+      },
+      history: {
+        label:'历史留仓-待分拣', count:'484', time:[['<24H','431'],['24-48H','45'],['48-72H','7'],['>72H','1']],
+        source:{all:'484',transit:'456',pickup:'10',customs:'10',self:'8'},
+        sort:{all:'484',hub:'70',station:'270',road:'120',channel:'24'},
+        destination:{
+          hub:[['DFW H','40'],['IAH H','20'],['SFO H','10']],
+          station:[['ATL01','100'],['ATL03','70'],['SFO03','55'],['其他站点','45']],
+          road:[['ATL-R01','40'],['ATL-R02','30'],['SFO-R03','25'],['其他目的区域','25']],
+          channel:[['LAX.H-USPS(TT)','10'],['LAX.H-USPS(PM)','7'],['LAX.H-FEDEX(IP)','4'],['其他','3']]
+        }
+      }
+    }
+  };
+  const scopeData = scopeDataMap[type];
+  const d = scopeData[scope] || scopeData.all;
+  const sourceLabels = {all:'全部',transit:'中转',pickup:'揽收',customs:'清关',self:'客户自送'};
+  const sortLabels = {all:'全部',hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
+  const typeLabels = {hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
+  const toNumber = value => Number(String(value || 0).replace(/,/g,'')) || 0;
+  const formatNumber = value => Number(value || 0).toLocaleString('en-US');
+  const timeRows = d.time.map(([name,count]) => `<tr><td>${name}</td><td><a class="count-link" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}">${count}</a></td></tr>`).join('');
+  const buildDimensionCard = (group,key,label,count) => `
+    <button type="button" class="backlog-dimension-card ${key === 'all' ? 'is-all' : ''}" data-backlog-dimension-context="${type}" data-backlog-dimension-group="${group}" data-backlog-dimension-key="${key}" data-backlog-dimension-scope="${scope}">
+      <span class="name"><span>${label}</span><span class="arrow">›</span></span>
+      <span class="value"><b>${count}</b><small>票</small></span>
+    </button>`;
+
+  if (stage === 'destination') {
+    const selectedMap = dimensionGroup === 'source' ? d.source : d.sort;
+    const selectedLabels = dimensionGroup === 'source' ? sourceLabels : sortLabels;
+    const selectedCount = toNumber(selectedMap[dimensionKey] || d.count);
+    const selectedLabel = selectedLabels[dimensionKey] || '全部';
+    const groupLabel = dimensionGroup === 'source' ? '货物来源' : '分拣维度';
+    const typeOrder = ['hub','station','road','channel'];
+    let destinationRows = [];
+
+    if (dimensionGroup === 'sort' && dimensionKey !== 'all') {
+      destinationRows = (d.destination[dimensionKey] || []).map(([name,count]) => ({type:dimensionKey,name,count:toNumber(count)}));
+    } else {
+      const baseSortTotal = typeOrder.reduce((sum,key)=>sum+toNumber(d.sort[key]),0) || 1;
+      const allocatedByType = {};
+      let assigned = 0;
+      typeOrder.forEach((key,index) => {
+        const value = index === typeOrder.length - 1
+          ? selectedCount - assigned
+          : Math.floor(selectedCount * toNumber(d.sort[key]) / baseSortTotal);
+        allocatedByType[key] = Math.max(0,value);
+        assigned += allocatedByType[key];
+      });
+      typeOrder.forEach(typeKey => {
+        const baseRows = d.destination[typeKey] || [];
+        const baseTotal = baseRows.reduce((sum,row)=>sum+toNumber(row[1]),0) || 1;
+        let typeAssigned = 0;
+        baseRows.forEach(([name,count],index) => {
+          const value = index === baseRows.length - 1
+            ? allocatedByType[typeKey] - typeAssigned
+            : Math.floor(allocatedByType[typeKey] * toNumber(count) / baseTotal);
+          const safeValue = Math.max(0,value);
+          typeAssigned += safeValue;
+          destinationRows.push({type:typeKey,name,count:safeValue});
+        });
+      });
+    }
+
+    const destinationTotal = destinationRows.reduce((sum,row)=>sum+row.count,0);
+    const flowRows = destinationRows.map(row => `<tr>
+      <td>${row.name}</td>
+      <td><a class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · ${typeLabels[row.type]} · ${row.name}" data-waybill-count="${formatNumber(row.count)}" data-waybill-scope="${d.label}">${formatNumber(row.count)}</a></td>
+    </tr>`).join('');
+    return `
+      <div class="backlog-flow-path" data-backlog-dimension-page>
+        <span>${baseLabel}</span><span class="sep">›</span><span>${d.label}</span><span class="sep">›</span><span>${groupLabel}</span><span class="sep">›</span><b>${selectedLabel}</b><span class="sep">›</span><b>目的流向汇总</b>
+        <button type="button" class="backlog-flow-back" data-action="backlog-flow-back">← 关闭当前层级</button>
+      </div>
+      <div class="drawer-section-head">
+        <div class="sec-title">目的流向汇总</div>
+        <div class="section-head-actions"><span class="scope-tag">${groupLabel}：${selectedLabel}</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · ${groupLabel}-${selectedLabel} · 目的流向汇总">导出</button></div>
+      </div>
+      <div class="table-scroll"><table class="tbl backlog-flow-table"><thead><tr><th>目的流向</th><th>运单数量</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · 目的流向合计" data-waybill-count="${formatNumber(destinationTotal)}" data-waybill-scope="${d.label}">${formatNumber(destinationTotal)}</a></td></tr>${flowRows}</tbody></table></div>
+      <div class="backlog-flow-footnote">点击运单数量进入运单明细。关闭本页后，上一级“${baseLabel} · 下钻分析”仍保留。</div>
+    `;
+  }
+
+  const sourceCards = Object.entries(sourceLabels).map(([key,label]) => buildDimensionCard('source',key,label,d.source[key])).join('');
+  const sortCards = Object.entries(sortLabels).map(([key,label]) => buildDimensionCard('sort',key,label,d.sort[key])).join('');
+  const definition = isPending
+    ? '今日已入库-待分拣与历史留仓-待分拣中，已经实际入库且尚未完成分拣的运单；不包含预计到车。'
+    : '历史留仓-待分拣与今日已入库-待分拣中，实际入库时间小于等于散货截单时间的运单；不包含预计到车。';
+  return `
+    <div class="stats-row backlog-stats">
+      <div class="stat backlog-filter-card ${scope === 'all' ? 'on' : ''}" data-backlog-scope="all" data-backlog-context="${type}"><div class="l">${scopeData.all.label}</div><div class="v num" style="color:${isPending ? 'var(--accent)' : 'var(--red)'};">${scopeData.all.count}</div></div>
+      <div class="stat backlog-filter-card ${scope === 'today' ? 'on' : ''}" data-backlog-scope="today" data-backlog-context="${type}"><div class="l">${scopeData.today.label}</div><div class="v num">${scopeData.today.count}</div></div>
+      <div class="stat backlog-filter-card ${scope === 'history' ? 'on' : ''}" data-backlog-scope="history" data-backlog-context="${type}"><div class="l">${scopeData.history.label}</div><div class="v num">${scopeData.history.count}</div></div>
+    </div>
+    <div class="metric-note"><b>统计口径：</b>${definition}当前筛选：<b>${d.label}</b>。</div>
+    <div class="drawer-section-head">
+      <div class="sec-title">时间分布</div>
+      <div class="section-head-actions"><span class="scope-tag">${d.label} · ${d.count} 票</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 时间分布">导出</button></div>
+    </div>
+    <table class="tbl"><thead><tr><th style="text-align:left;">时间分布</th><th>运单数</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="时间分布：合计" data-waybill-count="${d.count}" data-waybill-scope="${d.label}">${d.count}</a></td></tr>${timeRows}</tbody></table>
+    <div style="font-size:10.5px;color:var(--faint);margin-top:6px;">时间分布 = 当前时间 −【到件时间、签入时间、集包时间】中的最早时间。</div>
+    <div class="drawer-section-head">
+      <div class="sec-title">目的流向 · 维度汇总</div>
+      <div class="section-head-actions"><span class="scope-tag">先选维度，再查看目的流向</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 流向维度汇总">导出</button></div>
+    </div>
+    <div class="backlog-flow-overview">
+      <section class="backlog-dimension-group">
+        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">货物来源</div><div class="backlog-dimension-group-desc">按进入分拣环节前的业务来源汇总，点击后查看该来源下的目的流向。</div></div><span class="scope-tag">明细合计 = ${d.count} 票</span></div>
+        <div class="backlog-dimension-grid">${sourceCards}</div>
+      </section>
+      <section class="backlog-dimension-group">
+        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">分拣维度</div><div class="backlog-dimension-group-desc">HUB、站点、路区、服务渠道按互斥分拣类型汇总，每票仅归入一项。</div></div><span class="scope-tag">明细合计 = ${d.count} 票</span></div>
+        <div class="backlog-dimension-grid">${sortCards}</div>
+      </section>
+    </div>
+    <div class="flow-dimension-note">点击“全部”或任一维度卡片进入目的流向汇总，再点击运单数进入运单管理。</div>
+  `;
+}
 
 function buildDrawer(type, extra) {
   if (type === 'reflowRate') return `
@@ -1356,109 +1627,7 @@ function buildDrawer(type, extra) {
       <b>研发逻辑：</b>按当前组织、当前分拣班次统计；分子取存在有效回流扫描记录的运单，分母与“已分拣”指标保持同一统计口径；同一运单多次回流只计一次。
     </div>
   `;
-  if (type === 'backlog' || type === 'pending') {
-    const isPending = type === 'pending';
-    const scope = (extra && extra.scope) || 'all';
-    const flowType = (extra && extra.flowType) || 'all';
-    const backlogScopeData = {
-      all: {
-        label:'应分拣', count:'6,795', time:[['<24H','6,651'],['24-48H','120'],['48-72H','20'],['>72H','4']],
-        flow:{
-          hub:[['DFW H','1,700'],['IAH H','1,200']],
-          station:[['ATL01','1,205'],['SFO03','895']],
-          road:[['ATL-R01','450'],['ATL-R02','330'],['SFO-R03','220']],
-          channel:[['LAX.H-USPS(TT)','400'],['LAX.H-USPS(PM)','220'],['LAX.H-FEDEX(IP)','100'],['其他','75']]
-        }
-      },
-      today: {
-        label:'今日已入库-应分拣', count:'6,311', time:[['<24H','6,220'],['24-48H','75'],['48-72H','13'],['>72H','3']],
-        flow:{
-          hub:[['DFW H','1,580'],['IAH H','1,120']],
-          station:[['ATL01','1,120'],['SFO03','830']],
-          road:[['ATL-R01','420'],['ATL-R02','305'],['SFO-R03','205']],
-          channel:[['LAX.H-USPS(TT)','365'],['LAX.H-USPS(PM)','205'],['LAX.H-FEDEX(IP)','95'],['其他','66']]
-        }
-      },
-      history: {
-        label:'历史留仓-应分拣', count:'484', time:[['<24H','431'],['24-48H','45'],['48-72H','7'],['>72H','1']],
-        flow:{
-          hub:[['DFW H','120'],['IAH H','80']],
-          station:[['ATL01','85'],['SFO03','65']],
-          road:[['ATL-R01','30'],['ATL-R02','25'],['SFO-R03','15']],
-          channel:[['LAX.H-USPS(TT)','35'],['LAX.H-USPS(PM)','15'],['LAX.H-FEDEX(IP)','5'],['其他','9']]
-        }
-      }
-    };
-    const pendingScopeData = {
-      all: {
-        label:'待分拣', count:'10,000', time:[['<24H','9,700'],['24-48H','240'],['48-72H','50'],['>72H','10']],
-        flow:{
-          hub:[['DFW H','2,200'],['IAH H','1,600']],
-          station:[['ATL01','1,750'],['SFO03','1,250']],
-          road:[['ATL-R01','800'],['ATL-R02','650'],['SFO-R03','450']],
-          channel:[['LAX.H-USPS(TT)','650'],['LAX.H-USPS(PM)','350'],['LAX.H-FEDEX(IP)','180'],['其他','120']]
-        }
-      },
-      today: {
-        label:'今日已入库-待分拣', count:'9,516', time:[['<24H','9,450'],['24-48H','55'],['48-72H','10'],['>72H','1']],
-        flow:{
-          hub:[['DFW H','2,080'],['IAH H','1,520']],
-          station:[['ATL01','1,660'],['SFO03','1,190']],
-          road:[['ATL-R01','760'],['ATL-R02','615'],['SFO-R03','425']],
-          channel:[['LAX.H-USPS(TT)','630'],['LAX.H-USPS(PM)','340'],['LAX.H-FEDEX(IP)','176'],['其他','120']]
-        }
-      },
-      history: {
-        label:'历史留仓-待分拣', count:'484', time:[['<24H','431'],['24-48H','45'],['48-72H','7'],['>72H','1']],
-        flow:{
-          hub:[['DFW H','120'],['IAH H','80']],
-          station:[['ATL01','90'],['SFO03','60']],
-          road:[['ATL-R01','40'],['ATL-R02','35'],['SFO-R03','25']],
-          channel:[['LAX.H-USPS(TT)','20'],['LAX.H-USPS(PM)','10'],['LAX.H-FEDEX(IP)','4'],['其他','0']]
-        }
-      }
-    };
-    const scopeData = isPending ? pendingScopeData : backlogScopeData;
-    const d = scopeData[scope];
-    const flowTypeLabelMap = {all:'全部', hub:'HUB', station:'站点', road:'路区', channel:'服务渠道'};
-    const flowTypeLabel = flowTypeLabelMap[flowType] || '全部';
-    const numberValue = value => Number(String(value).replace(/,/g,'')) || 0;
-    const typedRows = ['hub','station','road','channel'].flatMap(key => (d.flow[key] || []).map(([name,count]) => ({type:key,name,count})));
-    const visibleFlow = flowType === 'all' ? typedRows : typedRows.filter(item => item.type === flowType);
-    const flowTotal = visibleFlow.reduce((sum,item)=>sum+numberValue(item.count),0).toLocaleString('en-US');
-    const flowColumnName = flowType === 'hub' ? '目的中心' : flowType === 'station' ? '目的站点' : flowType === 'road' ? '目的区域' : flowType === 'channel' ? '服务渠道' : '目的组织';
-    const timeRows = d.time.map(([name,count]) => `<tr><td>${name}</td><td><a class="count-link" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}">${count}</a></td></tr>`).join('');
-    const flowRows = visibleFlow.map(item => `<tr><td>${item.name}</td><td><a class="count-link" data-waybill-name="目的流向（${flowTypeLabel}）：${item.name}" data-waybill-count="${item.count}" data-waybill-scope="${d.label}">${item.count}</a></td></tr>`).join('');
-    return `
-      <div class="stats-row backlog-stats">
-        <div class="stat backlog-filter-card ${scope === 'all' ? 'on' : ''}" data-backlog-scope="all" data-backlog-context="${type}"><div class="l">${scopeData.all.label}</div><div class="v num" style="color:${isPending ? 'var(--accent)' : 'var(--red)'};">${scopeData.all.count}</div></div>
-        <div class="stat backlog-filter-card ${scope === 'today' ? 'on' : ''}" data-backlog-scope="today" data-backlog-context="${type}"><div class="l">${scopeData.today.label}</div><div class="v num">${scopeData.today.count}</div></div>
-        <div class="stat backlog-filter-card ${scope === 'history' ? 'on' : ''}" data-backlog-scope="history" data-backlog-context="${type}"><div class="l">${scopeData.history.label}</div><div class="v num">${scopeData.history.count}</div></div>
-      </div>
-      <div class="metric-note"><b>统计口径：</b>${isPending ? '今日已入库-待分拣与历史留仓-待分拣中，已经实际入库且尚未完成分拣的运单；不包含预计到车。' : '历史留仓-待分拣与今日已入库-待分拣中，实际入库时间小于等于散货截单时间的运单；不包含预计到车。'}当前筛选：<b>${d.label}</b>。</div>
-      <div class="drawer-section-head">
-        <div class="sec-title">时间分布</div>
-        <div class="section-head-actions"><span class="scope-tag">${d.label} · ${d.count} 票</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 时间分布">导出</button></div>
-      </div>
-      <table class="tbl"><thead><tr><th style="text-align:left;">时间分布</th><th>运单数</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="时间分布：合计" data-waybill-count="${d.count}" data-waybill-scope="${d.label}">${d.count}</a></td></tr>${timeRows}</tbody></table>
-      <div style="font-size:10.5px;color:var(--faint);margin-top:6px;">时间分布 = 当前时间 −【到件时间、签入时间、集包时间】中的最早时间。</div>
-      <div class="drawer-section-head">
-        <div class="sec-title">目的流向</div>
-        <div class="section-head-actions">
-          <div class="flow-filter-tabs" role="tablist" aria-label="目的流向分拣类型筛选">
-            <button type="button" class="flow-filter-tab ${flowType === 'all' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="all">全部</button>
-            <button type="button" class="flow-filter-tab ${flowType === 'hub' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="hub">HUB</button>
-            <button type="button" class="flow-filter-tab ${flowType === 'station' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="station">站点</button>
-            <button type="button" class="flow-filter-tab ${flowType === 'road' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="road">路区</button>
-            <button type="button" class="flow-filter-tab ${flowType === 'channel' ? 'on' : ''}" data-flow-context="${type}" data-flow-type="channel">服务渠道</button>
-          </div>
-          <button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 目的流向（${flowTypeLabel}）">导出</button>
-        </div>
-      </div>
-      <table class="tbl"><thead><tr><th style="text-align:left;">${flowColumnName}</th><th>运单数</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="目的流向（${flowTypeLabel}）：合计" data-waybill-count="${flowTotal}" data-waybill-scope="${d.label}">${flowTotal}</a></td></tr>${flowRows}</tbody></table>
-      <div class="flow-dimension-note">HUB、站点、路区、服务渠道按分拣类型筛选；路区列表展示目的区域。点击运单数进入运单管理。</div>
-    `;
-  }
+  if (type === 'backlog' || type === 'pending') return buildUnsortedDrawer(type, extra);
   if (type === 'sorted') {
     const rows = mainFlowTypeSummaryRows();
     const totalTickets = rows.reduce((sum,row)=>sum+row.tickets,0);
@@ -1698,12 +1867,24 @@ document.addEventListener('click', (e) => {
 
   const filterCard = e.target.closest('.backlog-filter-card');
   if (filterCard) {
-    const activeFlowTab = drawerBody.querySelector('.flow-filter-tab.on');
     const drawerContext = filterCard.getAttribute('data-backlog-context') || 'backlog';
     openDrawer(drawerContext, {
       scope: filterCard.getAttribute('data-backlog-scope'),
-      flowType: activeFlowTab ? activeFlowTab.getAttribute('data-flow-type') : 'all'
+      stage: 'overview'
     });
+    return;
+  }
+
+  const backlogDimensionCard = e.target.closest('.backlog-dimension-card');
+  if (backlogDimensionCard) {
+    openBacklogFlowDrawer(
+      backlogDimensionCard.getAttribute('data-backlog-dimension-context') || 'backlog',
+      {
+        scope: backlogDimensionCard.getAttribute('data-backlog-dimension-scope') || 'all',
+        dimensionGroup: backlogDimensionCard.getAttribute('data-backlog-dimension-group') || 'source',
+        dimensionKey: backlogDimensionCard.getAttribute('data-backlog-dimension-key') || 'all'
+      }
+    );
     return;
   }
 
@@ -1787,6 +1968,10 @@ document.addEventListener('click', (e) => {
   const action = e.target.closest('[data-action]');
   if (action) {
     const actionName = action.getAttribute('data-action');
+    if (actionName === 'backlog-flow-back') {
+      closeBacklogFlowDrawer();
+      return;
+    }
     if (actionName === 'flow-back') {
       const flowContext = action.getAttribute('data-flow-context') || 'backlog';
       const payload = { flowType: action.getAttribute('data-flow-type') || 'station', flowLevel:'summary' };
