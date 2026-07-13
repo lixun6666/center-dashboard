@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - GOFO 管理后台 V2.80</title>
+<title>分拣区看板 - GOFO 管理后台 V2.89</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -1586,6 +1586,306 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 .card-hd{margin-bottom:10px !important;}
 </style>
 
+
+<style id="gofo-v282-time-title-tune">
+/* ===== V2.82 时长卡标题优化 ===== */
+.backlog-time-card-head{display:block !important;}
+.backlog-time-card-label{display:block !important;text-align:left !important;}
+</style>
+
+
+<style id="gofo-v283-square-contract">
+/* ===== V2.83 GOFO 卡片 / Tab 直角规范 ===== */
+:root{--r-card:2px;--gofo-card-radius:2px;--gofo-control-radius:2px}
+
+/* 页面级与业务卡片 */
+.card,.kpi,.abn-panel,
+.gofo-business-nav-card,.gofo-filter-card,
+.history-total-card,.history-status-panel,.history-flat-card,.history-flat-section,
+.history-time-panel,.history-time-card,
+.backlog-time-card,.backlog-dimension-group,.backlog-dimension-card,
+.metric-note,.history-insight,.history-definition,.history-data-note,
+.main-flow-filterbar,.main-flow-note,
+.query-filter-card,.query-table-card,.bag-query-card,.compare-table,
+.table-scroll,.scroll,.stat,.hold-card,.status-card,
+.drawer,.drawer-panel,.drawer-stat,.history-hero-main,.history-drawer-time,
+.backlog-flow-selected,.backlog-flow-rule,.backlog-flow-path,
+.flow-breadcrumb,.query-panel{
+  border-radius:2px !important;
+}
+
+/* 固定页签、业务 Tab、维度切换 Tab */
+.gofo-tab-card,.gofo-tab-more,
+.gofo-business-tabs button,
+.tabs a,
+.seg-group,.filter-tabs,
+.seg-group button,.filter-tabs button,
+.flow-filter-tabs,.flow-filter-tab,
+.main-flow-tabs,.main-flow-tab,
+.history-dimension-tabs,.history-dimension-tab,
+.history-stage-chevron{
+  border-radius:2px !important;
+}
+
+/* 通用操作控件 */
+.gofo-filter-value,.gofo-filter-control,.gofo-primary-btn,
+.query-input,.query-select,.action-btn,
+.section-export-btn,.flow-back-btn,.backlog-flow-back,
+.query-toolbar-icon,.pagination-btn,.pagination-ellipsis,
+.pagination-page-size,.pagination-jump-input,
+.drawer-x,.drawer-close{
+  border-radius:2px !important;
+}
+
+/* 直角卡片不再使用过度圆润的内部装饰 */
+.history-time-card:before,.backlog-time-card:before,
+.history-flat-card:before,.kpi:before,.history-status-card:before{
+  border-radius:0 !important;
+}
+
+/* 状态标签、圆点、头像等语义元素继续保留圆形/胶囊 */
+.scope-tag,.status-pill,.history-time-panel-tip,.history-panel-head span,
+.machine-manual-scope,.history-pill,.gofo-avatar,.gofo-notice:after,
+.realtime-dot,.status-dot,.compare-dot{
+  border-radius:999px !important;
+}
+</style>
+
+
+<style id="gofo-v284-time-card-kpi-layout">
+/* ===== V2.84 滞留时长卡片布局对齐外围 KPI ===== */
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  min-height:116px !important;
+  padding:14px 16px !important;
+  border:1px solid var(--line) !important;
+  border-radius:2px !important;
+  background:#fff !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04) !important;
+  text-align:left !important;
+  transform:none !important;
+}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card:hover,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card:hover{
+  transform:none !important;
+  border-color:#ffd0bc !important;
+  box-shadow:0 3px 10px rgba(0,0,0,.08) !important;
+}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-head,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-head{
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-label,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-label{
+  display:block !important;
+  width:100% !important;
+  color:var(--muted) !important;
+  font-size:12px !important;
+  line-height:1.4 !important;
+  font-weight:600 !important;
+  text-align:left !important;
+}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value{
+  display:flex !important;
+  align-items:baseline !important;
+  gap:4px !important;
+  width:100% !important;
+  margin-top:8px !important;
+  line-height:1 !important;
+}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value b,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value b{
+  font-size:clamp(25px,2vw,30px) !important;
+  line-height:1 !important;
+  font-weight:700 !important;
+  letter-spacing:-.7px !important;
+}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value small,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value small{
+  display:inline !important;
+  font-size:11px !important;
+  line-height:1 !important;
+  color:var(--faint) !important;
+  white-space:nowrap !important;
+}
+/* 状态通过左侧色条和边框表达，布局与外围 KPI 保持一致 */
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card.watch,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card.watch{border-color:#dce7fb !important;}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card.warning,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card.warning{border-color:#f3dfba !important;}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card.danger,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card.danger{border-color:#f3d2cf !important;}
+</style>
+
+
+<style id="gofo-v286-interface-switch">
+/* ===== V2.86 页面超链接 / 界面切换入口 ===== */
+.gofo-interface-switch{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:32px;
+}
+.gofo-interface-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  height:32px;
+  padding:0 12px;
+  border:1px solid #dcdfe6;
+  border-radius:2px;
+  background:#fff;
+  color:#303133;
+  font-size:13px;
+  font-weight:500;
+  line-height:1;
+  text-decoration:none;
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+  transition:border-color .16s ease,color .16s ease,background .16s ease;
+}
+.gofo-interface-link:hover,
+.gofo-interface-link:focus-visible{
+  border-color:var(--gofo-primary);
+  color:var(--gofo-primary);
+  background:#fffaf7;
+  outline:0;
+}
+.gofo-interface-link[aria-current="page"]{
+  border-color:#cfd5dd;
+  background:#fff;
+  color:#1f2937;
+  box-shadow:inset 0 -2px 0 var(--gofo-primary);
+}
+.gofo-interface-link gofo-icon{
+  width:15px;
+  height:15px;
+  flex:0 0 15px;
+}
+@media(max-width:1100px){
+  .gofo-interface-switch{overflow-x:auto;padding-bottom:1px;}
+  .gofo-interface-link{white-space:nowrap;}
+}
+</style>
+
+
+<style id="gofo-v287-attention-contract">
+/* ===== V2.87 重点关注事项卡：GOFO 组件规范 ===== */
+.abn-list{gap:6px !important;}
+.abn-item{
+  min-height:58px;
+  padding:10px 12px !important;
+  gap:10px;
+  align-items:center !important;
+  border:1px solid #f0f0f0 !important;
+  border-left:3px solid #e5484d !important;
+  border-radius:2px !important;
+  background:#fff !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  transform:none !important;
+}
+.abn-item.amber{border-color:#f0f0f0 !important;border-left-color:#e0921a !important;}
+.abn-item:hover{
+  background:#fafafa !important;
+  border-color:#ffd0bc !important;
+  border-left-color:#e5484d !important;
+  box-shadow:0 3px 10px rgba(0,0,0,.08);
+  transform:none !important;
+}
+.abn-item.amber:hover{border-left-color:#e0921a !important;}
+.abn-item .dot{width:6px;height:6px;margin-top:0;box-shadow:none !important;}
+.abn-item .txt{min-width:0;}
+.abn-item .ttl{font-size:13px;font-weight:600;line-height:1.35;color:#303133;}
+.abn-item .sub{margin-top:4px;font-size:11px;line-height:1.35;color:#909399;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.abn-badge{border-radius:2px !important;box-shadow:none !important;}
+</style>
+
+
+<style id="gofo-v288-mini-kpi-contract">
+/* ===== V2.88 峰值/谷值/均值/时速指标卡 GOFO 规范 ===== */
+.kpi-strip{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:8px;
+  padding-top:10px;
+}
+.ms-card,
+.ms-card.amber,
+.ms-card.blue{
+  min-width:0;
+  min-height:76px;
+  padding:10px 12px;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  align-items:start;
+  text-align:left;
+  border:1px solid var(--gofo-border,#f0f0f0);
+  border-radius:2px;
+  background:#fff;
+  box-shadow:none;
+  box-sizing:border-box;
+}
+.ms-card .l,
+.ms-card.amber .l,
+.ms-card.blue .l{
+  font-size:12px;
+  line-height:1.2;
+  font-weight:500;
+  color:#606266;
+}
+.ms-card .v,
+.ms-card.amber .v,
+.ms-card.blue .v{
+  align-self:center;
+  margin-top:5px;
+  font-size:23px;
+  line-height:1;
+  font-weight:600;
+  color:#303133;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.ms-card.amber .v{color:#d97706;}
+.ms-card.blue .v{color:var(--gofo-primary,#fc4c02);}
+.ms-card .s,
+.ms-card.amber .s,
+.ms-card.blue .s{
+  margin-top:5px;
+  font-size:11px;
+  line-height:1.2;
+  color:#909399;
+}
+.ms-card:hover{transform:none!important;box-shadow:none!important;border-color:#dcdfe6;}
+@media(max-width:1366px){
+  .ms-card,.ms-card.amber,.ms-card.blue{padding:9px 10px;}
+  .ms-card .v,.ms-card.amber .v,.ms-card.blue .v{font-size:21px;}
+}
+</style>
+
+
+<style id="gofo-v289-nav-align">
+/* ===== V2.89 业务导航与界面入口同排 ===== */
+.gofo-business-nav-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:44px;
+}
+.gofo-interface-switch{margin-left:auto;flex:0 0 auto;}
+@media(max-width:1180px){
+  .gofo-business-nav-card{overflow-x:auto;}
+  .gofo-business-tabs,.gofo-interface-switch{flex:0 0 auto;}
+}
+</style>
+
 </head>
 <body>
 <header class="gofo-header">
@@ -1598,7 +1898,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
     <div class="gofo-header-action optional" title="语言">中文⌄</div>
     <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
     <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
-    <span class="gofo-version">V2.80</span>
+    <span class="gofo-version">V2.89</span>
   </div>
 </header>
 <aside class="gofo-sidebar" aria-label="主菜单">
@@ -1618,14 +1918,28 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 </div>
 
 <main class="gofo-content">
-  <section class="gofo-business-nav-card" aria-label="业务区域切换">
+  <section class="gofo-business-nav-card" aria-label="业务区域与界面切换">
     <div class="gofo-business-tabs" role="tablist" aria-label="中心看板业务区域">
-      <button type="button" role="tab" aria-selected="false" data-business-tab="overview">概览</button>
+      <button type="button" role="tab" aria-selected="false" data-business-tab="overview">概况</button>
       <button type="button" role="tab" aria-selected="false" data-business-tab="unload">卸车区</button>
       <button type="button" role="tab" aria-selected="true" class="active" data-business-tab="sorting">分拣区</button>
       <button type="button" role="tab" aria-selected="false" data-business-tab="loading">装车区</button>
       <button type="button" role="tab" aria-selected="false" data-business-tab="exception">异常区</button>
     </div>
+    <nav class="gofo-interface-switch" aria-label="页面入口与界面切换">
+      <a class="gofo-interface-link" href="#center-dashboard-old" aria-current="page" data-interface-link="center-dashboard-old">
+        <gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7M8 12h11"/></svg></gofo-icon>
+        <span>中心看板（旧）</span>
+      </a>
+      <a class="gofo-interface-link" href="#operations-cockpit" data-interface-link="operations-cockpit">
+        <span>运营驾驶舱</span>
+        <gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></gofo-icon>
+      </a>
+      <a class="gofo-interface-link" href="#mobile-view" data-interface-link="mobile-view">
+        <span>移动端（观层）</span>
+        <gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></gofo-icon>
+      </a>
+    </nav>
   </section>
 
   <section class="gofo-filter-card" aria-label="分拣区筛选条件">
@@ -1965,7 +2279,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
     </div>
   </section>
 
-  <div class="footer">中心看板 · 分拣区 V2.80</div>
+  <div class="footer">中心看板 · 分拣区 V2.89</div>
 </main>
 
 <!-- ===== Drawer (二级弹框) ===== -->
@@ -2051,8 +2365,9 @@ function openDrawer(type, extra) {
   drawerBody.innerHTML = buildDrawer(type, extra);
   drawerBody.setAttribute('data-drawer-type', type);
   const drawerPanel = drawerMask.querySelector('.drawer');
-  const exportable = type === 'backlog' || type === 'pending' || type === 'sorted' || type === 'history';
-  if (drawerPanel) drawerPanel.classList.toggle('drawer-wide', exportable);
+  const wideDrawer = type === 'backlog' || type === 'pending' || type === 'sorted' || type === 'history';
+  const exportable = type === 'sorted' || type === 'history';
+  if (drawerPanel) drawerPanel.classList.toggle('drawer-wide', wideDrawer);
   if (drawerExportBtn) {
     drawerExportBtn.style.display = exportable ? 'inline-flex' : 'none';
     drawerExportBtn.setAttribute('data-export-name', exportable ? getDrawerExportName(type, extra) : '');
@@ -2404,10 +2719,11 @@ function buildUnsortedDrawer(type, extra) {
   const toNumber = value => Number(String(value || 0).replace(/,/g,'')) || 0;
   const formatNumber = value => Number(value || 0).toLocaleString('en-US');
   const timeToneMap = ['normal','watch','warning','danger'];
+  const backlogTimeDisplayMap = {'<24H':'小于24H','24-48H':'24-48H','48-72H':'48-72H','>72H':'大于72H'};
   const timeCards = d.time.map(([name,count], index) => {
     const value = toNumber(count);
     return `<button type="button" class="backlog-time-card count-link ${timeToneMap[index] || 'normal'}" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}" aria-label="查看${d.label}${name}运单，共${count}票">
-      <span class="backlog-time-card-head"><span class="backlog-time-card-label">${name}</span></span>
+      <span class="backlog-time-card-head"><span class="backlog-time-card-label">${backlogTimeDisplayMap[name] || name}</span></span>
       <span class="backlog-time-card-value"><b>${count}</b><small>票</small></span>
     </button>`;
   }).join('');
@@ -2487,7 +2803,7 @@ function buildUnsortedDrawer(type, extra) {
     <div class="metric-note"><b>统计口径：</b>${definition}</div>
     <div class="drawer-section-head">
       <div class="backlog-duration-title"><div class="sec-title">滞留时长分布</div><div class="sec-subtitle">按运单当前滞留时长统计</div></div>
-      <div class="section-head-actions"><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 滞留时长分布">导出</button></div>
+      
     </div>
     <div class="backlog-time-grid">${timeCards}</div>
     <div class="backlog-time-definition"><span>ⓘ</span><span><b>时长统计口径：</b>当前时间 −【到件时间、签入时间、集包时间】中的最早时间；点击任一卡片可查看对应运单明细。</span></div>
@@ -3817,6 +4133,22 @@ reflowChart.setOption({
       emphasis: { focus: 'series', scale: true }
     }
   ]
+});
+
+
+/* ============== Interface switch links ============== */
+document.querySelectorAll('[data-interface-link]').forEach(link => {
+  link.addEventListener('click', event => {
+    const target = link.getAttribute('data-interface-link');
+    if (target === 'center-dashboard-old') {
+      event.preventDefault();
+      showPrototypeToast('当前页面：中心看板（旧）');
+      return;
+    }
+    event.preventDefault();
+    const label = link.textContent.trim();
+    showPrototypeToast(`界面切换入口：${label}`);
+  });
 });
 
 /* ============== Resize Handler ============== */
