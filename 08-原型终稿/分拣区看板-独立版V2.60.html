@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - GOFO 管理后台 V2.56</title>
+<title>分拣区看板 - GOFO 管理后台 V2.60</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -450,7 +450,6 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .backlog-filter-card { cursor:pointer; position:relative; transition:all .18s ease; }
 .backlog-filter-card:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(31,45,61,.08); }
 .backlog-filter-card.on { background:var(--accent-soft); border-color:var(--accent-line); box-shadow:0 0 0 2px rgba(255,90,31,.08); }
-.backlog-filter-card.on:after { content:'当前筛选'; position:absolute; right:10px; top:9px; font-size:10px; color:var(--accent); font-weight:700; }
 .backlog-filter-card.on .l,.backlog-filter-card.on .v { color:var(--accent)!important; }
 .metric-note { padding:10px 12px; margin-bottom:14px; background:#f8fafc; border:1px solid var(--line-2); border-radius:10px; color:var(--muted); font-size:11.5px; line-height:1.65; }
 .metric-note b { color:var(--text); }
@@ -753,7 +752,36 @@ body{padding-top:48px!important}
 body>.topbar{top:89px!important}
 body>.subbar{top:135px!important}
 main.gofo-content{position:relative!important;z-index:1!important}
-</style></head>
+</style>
+<style id="gofo-v257-modal-layer-fix">
+/* V2.57 modal layer fix: 运单/袋号明细必须覆盖应分拣及目的流向弹框 */
+#drawerMask{z-index:1200!important}
+#backlogFlowMask{z-index:1250!important}
+#lightbox{z-index:1300!important}
+#prototypeToast{z-index:1400!important}
+</style>
+<style id="gofo-v258-backlog-time-card-fix">
+/* V2.60 应分拣 / 待分拣下钻：时间分布卡片去除柱状进度条 */
+.backlog-time-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.backlog-time-card{position:relative;display:block;min-width:0;min-height:112px;padding:14px 14px 12px;border:1px solid #e5eaf0;border-radius:12px;background:#fff;color:var(--text)!important;text-align:left;font-family:inherit;cursor:pointer;overflow:hidden;box-shadow:0 4px 13px rgba(31,45,61,.045);text-decoration:none!important;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.backlog-time-card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#16a34a}
+.backlog-time-card:hover{transform:translateY(-2px)!important;border-color:#ccd6e2;box-shadow:0 10px 24px rgba(31,45,61,.09);text-decoration:none!important}
+.backlog-time-card:focus-visible{outline:3px solid rgba(255,90,31,.16);outline-offset:2px}
+.backlog-time-card-head{display:flex;align-items:center;gap:8px}
+.backlog-time-card-label{font-size:13px;font-weight:700;color:var(--text)}
+.backlog-time-card-value{display:flex;align-items:baseline;gap:5px;margin-top:15px}
+.backlog-time-card-value b{font-family:'IBM Plex Mono',monospace;font-size:25px;line-height:1;font-weight:750;color:var(--text)}
+.backlog-time-card-value small{font-size:10.5px;font-weight:500;color:var(--faint)}
+.backlog-time-card.watch:before{background:#5b8def}
+.backlog-time-card.warning:before{background:#e0921a}
+.backlog-time-card.danger{border-color:#f3d2cf;background:linear-gradient(145deg,#fff8f7,#fff)}
+.backlog-time-card.danger:before{background:var(--red)}
+.backlog-time-card.danger .backlog-time-card-value b{color:var(--red)}
+.backlog-time-definition{display:flex;align-items:flex-start;gap:7px;margin-top:10px;padding:9px 11px;border:1px solid var(--line-2);border-radius:9px;background:#f8fafc;color:var(--faint);font-size:10.5px;line-height:1.55}
+.backlog-time-definition b{color:var(--muted);font-weight:650}
+@media(max-width:1280px){.backlog-time-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
 <body>
 <header class="gofo-header">
   <div class="gofo-header-left">
@@ -765,7 +793,7 @@ main.gofo-content{position:relative!important;z-index:1!important}
     <div class="gofo-header-action optional" title="语言">中文⌄</div>
     <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
     <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
-    <span class="gofo-version">V2.56</span>
+    <span class="gofo-version">V2.60</span>
   </div>
 </header>
 <aside class="gofo-sidebar" aria-label="主菜单">
@@ -1131,7 +1159,7 @@ main.gofo-content{position:relative!important;z-index:1!important}
     </div>
   </section>
 
-  <div class="footer">中心看板 · 分拣区 V2.55</div>
+  <div class="footer">中心看板 · 分拣区 V2.60</div>
 </main>
 
 <!-- ===== Drawer (二级弹框) ===== -->
@@ -1564,7 +1592,14 @@ function buildUnsortedDrawer(type, extra) {
   const typeLabels = {hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
   const toNumber = value => Number(String(value || 0).replace(/,/g,'')) || 0;
   const formatNumber = value => Number(value || 0).toLocaleString('en-US');
-  const timeRows = d.time.map(([name,count]) => `<tr><td>${name}</td><td><a class="count-link" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}">${count}</a></td></tr>`).join('');
+  const timeToneMap = ['normal','watch','warning','danger'];
+  const timeCards = d.time.map(([name,count], index) => {
+    const value = toNumber(count);
+    return `<button type="button" class="backlog-time-card count-link ${timeToneMap[index] || 'normal'}" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}" aria-label="查看${d.label}${name}运单，共${count}票">
+      <span class="backlog-time-card-head"><span class="backlog-time-card-label">${name}</span></span>
+      <span class="backlog-time-card-value"><b>${count}</b><small>票</small></span>
+    </button>`;
+  }).join('');
   const buildDimensionCard = (group,key,label,count) => `
     <button type="button" class="backlog-dimension-card ${key === 'all' ? 'is-all' : ''}" data-backlog-dimension-context="${type}" data-backlog-dimension-group="${group}" data-backlog-dimension-key="${key}" data-backlog-dimension-scope="${scope}">
       <span class="name"><span>${label}</span><span class="arrow">›</span></span>
@@ -1638,13 +1673,13 @@ function buildUnsortedDrawer(type, extra) {
       <div class="stat backlog-filter-card ${scope === 'today' ? 'on' : ''}" data-backlog-scope="today" data-backlog-context="${type}"><div class="l">${scopeData.today.label}</div><div class="v num">${scopeData.today.count}</div></div>
       <div class="stat backlog-filter-card ${scope === 'history' ? 'on' : ''}" data-backlog-scope="history" data-backlog-context="${type}"><div class="l">${scopeData.history.label}</div><div class="v num">${scopeData.history.count}</div></div>
     </div>
-    <div class="metric-note"><b>统计口径：</b>${definition}当前筛选：<b>${d.label}</b>。</div>
+    <div class="metric-note"><b>统计口径：</b>${definition}</div>
     <div class="drawer-section-head">
       <div class="sec-title">时间分布</div>
       <div class="section-head-actions"><span class="scope-tag">${d.label} · ${d.count} 票</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 时间分布">导出</button></div>
     </div>
-    <table class="tbl"><thead><tr><th style="text-align:left;">时间分布</th><th>运单数</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="时间分布：合计" data-waybill-count="${d.count}" data-waybill-scope="${d.label}">${d.count}</a></td></tr>${timeRows}</tbody></table>
-    <div style="font-size:10.5px;color:var(--faint);margin-top:6px;">时间分布 = 当前时间 −【到件时间、签入时间、集包时间】中的最早时间。</div>
+    <div class="backlog-time-grid">${timeCards}</div>
+    <div class="backlog-time-definition"><span>ⓘ</span><span><b>时间分布口径：</b>当前时间 −【到件时间、签入时间、集包时间】中的最早时间；点击任一卡片可查看对应运单明细。</span></div>
     <div class="drawer-section-head">
       <div class="sec-title">目的流向 · 维度汇总</div>
       <div class="section-head-actions"><span class="scope-tag">先选维度，再查看目的流向</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 流向维度汇总">导出</button></div>
