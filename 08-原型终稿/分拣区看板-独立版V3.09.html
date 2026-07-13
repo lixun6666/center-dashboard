@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - GOFO 管理后台 V3.08（明细紧凑与已到未卸下钻修复）</title>
+<title>分拣区看板 - GOFO 管理后台 V3.09（分拣班次增加全部）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -1985,6 +1985,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 </head>
 <body>
 <!-- V3.06：按组织维度新增“全部”，合计按分拣类型去重。 -->
+<!-- V3.09：分拣班次新增“全部”筛选，并设为默认选中。 -->
 <header class="gofo-header">
   <div class="gofo-header-left">
     <div class="gofo-logo" aria-label="GOFO"><em>GO</em>FO</div>
@@ -2047,7 +2048,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
       <div class="gofo-filter-field"><span class="gofo-filter-label">集货截单</span><div class="gofo-filter-value num">0D 20:00</div></div>
       <div class="gofo-filter-field"><span class="gofo-filter-label">散货截单</span><div class="gofo-filter-value num">1D 03:00</div></div>
       <div class="gofo-filter-field"><span class="gofo-filter-label">距离截单时间</span><div class="gofo-filter-value cutoff-countdown-tag"><b class="num" id="cutoffCountdown">--:--:--</b></div></div>
-      <div class="gofo-filter-field shift-field"><span class="gofo-filter-label">分拣班次</span><div class="filter-tabs" id="sortingShiftTabs" role="tablist" aria-label="分拣班次"><button type="button" class="on" role="tab" data-shift="早班" aria-selected="true">早班</button><button type="button" role="tab" data-shift="中班" aria-selected="false">中班</button><button type="button" role="tab" data-shift="晚班" aria-selected="false">晚班</button></div></div>
+      <div class="gofo-filter-field shift-field"><span class="gofo-filter-label">分拣班次</span><div class="filter-tabs" id="sortingShiftTabs" role="tablist" aria-label="分拣班次"><button type="button" class="on" role="tab" data-shift="全部" aria-selected="true">全部</button><button type="button" role="tab" data-shift="早班" aria-selected="false">早班</button><button type="button" role="tab" data-shift="中班" aria-selected="false">中班</button><button type="button" role="tab" data-shift="晚班" aria-selected="false">晚班</button></div></div>
       <div class="gofo-filter-actions"><button type="button" class="gofo-primary-btn" data-action="dashboard-query">查询</button></div>
     </div>
   </section>
@@ -2376,7 +2377,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
     </div>
   </section>
 
-  <div class="footer">中心看板 · 分拣区 V3.06</div>
+  <div class="footer">中心看板 · 分拣区 V3.09</div>
 </main>
 
 <!-- ===== Drawer (二级弹框) ===== -->
