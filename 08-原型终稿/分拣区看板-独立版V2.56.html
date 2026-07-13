@@ -746,6 +746,13 @@ body>.topbar{display:flex!important;width:calc(100% - 55px)!important;max-width:
 body>.subbar{display:flex!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:135px!important;z-index:79!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box;min-height:54px!important}
 main.gofo-content{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
 @media(max-width:1200px){body>.subbar{min-width:1125px!important}body>.topbar,.gofo-tabs-bar,main.gofo-content{min-width:1125px}}
+</style><style id="gofo-v256-header-offset-fix">
+/* Reserve space for the fixed 48px GOFO header so KPI labels are not covered. */
+body{padding-top:48px!important}
+.gofo-tabs-bar{top:48px!important}
+body>.topbar{top:89px!important}
+body>.subbar{top:135px!important}
+main.gofo-content{position:relative!important;z-index:1!important}
 </style></head>
 <body>
 <header class="gofo-header">

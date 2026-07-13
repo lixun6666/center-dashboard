@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>中心看板 · 装车区（独立版）</title>
+<title>装车区看板 · GOFO 管理后台 V2.10</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -400,53 +400,97 @@
   @media(max-width:680px){.source-card-grid{grid-template-columns:1fr;}}
 
 </style>
-</head>
+<style>
+
+/* ===== GOFO Web Design v2 · immutable shell / V2.10 ===== */
+/* V2.10 shell hotfix 2026-07-13: style block restored after initial injection failure */
+:root{--gofo-primary:#fc4c02;--gofo-primary-hover:#f76121;--gofo-primary-active:#e84702;--gofo-primary-light:#fff1e6;--gofo-header-bg:#001529;--gofo-header-height:48px;--gofo-sidebar-width:55px;--gofo-sidebar-expand:270px;--gofo-tabs-height:41px;--gofo-border:#f0f0f0;--gofo-page-bg:#f0f2f5;--gofo-card-radius:2px;--gofo-control-radius:2px}
+html,body{font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--gofo-page-bg)}
+.gofo-header{position:fixed;inset:0 0 auto 0;height:48px;background:#001529;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:#fff}.gofo-header-left,.gofo-header-right{display:flex;align-items:center}.gofo-header-left{gap:21px}.gofo-header-right{gap:16px}.gofo-logo{width:113px;font-size:20px;font-weight:800;letter-spacing:1.6px}.gofo-logo em{color:#fc4c02;font-style:normal}.gofo-search{width:224px;height:30px;border:1px solid transparent;border-radius:2px;background:#293c52;color:#fff;padding:0 34px 0 11px;outline:0}.gofo-search::placeholder{color:rgba(255,255,255,.55)}.gofo-search:focus{border-color:#fc4c02;box-shadow:0 0 0 2px rgba(252,76,2,.18)}.gofo-search-wrap{position:relative}.gofo-search-wrap:after{content:'⌕';position:absolute;right:10px;top:4px;color:rgba(255,255,255,.7);font-size:18px}.gofo-header-action{height:30px;display:flex;align-items:center;gap:6px;padding:0 7px;border-radius:2px;color:rgba(255,255,255,.82);font-size:12px;cursor:pointer}.gofo-header-action:hover{background:rgba(255,255,255,.10);color:#fff}.gofo-notice{position:relative;font-size:17px}.gofo-notice:after{content:'3';position:absolute;right:-3px;top:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:8px;background:#e5484d;color:#fff;font-size:9px;line-height:14px;text-align:center}.gofo-avatar{width:24px;height:24px;border-radius:50%;background:#fc4c02;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+.gofo-sidebar{position:fixed;left:0;top:48px;bottom:0;width:55px;background:#fff;border-right:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:900;overflow:hidden;transition:width .2s ease}.gofo-sidebar:hover{width:270px}.gofo-menu{padding-top:8px}.gofo-menu-item{height:40px;padding:0 16px;display:flex;align-items:center;gap:16px;color:#596579;white-space:nowrap;cursor:pointer;position:relative}.gofo-menu-item:hover{background:#fafafa;color:#fc4c02}.gofo-menu-item.active{background:#fff1e6;color:#fc4c02;box-shadow:inset -3px 0 0 #fc4c02}.gofo-menu-icon{flex:0 0 22px;width:22px;text-align:center;font-size:16px}.gofo-menu-text{opacity:0;max-width:0;overflow:hidden;transition:opacity .15s,max-width .2s}.gofo-sidebar:hover .gofo-menu-text{opacity:1;max-width:190px}.gofo-sidebar-footer{position:absolute;bottom:0;left:0;width:270px;height:48px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:16px;padding:0 16px;color:#8c8c8c;font-size:13px}
+.gofo-tabs-bar{position:sticky;top:48px;z-index:100;display:flex;height:41px;margin-left:55px;padding-left:16px;background:#fff;border-bottom:1px solid #f0f0f0}.gofo-tabs-list{display:flex;align-items:flex-end;gap:4px}.gofo-tab-card{height:40px;min-width:96px;padding:0 16px;display:flex;align-items:center;justify-content:center;background:#fafafa;border:1px solid #f0f0f0;border-bottom-color:#fff;color:#595959;font-size:13px;cursor:pointer}.gofo-tab-card.active{background:#fff1e6;border-color:#ffd9c7;border-bottom-color:#fff1e6;color:#fc4c02;font-weight:600}.gofo-tab-close{margin-left:10px;color:#bfbfbf}.gofo-tab-more{width:32px;height:32px;margin:4px;display:flex;align-items:center;justify-content:center;color:#8c8c8c}
+body>.topbar{top:89px;height:46px;margin-left:55px;padding:0 16px;background:#fff;border-bottom:1px solid #f0f0f0;box-shadow:none;z-index:80}.topbar .brand{display:none}.topbar .tabs a{border-radius:2px;padding:6px 16px}.topbar .tabs a.active{background:#fff1e6;color:#fc4c02;box-shadow:inset 0 -2px 0 #fc4c02}.subbar{display:flex!important;margin-left:55px;padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa}.center-pill,.date-tag,.seg-group,.filter-tabs,.query-btn{border-radius:2px}.query-btn{background:#fc4c02}.query-btn:hover{background:#f76121}
+main.gofo-content{margin-left:55px;padding:16px;gap:16px;background:#f0f2f5}.card,.kpi,.abn-panel{border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04);border-color:#f0f0f0}.card{padding:16px}.kpi{padding:14px 16px}.kpi:hover{transform:none;border-color:#ffd0bc;box-shadow:0 3px 10px rgba(0,0,0,.08)}.card-title .h1{font-size:16px}.bar{border-radius:0;background:#fc4c02}.seg-group span,.filter-tabs span{border-radius:0}.drawer{border-radius:2px}.drawer-x{border-radius:2px}.drawer-hd{height:48px;padding:0 16px}.drawer-bd{padding:16px}.drawer-mask{z-index:1200}.gofo-version{color:rgba(255,255,255,.45);font-size:11px}.gofo-menu-item[aria-current='page']{font-weight:600}
+@media(max-width:1200px){.gofo-header-action.optional{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}@media(prefers-reduced-motion:reduce){.gofo-sidebar,.gofo-menu-text{transition:none!important}}
+</style>
+<style id="gofo-v256-layout-fix">
+/* V2.10 layout fix: visible filter bar + full-width workspace */
+body{width:100%;min-width:1180px;overflow-x:auto}
+.gofo-tabs-bar{width:calc(100% - 55px);max-width:none;margin-right:0;box-sizing:border-box}
+body>.topbar{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
+body>.subbar{display:flex!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:135px!important;z-index:79!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box;min-height:54px!important}
+main.gofo-content{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
+@media(max-width:1200px){body>.subbar{min-width:1125px!important}body>.topbar,.gofo-tabs-bar,main.gofo-content{min-width:1125px}}
+</style>
+<style id="gofo-v256-header-offset-fix">
+/* Reserve space for the fixed 48px GOFO header so KPI labels are not covered. */
+body{padding-top:48px!important}
+.gofo-tabs-bar{top:48px!important}
+body>.topbar{top:89px!important}
+body>.subbar{top:135px!important}
+main.gofo-content{position:relative!important;z-index:1!important}
+</style>
+<style id="gofo-business-nav-consistency-fix">
+.gofo-business-shell.topbar{display:flex!important;align-items:center!important;gap:28px!important;height:46px!important;min-height:46px!important;position:sticky!important;top:89px!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:0 26px!important;background:#fff!important;border-bottom:1px solid #e8edf3!important;box-shadow:none!important;box-sizing:border-box!important;z-index:2700!important}.gofo-business-shell.topbar .brand{display:flex!important;align-items:center!important;gap:8px!important;color:#16202e!important;font-size:13px!important;font-weight:700!important}.gofo-business-shell.topbar .brand .dot{width:22px!important;height:22px!important;border-radius:6px!important;background:linear-gradient(135deg,#fc4c02,#f76121)!important;color:#fff!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:12px!important}.gofo-business-shell.topbar .tabs{display:flex!important;gap:4px!important}.gofo-business-shell.topbar .tabs a{padding:6px 14px!important;border-radius:7px!important;color:#64718a!important;background:transparent!important;border:0!important;box-shadow:none!important;text-decoration:none!important;font-size:13.5px!important;font-weight:500!important}.gofo-business-shell.topbar .tabs a.active{background:#fc4c02!important;color:#fff!important;font-weight:600!important}.gofo-business-shell.topbar .tabs a:hover{background:#fff1e6!important;color:#fc4c02!important}
+.gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:12px!important;flex-wrap:nowrap!important;position:sticky!important;top:135px!important;z-index:2690!important;width:calc(100% - 55px)!important;min-height:54px!important;margin-left:55px!important;padding:10px 26px!important;box-sizing:border-box!important;background:#fafbfd!important;border-bottom:1px solid #e8edf3!important}.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag{display:flex!important;align-items:center!important;gap:7px!important;height:32px!important;padding:0 12px!important;border:1px solid #d6dde6!important;border-radius:9px!important;background:#fff!important;color:#64718a!important;white-space:nowrap!important;font-size:12.5px!important;box-sizing:border-box!important}.gofo-business-filterbar .center-pill{color:#16202e!important;font-size:13px!important}.gofo-business-filterbar .date-tag b{color:#16202e!important;font-weight:500!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;height:32px!important;border:1px solid #d6dde6!important;border-radius:9px!important;overflow:hidden!important;background:#fff!important;white-space:nowrap!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;padding:0 13px!important;border:0!important;color:#64718a!important;background:#fff!important;font-size:12.5px!important}.gofo-business-filterbar .seg-group span.on,.gofo-business-filterbar .filter-tabs span.on{background:#fff1e6!important;color:#fc4c02!important;font-weight:600!important}.gofo-business-filterbar .spacer{flex:1!important}.gofo-business-filterbar .area-label{color:#9aa6b6!important;font-size:12px!important;white-space:nowrap!important}.gofo-business-filterbar .query-btn{height:32px!important;padding:0 18px!important;border:0!important;border-radius:9px!important;background:#fc4c02!important;color:#fff!important;font-size:13px!important;font-weight:600!important}.gofo-content{position:relative!important;z-index:1!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:16px!important;box-sizing:border-box!important}@media(max-width:1200px){.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1125px!important}}
+</style><style id="gofo-standalone-dashboard-final">
+/* Explicit standalone variant requested by user: two-row business header only. */
+html,body{margin:0!important;padding:0!important;width:100%!important;min-width:1180px!important;background:#f0f2f5!important;font-family:Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif!important;font-size:14px!important;color:#16202e!important}.gofo-header,.gofo-sidebar,.gofo-tabs-bar{display:none!important}
+.gofo-business-shell.topbar{display:flex!important;align-items:flex-end!important;height:42px!important;min-height:42px!important;position:sticky!important;top:0!important;z-index:2700!important;width:100%!important;max-width:none!important;margin:0!important;padding:0 12px!important;background:#fff!important;border-bottom:1px solid #e8edf3!important;box-shadow:none!important;box-sizing:border-box!important}.gofo-business-shell.topbar .brand{display:none!important}.gofo-business-shell.topbar .tabs{display:flex!important;align-items:stretch!important;height:42px!important;gap:4px!important}.gofo-business-shell.topbar .tabs a{display:inline-flex!important;align-items:center!important;height:42px!important;padding:0 13px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;color:#536b88!important;box-shadow:none!important;text-decoration:none!important;font-size:13px!important;font-weight:400!important;line-height:40px!important;box-sizing:border-box!important}.gofo-business-shell.topbar .tabs a:hover{background:#fff8f4!important;color:#fc4c02!important}.gofo-business-shell.topbar .tabs a.active{background:#fff7f2!important;color:#fc4c02!important;border-bottom-color:#fc4c02!important;font-weight:600!important}
+.gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:12px!important;flex-wrap:nowrap!important;position:sticky!important;top:42px!important;z-index:2690!important;width:100%!important;max-width:none!important;min-height:58px!important;margin:0!important;padding:10px 12px!important;box-sizing:border-box!important;background:#fafbfd!important;border-bottom:1px solid #e8edf3!important;box-shadow:0 2px 8px rgba(16,32,64,.04)!important}.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag{display:inline-flex!important;align-items:center!important;gap:7px!important;height:34px!important;padding:0 12px!important;border:1px solid #d8e0ea!important;border-radius:2px!important;background:#fff!important;color:#64718a!important;white-space:nowrap!important;font-size:12px!important;box-sizing:border-box!important}.gofo-business-filterbar .center-pill{border-color:#ff8a5c!important;color:#fc4c02!important;font-size:13px!important}.gofo-business-filterbar .date-tag b{color:#16202e!important;font-weight:500!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;height:34px!important;border:1px solid #d8e0ea!important;border-radius:2px!important;overflow:hidden!important;background:#f5f7fa!important;white-space:nowrap!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;height:32px!important;padding:0 13px!important;border:0!important;border-radius:0!important;color:#536b88!important;background:transparent!important;font-size:12px!important;box-sizing:border-box!important}.gofo-business-filterbar .seg-group span.on,.gofo-business-filterbar .filter-tabs span.on{background:#fff!important;color:#fc4c02!important;box-shadow:0 1px 4px rgba(16,32,64,.10)!important;font-weight:600!important}.gofo-business-filterbar .spacer{flex:1!important}.gofo-business-filterbar .area-label{color:#98a2b3!important;font-size:12px!important;white-space:nowrap!important}.gofo-business-filterbar .query-btn{height:34px!important;padding:0 19px!important;border:0!important;border-radius:2px!important;background:#fc4c02!important;color:#fff!important;box-shadow:none!important;font-family:inherit!important;font-size:13px!important;font-weight:600!important;cursor:pointer!important}.gofo-business-filterbar .query-btn:hover{background:#f76121!important}
+.gofo-content{position:relative!important;z-index:1!important;width:100%!important;max-width:none!important;margin:0!important;padding:16px!important;gap:16px!important;box-sizing:border-box!important;background:#f0f2f5!important}.gofo-content .panel,.gofo-content .ops-section,.gofo-content .card{border-color:#e8edf3!important;box-shadow:0 1px 2px rgba(16,32,64,.04)!important}.gofo-content .panel,.gofo-content .ops-section{border-radius:2px!important}.gofo-content h2,.gofo-content .ops-title,.gofo-content .card-title .h1{font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif!important;font-weight:600!important;letter-spacing:0!important}.drawer-panel,.drawer{border-radius:2px!important}.drawer-head{min-height:48px!important}.drawer-body,.drawer-bd{max-height:calc(100vh - 96px)!important;overflow:auto!important}
+@media(max-width:1280px){.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1180px!important}}
+</style><style id="gofo-enterprise-shell-final">
+/* GOFO Web Design v2 immutable L-shell restoration. */
+html,body{margin:0!important;padding:0!important;padding-top:48px!important;width:100%!important;min-width:1180px!important;background:#f0f2f5!important;font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif!important}
+.gofo-header{display:flex!important;position:fixed!important;inset:0 0 auto 0!important;height:48px!important;z-index:3000!important;background:#001529!important;padding:0 16px!important;box-sizing:border-box!important}.gofo-header-left,.gofo-header-right{display:flex!important;align-items:center!important}.gofo-header-left{gap:21px!important}.gofo-header-right{gap:16px!important}.gofo-logo{width:113px!important}.gofo-search{width:224px!important;height:30px!important}.gofo-avatar{width:24px!important;height:24px!important}
+.gofo-sidebar{display:block!important;position:fixed!important;left:0!important;top:48px!important;bottom:0!important;width:55px!important;z-index:2900!important;background:#fff!important;border-right:1px solid #f0f0f0!important;box-shadow:0 2px 8px rgba(0,0,0,.15)!important;overflow:hidden!important;transition:width .2s ease!important}.gofo-sidebar:hover{width:270px!important}.gofo-sidebar .gofo-menu-item{height:40px!important;padding:0 16px!important}.gofo-sidebar .gofo-menu-text{opacity:0!important;max-width:0!important}.gofo-sidebar:hover .gofo-menu-text{opacity:1!important;max-width:190px!important}.gofo-sidebar .gofo-menu-item.active{background:#fff1e6!important;color:#fc4c02!important;box-shadow:inset -3px 0 0 #fc4c02!important}
+.gofo-tabs-bar{display:flex!important;position:sticky!important;top:48px!important;z-index:2800!important;width:calc(100% - 55px)!important;height:41px!important;margin-left:55px!important;margin-right:0!important;padding-left:16px!important;box-sizing:border-box!important;background:#fff!important;border-bottom:1px solid #f0f0f0!important}.gofo-tab-card{height:40px!important;padding:0 16px!important}.gofo-tab-card.active{background:#fff1e6!important;color:#fc4c02!important}
+.gofo-business-shell.topbar{display:flex!important;position:sticky!important;top:89px!important;z-index:2700!important;width:calc(100% - 55px)!important;height:42px!important;min-height:42px!important;margin-left:55px!important;margin-right:0!important;padding:0 12px!important;box-sizing:border-box!important}.gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:131px!important;z-index:2690!important;width:calc(100% - 55px)!important;height:58px!important;min-height:58px!important;margin-left:55px!important;margin-right:0!important;padding:10px 12px!important;align-items:center!important;box-sizing:border-box!important}.gofo-content{position:relative!important;z-index:1!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:16px!important;box-sizing:border-box!important}
+.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag,.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs,.gofo-business-filterbar .query-btn{height:34px!important;min-height:34px!important;max-height:34px!important;align-self:center!important;box-sizing:border-box!important;margin-top:0!important;margin-bottom:0!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;align-items:stretch!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;height:32px!important;line-height:32px!important;padding-top:0!important;padding-bottom:0!important;box-sizing:border-box!important}.gofo-business-filterbar .query-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:34px!important;padding-top:0!important;padding-bottom:0!important}
+body.unload-dashboard .gofo-business-filterbar>*{align-self:center!important}body.unload-dashboard .gofo-business-filterbar .filter-tabs,body.unload-dashboard .gofo-business-filterbar .query-btn{height:34px!important;min-height:34px!important;max-height:34px!important}
+.drawer-layer,.drawer-stack,.drawer-backdrop{z-index:4000!important}@media(max-width:1200px){.gofo-tabs-bar,.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1125px!important}}
+</style><style id="gofo-top-gap-fix">
+/* Remove duplicate 48px top spacer; header itself occupies the first row. */
+html,body{padding-top:0!important}
+.gofo-header{position:sticky!important;top:0!important;inset:auto!important;width:100%!important}
+.gofo-tabs-bar{top:48px!important}
+.gofo-business-shell.topbar{top:89px!important}
+.gofo-business-filterbar{top:131px!important}
+</style></head>
 <body>
-
-<!-- ============ 顶部导航 ============ -->
-<header class="app-header">
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-logo">装</div>
-      <div class="brand-name">中心实时看板</div>
-    </div>
-    <nav class="nav-tabs">
-      <span>概况</span>
-      <span>卸车区</span>
-      <span>分拣区</span>
-      <span class="active">装车区</span>
-      <span>异常区</span>
-    </nav>
-    <div style="flex:1;"></div>
-    <div class="realtime">
-      <span class="realtime-dot"></span>
-      数据实时更新 <span class="num">14:32:08</span>
-    </div>
+<header class="gofo-header">
+  <div class="gofo-header-left">
+    <div class="gofo-logo" aria-label="GOFO"><em>GO</em>FO</div>
+    <div class="gofo-search-wrap"><input class="gofo-search" type="search" placeholder="请输入菜单或功能" aria-label="全局搜索"></div>
   </div>
-
-  <div class="filterbar">
-    <div class="filter-control site">LAX H <span style="color:#98a2b3;">▾</span></div>
-    <div class="filter-control"><span class="filter-label">操作日</span><strong class="num">06-16 04:00 ~ 06-17 04:00</strong></div>
-    <div class="day-switch"><span class="on">今日</span><span>明日</span></div>
-    <div class="cutoff-group">
-      <div class="cutoff-chip"><span>集货截单</span><strong>0D 20:00</strong></div>
-      <div class="cutoff-chip"><span>散货截单</span><strong>1D 03:00</strong></div>
-      <div class="cutoff-chip urgent"><span>距离截单</span><strong>03:28:15</strong></div>
-    </div>
-    <div class="filter-spacer"></div>
-    <span class="shift-label">装车班次</span>
-    <div class="seg">
-      <span class="on">全天</span>
-      <span class="disabled">班次1</span>
-      <span class="disabled">班次2</span>
-      <span class="disabled">班次3</span>
-    </div>
-    <button class="query-btn">查询</button>
+  <div class="gofo-header-right">
+    <div class="gofo-header-action gofo-notice" title="消息通知" aria-label="消息通知">♢</div>
+    <div class="gofo-header-action optional" title="语言">中文⌄</div>
+    <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
+    <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
+    <span class="gofo-version">V2.10</span>
   </div>
 </header>
+<aside class="gofo-sidebar" aria-label="主菜单">
+  <nav class="gofo-menu">
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">⌂</span><span class="gofo-menu-text">工作台</span></div>
+    <div class="gofo-menu-item active" aria-current="page"><span class="gofo-menu-icon">▥</span><span class="gofo-menu-text">中心运营看板</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">◇</span><span class="gofo-menu-text">车辆与场地</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">⇄</span><span class="gofo-menu-text">分拣作业管理</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">!</span><span class="gofo-menu-text">异常监控</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">≡</span><span class="gofo-menu-text">报表中心</span></div>
+  </nav>
+  <div class="gofo-sidebar-footer"><span class="gofo-menu-icon">«</span><span class="gofo-menu-text">收起菜单</span></div>
+</aside>
+<div class="gofo-tabs-bar" aria-label="页面页签">
+  <div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">装车区看板 <span class="gofo-tab-close">×</span></div></div>
+  <div class="gofo-tab-more" title="更多页签">•••</div>
+</div>
+<nav class="gofo-business-shell topbar"><div class="tabs"><a href="#">概况</a><a href="#">卸车区</a><a href="#">分拣区</a><a href="#" class="active">装车区</a><a href="#">异常区</a></div></nav><div class="gofo-business-filterbar"><div class="center-pill">LAX H <span style="color:#9aa6b6;">▾</span></div><div class="date-tag">操作日 <b class="num">06-16 04:00 ~ 06-17 04:00</b></div><div class="seg-group"><span class="on">今日</span><span>明日</span></div><div class="date-tag">卸车截单 <b class="num">0D 20:00</b></div><div class="date-tag">散货截单 <b class="num">1D 03:00</b></div><div class="date-tag">距离截单时间 <b class="num" style="color:#fc4c02!important;">16:21:00</b></div><div class="spacer"></div><span class="area-label">装车班次</span><div class="filter-tabs"><span class="on">早班</span><span>中班</span><span>晚班</span></div><button class="query-btn">查询</button></div>
 
 <!-- ============ 内容区 ============ -->
-<main class="dashboard-shell">
+<main class="dashboard-shell gofo-content">
   <!-- FR-2 发车进度链 -->
   <section class="panel">
     <div class="panel-head">
