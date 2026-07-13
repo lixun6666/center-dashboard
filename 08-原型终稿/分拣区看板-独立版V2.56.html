@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - 独立版 V2.55</title>
+<title>分拣区看板 - GOFO 管理后台 V2.56</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -427,8 +427,7 @@
   .footer {
     text-align: center; padding: 20px 0 30px; color: var(--faint);
     font-size: 12px;
-  }
-</style>
+  }</style>
 <style>
 /* 2026 sorting dashboard visual refresh */
 :root{--bg:#eef2f7;--card:#fff;--line:#e5eaf0;--text:#172033;--muted:#66758a;--accent:#ff5a1f;--accent-soft:#fff3ed;--accent-line:#ffd2bf;--shadow:0 8px 28px rgba(31,45,61,.07);--shadow-lg:0 28px 80px rgba(15,23,42,.24);--r-card:16px}
@@ -557,7 +556,6 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .sorted-rule-list { margin:0; padding-left:18px; }
 .sorted-rule-list li+li { margin-top:2px; }
 @media(max-width:1200px){.query-panel{grid-template-columns:repeat(3,1fr)}.query-panel .action-btn{width:100%}.lightbox-box{width:96vw}}
-
 </style>
 
 <style>
@@ -590,8 +588,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .main-flow-empty{padding:42px 10px;text-align:center;color:var(--faint)}
 #mainFlowTable th:first-child,#mainFlowTable td:first-child{text-align:left}
 #mainFlowTable td{white-space:nowrap}
-@media(max-width:1200px){.main-flow-filterbar{align-items:flex-start}.main-flow-summary{width:100%;justify-content:flex-end}}
-</style>
+@media(max-width:1200px){.main-flow-filterbar{align-items:flex-start}.main-flow-summary{width:100%;justify-content:flex-end}}</style>
 <style>
 /* ===== 历史留仓展示 V2.45 ===== */
 .history-demo-card{overflow:hidden;background:linear-gradient(145deg,#fff 0,#fffaf7 100%)}
@@ -628,8 +625,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .history-dimension-panel{display:none}.history-dimension-panel.on{display:block}.history-dimension-panel .tbl th,.history-dimension-panel .tbl td{white-space:nowrap}
 .history-pill{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:650}.history-pill.danger{background:#fff1ef;color:#d9433d}.history-pill.warn{background:#fff7e8;color:#b86c00}
 .history-definition{margin-top:13px;padding:9px 11px;border:1px solid var(--line-2);border-radius:9px;background:#f8fafc;color:var(--muted);font-size:10.5px;line-height:1.6}.history-definition b{color:var(--text)}
-@media(max-width:1280px){.history-overview{grid-template-columns:1fr}.history-drawer-hero{grid-template-columns:1fr repeat(3,1fr)}.history-status-grid,.history-drawer-status{grid-template-columns:repeat(2,1fr)}}
-</style>
+@media(max-width:1280px){.history-overview{grid-template-columns:1fr}.history-drawer-hero{grid-template-columns:1fr repeat(3,1fr)}.history-status-grid,.history-drawer-status{grid-template-columns:repeat(2,1fr)}}</style>
 
 
 <style>
@@ -677,8 +673,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .history-child-item .v{display:block;margin-top:3px;font-family:'IBM Plex Mono',monospace;color:var(--text);font-size:13px;font-weight:750}
 .history-child-item .v small{font-family:inherit;color:var(--faint);font-size:9px;font-weight:500}
 .history-status-card.history-stage-toggle:focus-visible{outline:3px solid rgba(255,90,31,.18);outline-offset:2px}
-@media(max-width:1280px){.history-drawer-hero{grid-template-columns:1fr}.history-status-grid,.history-drawer-status{grid-template-columns:repeat(3,minmax(0,1fr))}}
-</style>
+@media(max-width:1280px){.history-drawer-hero{grid-template-columns:1fr}.history-status-grid,.history-drawer-status{grid-template-columns:repeat(3,minmax(0,1fr))}}</style>
 
 <style>
 /* distance to loose-cargo cutoff */
@@ -686,8 +681,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .cutoff-countdown-tag.is-warning{border-color:#f5c978;background:#fffaf0;}
 .cutoff-countdown-tag.is-warning b{color:#d97706;}
 .cutoff-countdown-tag.is-danger{border-color:#f2b8b5;background:#fff6f5;}
-.cutoff-countdown-tag.is-danger b{color:var(--red);}
-</style>
+.cutoff-countdown-tag.is-danger b{color:var(--red);}</style>
 
 
 <style>
@@ -729,11 +723,59 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .backlog-child-mask .backlog-flow-table{min-width:560px}
 .backlog-child-mask .backlog-flow-table th:first-child,.backlog-child-mask .backlog-flow-table td:first-child{text-align:left}
 .backlog-child-mask .backlog-flow-table th:not(:first-child),.backlog-child-mask .backlog-flow-table td:not(:first-child){text-align:right}
-@media(max-width:1280px){.backlog-dimension-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.backlog-flow-hero{grid-template-columns:1fr}}
-</style>
+@media(max-width:1280px){.backlog-dimension-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.backlog-flow-hero{grid-template-columns:1fr}}</style>
 
-</head>
+<style>
+
+/* ===== GOFO Web Design v2 · immutable shell / V2.56 ===== */
+/* V2.56 shell hotfix 2026-07-13: style block restored after initial injection failure */
+:root{--gofo-primary:#fc4c02;--gofo-primary-hover:#f76121;--gofo-primary-active:#e84702;--gofo-primary-light:#fff1e6;--gofo-header-bg:#001529;--gofo-header-height:48px;--gofo-sidebar-width:55px;--gofo-sidebar-expand:270px;--gofo-tabs-height:41px;--gofo-border:#f0f0f0;--gofo-page-bg:#f0f2f5;--gofo-card-radius:2px;--gofo-control-radius:2px}
+html,body{font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--gofo-page-bg)}
+.gofo-header{position:fixed;inset:0 0 auto 0;height:48px;background:#001529;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:#fff}.gofo-header-left,.gofo-header-right{display:flex;align-items:center}.gofo-header-left{gap:21px}.gofo-header-right{gap:16px}.gofo-logo{width:113px;font-size:20px;font-weight:800;letter-spacing:1.6px}.gofo-logo em{color:#fc4c02;font-style:normal}.gofo-search{width:224px;height:30px;border:1px solid transparent;border-radius:2px;background:#293c52;color:#fff;padding:0 34px 0 11px;outline:0}.gofo-search::placeholder{color:rgba(255,255,255,.55)}.gofo-search:focus{border-color:#fc4c02;box-shadow:0 0 0 2px rgba(252,76,2,.18)}.gofo-search-wrap{position:relative}.gofo-search-wrap:after{content:'⌕';position:absolute;right:10px;top:4px;color:rgba(255,255,255,.7);font-size:18px}.gofo-header-action{height:30px;display:flex;align-items:center;gap:6px;padding:0 7px;border-radius:2px;color:rgba(255,255,255,.82);font-size:12px;cursor:pointer}.gofo-header-action:hover{background:rgba(255,255,255,.10);color:#fff}.gofo-notice{position:relative;font-size:17px}.gofo-notice:after{content:'3';position:absolute;right:-3px;top:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:8px;background:#e5484d;color:#fff;font-size:9px;line-height:14px;text-align:center}.gofo-avatar{width:24px;height:24px;border-radius:50%;background:#fc4c02;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+.gofo-sidebar{position:fixed;left:0;top:48px;bottom:0;width:55px;background:#fff;border-right:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:900;overflow:hidden;transition:width .2s ease}.gofo-sidebar:hover{width:270px}.gofo-menu{padding-top:8px}.gofo-menu-item{height:40px;padding:0 16px;display:flex;align-items:center;gap:16px;color:#596579;white-space:nowrap;cursor:pointer;position:relative}.gofo-menu-item:hover{background:#fafafa;color:#fc4c02}.gofo-menu-item.active{background:#fff1e6;color:#fc4c02;box-shadow:inset -3px 0 0 #fc4c02}.gofo-menu-icon{flex:0 0 22px;width:22px;text-align:center;font-size:16px}.gofo-menu-text{opacity:0;max-width:0;overflow:hidden;transition:opacity .15s,max-width .2s}.gofo-sidebar:hover .gofo-menu-text{opacity:1;max-width:190px}.gofo-sidebar-footer{position:absolute;bottom:0;left:0;width:270px;height:48px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:16px;padding:0 16px;color:#8c8c8c;font-size:13px}
+.gofo-tabs-bar{position:sticky;top:48px;z-index:100;display:flex;height:41px;margin-left:55px;padding-left:16px;background:#fff;border-bottom:1px solid #f0f0f0}.gofo-tabs-list{display:flex;align-items:flex-end;gap:4px}.gofo-tab-card{height:40px;min-width:96px;padding:0 16px;display:flex;align-items:center;justify-content:center;background:#fafafa;border:1px solid #f0f0f0;border-bottom-color:#fff;color:#595959;font-size:13px;cursor:pointer}.gofo-tab-card.active{background:#fff1e6;border-color:#ffd9c7;border-bottom-color:#fff1e6;color:#fc4c02;font-weight:600}.gofo-tab-close{margin-left:10px;color:#bfbfbf}.gofo-tab-more{width:32px;height:32px;margin:4px;display:flex;align-items:center;justify-content:center;color:#8c8c8c}
+body>.topbar{top:89px;height:46px;margin-left:55px;padding:0 16px;background:#fff;border-bottom:1px solid #f0f0f0;box-shadow:none;z-index:80}.topbar .brand{display:none}.topbar .tabs a{border-radius:2px;padding:6px 16px}.topbar .tabs a.active{background:#fff1e6;color:#fc4c02;box-shadow:inset 0 -2px 0 #fc4c02}.subbar{display:flex!important;margin-left:55px;padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa}.center-pill,.date-tag,.seg-group,.filter-tabs,.query-btn{border-radius:2px}.query-btn{background:#fc4c02}.query-btn:hover{background:#f76121}
+main.gofo-content{margin-left:55px;padding:16px;gap:16px;background:#f0f2f5}.card,.kpi,.abn-panel{border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04);border-color:#f0f0f0}.card{padding:16px}.kpi{padding:14px 16px}.kpi:hover{transform:none;border-color:#ffd0bc;box-shadow:0 3px 10px rgba(0,0,0,.08)}.card-title .h1{font-size:16px}.bar{border-radius:0;background:#fc4c02}.seg-group span,.filter-tabs span{border-radius:0}.drawer{border-radius:2px}.drawer-x{border-radius:2px}.drawer-hd{height:48px;padding:0 16px}.drawer-bd{padding:16px}.drawer-mask{z-index:1200}.gofo-version{color:rgba(255,255,255,.45);font-size:11px}.gofo-menu-item[aria-current='page']{font-weight:600}
+@media(max-width:1200px){.gofo-header-action.optional{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}@media(prefers-reduced-motion:reduce){.gofo-sidebar,.gofo-menu-text{transition:none!important}}
+</style>
+<style id="gofo-v256-layout-fix">
+/* V2.56 layout fix: visible filter bar + full-width workspace */
+body{width:100%;min-width:1180px;overflow-x:auto}
+.gofo-tabs-bar{width:calc(100% - 55px);max-width:none;margin-right:0;box-sizing:border-box}
+body>.topbar{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
+body>.subbar{display:flex!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:135px!important;z-index:79!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box;min-height:54px!important}
+main.gofo-content{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
+@media(max-width:1200px){body>.subbar{min-width:1125px!important}body>.topbar,.gofo-tabs-bar,main.gofo-content{min-width:1125px}}
+</style></head>
 <body>
+<header class="gofo-header">
+  <div class="gofo-header-left">
+    <div class="gofo-logo" aria-label="GOFO"><em>GO</em>FO</div>
+    <div class="gofo-search-wrap"><input class="gofo-search" type="search" placeholder="请输入菜单或功能" aria-label="全局搜索"></div>
+  </div>
+  <div class="gofo-header-right">
+    <div class="gofo-header-action gofo-notice" title="消息通知" aria-label="消息通知">♢</div>
+    <div class="gofo-header-action optional" title="语言">中文⌄</div>
+    <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
+    <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
+    <span class="gofo-version">V2.56</span>
+  </div>
+</header>
+<aside class="gofo-sidebar" aria-label="主菜单">
+  <nav class="gofo-menu">
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">⌂</span><span class="gofo-menu-text">工作台</span></div>
+    <div class="gofo-menu-item active" aria-current="page"><span class="gofo-menu-icon">▥</span><span class="gofo-menu-text">中心运营看板</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">◇</span><span class="gofo-menu-text">车辆与场地</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">⇄</span><span class="gofo-menu-text">分拣作业管理</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">!</span><span class="gofo-menu-text">异常监控</span></div>
+    <div class="gofo-menu-item"><span class="gofo-menu-icon">≡</span><span class="gofo-menu-text">报表中心</span></div>
+  </nav>
+  <div class="gofo-sidebar-footer"><span class="gofo-menu-icon">«</span><span class="gofo-menu-text">收起菜单</span></div>
+</aside>
+<div class="gofo-tabs-bar" aria-label="页面页签">
+  <div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">分拣区看板 <span class="gofo-tab-close">×</span></div></div>
+  <div class="gofo-tab-more" title="更多页签">•••</div>
+</div>
 
 <!-- ===== Top Tab Bar ===== -->
 <nav class="topbar">
@@ -768,7 +810,7 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
   <button class="query-btn">查询</button>
 </div>
 
-<main>
+<main class="gofo-content">
 
   <!-- ===== KPI Row ===== -->
   <section class="kpi-row">
