@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - GOFO 管理后台 V2.60</title>
+<title>分拣区看板 - GOFO 管理后台 V2.80</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -781,6 +781,811 @@ main.gofo-content{position:relative!important;z-index:1!important}
 .backlog-time-definition b{color:var(--muted);font-weight:650}
 @media(max-width:1280px){.backlog-time-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
+
+<style id="history-flat-v261">
+/* ===== 历史留仓：当前滞留环节平铺展示 V2.61 ===== */
+.history-flat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.history-flat-card{padding:16px 16px 14px;border:1px solid #d8dde6;border-radius:12px;background:#f8fafc}
+.history-flat-head{text-align:center;margin-bottom:14px}
+.history-flat-head .name{font-size:13px;font-weight:650;color:var(--text)}
+.history-flat-total{display:inline-flex;align-items:baseline;gap:6px;margin-top:8px}
+.history-flat-total .v{font-family:'IBM Plex Mono',monospace;font-size:32px;line-height:1;font-weight:750;color:var(--text);text-decoration:none}
+.history-flat-total .u{font-size:12px;color:var(--muted)}
+.history-flat-total .count-link:hover{text-decoration:underline}
+.history-flat-section{padding:14px 16px;border:1px solid #dfe4eb;border-radius:10px;background:#fff}
+.history-flat-section + .history-flat-section{margin-top:14px}
+.history-flat-metrics{display:grid;gap:0}
+.history-flat-metrics.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.history-flat-metrics.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.history-flat-metric{padding:2px 16px 2px 0;min-width:0}
+.history-flat-metric + .history-flat-metric{border-left:1px solid #e5eaf0;padding-left:16px}
+.history-flat-metric .l{display:block;font-size:11.5px;color:var(--text);white-space:nowrap}
+.history-flat-metric .v{display:inline-flex;align-items:baseline;gap:4px;margin-top:7px;font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:750;color:var(--text)}
+.history-flat-metric .v .count-link{color:inherit;text-decoration:none}
+.history-flat-metric .v .count-link:hover{text-decoration:underline}
+.history-flat-metric .u{font-size:11px;color:var(--muted);font-family:inherit;font-weight:500}
+.history-status-panel .history-panel-head span,.drawer-section-head .scope-tag.history-flat-tag{background:#f4f6f9;color:var(--muted)}
+@media(max-width:1280px){.history-flat-grid{grid-template-columns:1fr}.history-flat-metrics.cols-4{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:14px}.history-flat-metrics.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.history-flat-metric:nth-child(odd){border-left:0;padding-left:0}}
+</style>
+
+
+<style id="gofo-v262-backlog-compact">
+/* ===== V2.62 应分拣/待分拣 下钻布局压缩优化 ===== */
+.drawer.drawer-wide{width:1180px;max-width:calc(100vw - 32px)}
+#drawerBody[data-drawer-type="backlog"],
+#drawerBody[data-drawer-type="pending"],
+#backlogFlowBody[data-drawer-type="backlog"],
+#backlogFlowBody[data-drawer-type="pending"]{font-size:13px}
+#drawerBody[data-drawer-type="backlog"] .stats-row.backlog-stats,
+#drawerBody[data-drawer-type="pending"] .stats-row.backlog-stats{gap:10px;margin-bottom:10px}
+#drawerBody[data-drawer-type="backlog"] .stat.backlog-filter-card,
+#drawerBody[data-drawer-type="pending"] .stat.backlog-filter-card{padding:10px 12px;min-height:auto}
+#drawerBody[data-drawer-type="backlog"] .backlog-filter-card .l,
+#drawerBody[data-drawer-type="pending"] .backlog-filter-card .l{font-size:12px}
+#drawerBody[data-drawer-type="backlog"] .backlog-filter-card .v.num,
+#drawerBody[data-drawer-type="pending"] .backlog-filter-card .v.num{font-size:26px;line-height:1.1}
+#drawerBody[data-drawer-type="backlog"] .metric-note,
+#drawerBody[data-drawer-type="pending"] .metric-note,
+#drawerBody[data-drawer-type="backlog"] .backlog-time-definition,
+#drawerBody[data-drawer-type="pending"] .backlog-time-definition,
+#drawerBody[data-drawer-type="backlog"] .flow-dimension-note,
+#drawerBody[data-drawer-type="pending"] .flow-dimension-note{margin:8px 0 10px;padding:8px 10px;font-size:10.5px;line-height:1.5}
+#drawerBody[data-drawer-type="backlog"] .drawer-section-head,
+#drawerBody[data-drawer-type="pending"] .drawer-section-head{margin:10px 0 8px}
+#drawerBody[data-drawer-type="backlog"] .sec-title,
+#drawerBody[data-drawer-type="pending"] .sec-title{font-size:14px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-grid,
+#drawerBody[data-drawer-type="pending"] .backlog-time-grid{gap:8px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card{min-height:86px;padding:12px 12px 10px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-label,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-label{font-size:12.5px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value{margin-top:10px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value b,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value b{font-size:22px}
+#drawerBody[data-drawer-type="backlog"] .backlog-flow-overview,
+#drawerBody[data-drawer-type="pending"] .backlog-flow-overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group{padding:12px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group-head,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group-head{margin-bottom:8px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group-title,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group-title{font-size:13px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group-desc,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group-desc{display:none}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-grid,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-grid{gap:8px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card{min-height:74px;padding:10px 11px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card .value,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card .value{margin-top:8px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card .value b,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card .value b{font-size:19px}
+#drawerBody[data-drawer-type="backlog"] .scope-tag,
+#drawerBody[data-drawer-type="pending"] .scope-tag{padding:4px 8px;font-size:11px}
+@media (max-height:900px){
+  .drawer-bd{padding:14px}
+  #drawerBody[data-drawer-type="backlog"] .backlog-dimension-card,
+  #drawerBody[data-drawer-type="pending"] .backlog-dimension-card{min-height:68px}
+  #drawerBody[data-drawer-type="backlog"] .backlog-time-card,
+  #drawerBody[data-drawer-type="pending"] .backlog-time-card{min-height:80px}
+}
+@media (max-width:1366px){
+  .drawer.drawer-wide{width:1120px}
+  #drawerBody[data-drawer-type="backlog"] .backlog-flow-overview,
+  #drawerBody[data-drawer-type="pending"] .backlog-flow-overview{grid-template-columns:1fr}
+}
+</style>
+
+
+<style id="gofo-v263-fine-tune">
+/* ===== V2.63 卡片紧凑 + 数字放大 + 标题对齐统一 ===== */
+/* 当前滞留环节平铺卡片 */
+.history-flat-grid{gap:12px}
+.history-flat-card{padding:13px 13px 11px}
+.history-flat-head{text-align:left;margin-bottom:10px}
+.history-flat-head .name{font-size:13px;font-weight:700}
+.history-flat-total{margin-top:6px}
+.history-flat-total .v{font-size:38px}
+.history-flat-section{padding:12px 14px}
+.history-flat-section + .history-flat-section{margin-top:10px}
+.history-flat-metric{padding:1px 12px 1px 0}
+.history-flat-metric + .history-flat-metric{padding-left:12px}
+.history-flat-metric .l{font-size:11px}
+.history-flat-metric .v{margin-top:6px;font-size:18px}
+.history-flat-metric .u{font-size:10px}
+
+/* 应分拣/待分拣下钻布局细化 */
+.drawer.drawer-wide{width:1200px;max-width:calc(100vw - 24px)}
+#drawerBody[data-drawer-type="backlog"],
+#drawerBody[data-drawer-type="pending"]{padding-bottom:4px}
+#drawerBody[data-drawer-type="backlog"] .stats-row.backlog-stats,
+#drawerBody[data-drawer-type="pending"] .stats-row.backlog-stats{gap:8px;margin-bottom:8px}
+#drawerBody[data-drawer-type="backlog"] .stat.backlog-filter-card,
+#drawerBody[data-drawer-type="pending"] .stat.backlog-filter-card{padding:8px 10px}
+#drawerBody[data-drawer-type="backlog"] .backlog-filter-card .l,
+#drawerBody[data-drawer-type="pending"] .backlog-filter-card .l{text-align:center;font-size:12px}
+#drawerBody[data-drawer-type="backlog"] .backlog-filter-card .v.num,
+#drawerBody[data-drawer-type="pending"] .backlog-filter-card .v.num{font-size:30px;line-height:1.05}
+#drawerBody[data-drawer-type="backlog"] .metric-note,
+#drawerBody[data-drawer-type="pending"] .metric-note,
+#drawerBody[data-drawer-type="backlog"] .backlog-time-definition,
+#drawerBody[data-drawer-type="pending"] .backlog-time-definition,
+#drawerBody[data-drawer-type="backlog"] .flow-dimension-note,
+#drawerBody[data-drawer-type="pending"] .flow-dimension-note{margin:6px 0 8px;padding:7px 9px;font-size:10px}
+#drawerBody[data-drawer-type="backlog"] .drawer-section-head,
+#drawerBody[data-drawer-type="pending"] .drawer-section-head{margin:8px 0 6px}
+#drawerBody[data-drawer-type="backlog"] .section-head-actions,
+#drawerBody[data-drawer-type="pending"] .section-head-actions{gap:8px}
+#drawerBody[data-drawer-type="backlog"] .sec-title,
+#drawerBody[data-drawer-type="pending"] .sec-title{font-size:14px;line-height:1.2}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-grid,
+#drawerBody[data-drawer-type="pending"] .backlog-time-grid{gap:6px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card{min-height:82px;padding:10px 11px 9px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-head,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-head{justify-content:flex-start}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-label,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-label{text-align:left;font-size:12.5px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value{margin-top:8px}
+#drawerBody[data-drawer-type="backlog"] .backlog-time-card-value b,
+#drawerBody[data-drawer-type="pending"] .backlog-time-card-value b{font-size:24px}
+#drawerBody[data-drawer-type="backlog"] .backlog-flow-overview,
+#drawerBody[data-drawer-type="pending"] .backlog-flow-overview{gap:10px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group{padding:10px 11px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group-head,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group-head{margin-bottom:6px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-group-title,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-group-title{text-align:left;font-size:13px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-grid,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-grid{gap:6px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card{min-height:70px;padding:9px 10px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card .name,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card .name{font-size:11.5px;text-align:left}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card .value,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card .value{margin-top:7px}
+#drawerBody[data-drawer-type="backlog"] .backlog-dimension-card .value b,
+#drawerBody[data-drawer-type="pending"] .backlog-dimension-card .value b{font-size:22px}
+#drawerBody[data-drawer-type="backlog"] .scope-tag,
+#drawerBody[data-drawer-type="pending"] .scope-tag{padding:3px 7px;font-size:10.5px}
+@media(max-width:1366px){.drawer.drawer-wide{width:1160px}}
+@media(max-width:1280px){
+  .history-flat-card{padding:12px}
+  .history-flat-total .v{font-size:34px}
+}
+</style>
+
+
+<style id="gofo-v264-history-card-layout">
+/* ===== V2.64 历史留仓：时间分布卡片化 + 一屏布局优化 ===== */
+.history-overview{gap:14px}
+.history-total-card{min-height:auto;padding:16px 18px}
+.history-total-desc{margin-top:8px}
+.history-time-panel{margin-top:12px;padding:12px;border:1px solid rgba(255,90,31,.16);border-radius:12px;background:rgba(255,255,255,.78)}
+.history-time-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.history-time-panel-title{font-size:12px;font-weight:700;color:var(--text)}
+.history-time-panel-tip{font-size:10px;color:var(--faint)}
+.history-time-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.history-time-card{position:relative;display:block;width:100%;min-width:0;min-height:78px;padding:10px 11px 9px;border:1px solid #e7ebf1;border-radius:10px;background:#fff;color:var(--text)!important;text-align:left;font-family:inherit;cursor:pointer;overflow:hidden;box-shadow:0 4px 12px rgba(31,45,61,.04);text-decoration:none!important;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.history-time-card:before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:6px;background:#16a34a}
+.history-time-card:hover{transform:translateY(-2px);border-color:#d3dbe6;box-shadow:0 10px 24px rgba(31,45,61,.08)}
+.history-time-card:focus-visible{outline:3px solid rgba(255,90,31,.16);outline-offset:2px}
+.history-time-card.watch:before{background:#5b8def}
+.history-time-card.warning:before{background:#e0921a}
+.history-time-card.danger{border-color:#f3d2cf;background:linear-gradient(145deg,#fff8f7,#fff)}
+.history-time-card.danger:before{background:var(--red)}
+.history-time-card .l{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;font-weight:700;color:var(--text)}
+.history-time-card .pct{font-size:10px;font-weight:600;color:var(--faint)}
+.history-time-card .v{display:flex;align-items:baseline;gap:4px;margin-top:9px}
+.history-time-card .v b{font-family:'IBM Plex Mono',monospace;font-size:24px;line-height:1;font-weight:750;color:var(--text)}
+.history-time-card .v small{font-size:10px;font-weight:500;color:var(--faint)}
+.history-time-card.danger .v b{color:var(--red)}
+.history-total-card .history-time-card-grid{gap:7px}
+.history-total-card .history-time-card{min-height:72px;padding:9px 10px 8px}
+.history-total-card .history-time-card .v b{font-size:22px}
+.history-total-card .history-time-card .l{font-size:11.5px}
+.history-total-card .history-time-card .pct{font-size:9.5px}
+
+#drawerBody[data-drawer-type="history"] .history-drawer-hero{grid-template-columns:minmax(270px,.82fr) minmax(0,1.18fr);gap:10px;margin-bottom:8px}
+#drawerBody[data-drawer-type="history"] .history-hero-main{padding:14px 16px}
+#drawerBody[data-drawer-type="history"] .history-hero-main .value b{font-size:38px}
+#drawerBody[data-drawer-type="history"] .history-hero-main .desc{margin-top:6px;line-height:1.45}
+#drawerBody[data-drawer-type="history"] .history-time-panel{margin-top:0;padding:10px 11px}
+#drawerBody[data-drawer-type="history"] .history-time-panel-head{margin-bottom:6px}
+#drawerBody[data-drawer-type="history"] .history-time-panel-title{font-size:11.5px}
+#drawerBody[data-drawer-type="history"] .history-time-card-grid{gap:6px}
+#drawerBody[data-drawer-type="history"] .history-time-card{min-height:72px;padding:9px 10px 8px}
+#drawerBody[data-drawer-type="history"] .history-time-card .l{font-size:11.5px}
+#drawerBody[data-drawer-type="history"] .history-time-card .pct{font-size:9px}
+#drawerBody[data-drawer-type="history"] .history-time-card .v{margin-top:7px}
+#drawerBody[data-drawer-type="history"] .history-time-card .v b{font-size:22px}
+#drawerBody[data-drawer-type="history"] .history-insight{margin-bottom:8px;padding:8px 10px;font-size:10.5px;line-height:1.45}
+#drawerBody[data-drawer-type="history"] .drawer-section-head{margin:8px 0 6px}
+#drawerBody[data-drawer-type="history"] .history-flat-grid{gap:8px}
+#drawerBody[data-drawer-type="history"] .history-flat-card{padding:10px 10px 9px}
+#drawerBody[data-drawer-type="history"] .history-flat-head{margin-bottom:8px}
+#drawerBody[data-drawer-type="history"] .history-flat-total .v{font-size:30px}
+#drawerBody[data-drawer-type="history"] .history-flat-section{padding:9px 10px}
+#drawerBody[data-drawer-type="history"] .history-flat-section + .history-flat-section{margin-top:8px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric{padding:1px 10px 1px 0}
+#drawerBody[data-drawer-type="history"] .history-flat-metric + .history-flat-metric{padding-left:10px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .l{font-size:10.5px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .v{font-size:16px}
+#drawerBody[data-drawer-type="history"] .history-data-note{margin-top:6px;font-size:10px;line-height:1.45}
+#drawerBody[data-drawer-type="history"] .history-definition{margin-top:6px;padding:8px 10px;font-size:10px;line-height:1.5}
+@media(max-width:1280px){
+  .history-time-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #drawerBody[data-drawer-type="history"] .history-drawer-hero{grid-template-columns:1fr}
+}
+</style>
+
+
+<style id="gofo-v265-history-beauty">
+/* ===== V2.65 历史留仓 · 美观展示版 ===== */
+.history-demo-card{
+  position:relative;
+  background:
+    radial-gradient(circle at 8% 0,rgba(255,90,31,.10),transparent 260px),
+    linear-gradient(180deg,#fff 0,#fffaf7 100%);
+  border-color:#f1e6e0;
+}
+.history-demo-card:before{
+  content:'';position:absolute;right:-90px;top:-110px;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,90,31,.08),rgba(255,90,31,0) 68%);pointer-events:none;
+}
+.history-demo-card>.card-hd{position:relative;z-index:1}
+.history-overview{position:relative;z-index:1;grid-template-columns:minmax(310px,.78fr) minmax(0,1.72fr);gap:16px}
+.history-total-card{
+  position:relative;overflow:hidden;padding:20px 20px 18px;border:1px solid #f0c9ba;
+  background:linear-gradient(145deg,#fff0e9 0,#fff8f4 52%,#fff 100%);
+  box-shadow:0 16px 34px rgba(216,77,23,.12);
+}
+.history-total-card:after{
+  content:'';position:absolute;right:-56px;bottom:-74px;width:180px;height:180px;border-radius:50%;
+  border:24px solid rgba(255,90,31,.08);pointer-events:none;
+}
+.history-total-label{font-size:12.5px;letter-spacing:.2px;color:#9c4121}
+.history-total-value{position:relative;z-index:1;margin-top:10px}
+.history-total-value .v{font-size:48px;letter-spacing:-2.5px;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.history-total-desc{position:relative;z-index:1;max-width:360px;color:#755548;line-height:1.65}
+.history-time-panel{
+  position:relative;z-index:1;margin-top:16px;padding:13px;border-color:rgba(255,90,31,.16);
+  background:rgba(255,255,255,.78);box-shadow:inset 0 1px 0 rgba(255,255,255,.85)
+}
+.history-time-panel-head{margin-bottom:10px}
+.history-time-panel-title{font-size:12.5px}
+.history-time-panel-tip{padding:3px 8px;border-radius:999px;background:#fff3ed;color:#c65328;font-weight:600}
+.history-time-card-grid{gap:9px}
+.history-time-card{
+  min-height:82px;padding:11px 12px 10px;border-color:#e6ebf1;background:linear-gradient(180deg,#fff,#fbfcfe);
+  box-shadow:0 6px 18px rgba(31,45,61,.055)
+}
+.history-time-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(31,45,61,.11)}
+.history-time-card:before{top:9px;bottom:9px}
+.history-time-card .l{padding-left:2px}
+.history-time-card .v{margin-top:10px}
+.history-time-card .v b{font-size:25px;letter-spacing:-.6px}
+.history-time-card.watch{background:linear-gradient(180deg,#f8fbff,#fff)}
+.history-time-card.warning{background:linear-gradient(180deg,#fffaf0,#fff)}
+.history-time-card.danger{background:linear-gradient(180deg,#fff4f2,#fff)}
+.history-status-panel{
+  padding:16px 17px;border-color:#e8edf3;background:rgba(255,255,255,.94);
+  box-shadow:0 12px 30px rgba(31,45,61,.07)
+}
+.history-panel-head{margin-bottom:13px}
+.history-panel-head b{font-size:13.5px}
+.history-panel-head span{padding:3px 8px;border-radius:999px;background:#f4f6f9}
+.history-flat-grid{gap:12px}
+.history-flat-card{
+  position:relative;overflow:hidden;border-color:#e0e6ed;background:linear-gradient(180deg,#fbfcfe,#fff);
+  box-shadow:0 7px 18px rgba(31,45,61,.055);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease
+}
+.history-flat-card:hover{transform:translateY(-3px);border-color:#ffd0bd;box-shadow:0 14px 28px rgba(31,45,61,.10)}
+.history-flat-card:before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:#ef4444}
+.history-flat-card:nth-child(2):before{background:linear-gradient(90deg,#ff7a45,#fc4c02)}
+.history-flat-card:nth-child(3):before{background:#94a3b8}
+.history-flat-head{padding-top:3px}
+.history-flat-head .name{font-size:13.5px;color:#354052}
+.history-flat-total .v{font-size:38px;letter-spacing:-1.4px}
+.history-flat-card:nth-child(1) .history-flat-total .v{color:#dc4545}
+.history-flat-card:nth-child(2) .history-flat-total .v{color:var(--accent)}
+.history-flat-card:nth-child(3) .history-flat-total .v{color:#64748b}
+.history-flat-section{border-color:#e6ebf1;background:rgba(255,255,255,.88)}
+.history-flat-section:hover{border-color:#d7dee7}
+.history-flat-metric .l{color:#66758a;font-weight:600}
+.history-flat-metric .v{font-size:18px}
+.history-data-note{margin-top:8px;padding:7px 9px;border-radius:8px;background:#f8fafc}
+
+/* 弹框展示优化：更有层级但保持紧凑 */
+#drawerBody[data-drawer-type="history"]{background:linear-gradient(180deg,#fff,#fcfdff)}
+#drawerBody[data-drawer-type="history"] .history-drawer-hero{gap:12px;margin-bottom:10px}
+#drawerBody[data-drawer-type="history"] .history-hero-main{
+  position:relative;overflow:hidden;padding:16px 18px;border-color:#efc7b8;
+  background:linear-gradient(145deg,#fff0e8,#fff8f4 60%,#fff);
+  box-shadow:0 12px 26px rgba(216,77,23,.10)
+}
+#drawerBody[data-drawer-type="history"] .history-hero-main:after{
+  content:'';position:absolute;right:-46px;bottom:-62px;width:150px;height:150px;border-radius:50%;
+  border:20px solid rgba(255,90,31,.07)
+}
+#drawerBody[data-drawer-type="history"] .history-hero-main .label{font-size:12px}
+#drawerBody[data-drawer-type="history"] .history-hero-main .value{position:relative;z-index:1}
+#drawerBody[data-drawer-type="history"] .history-hero-main .value b{font-size:42px;letter-spacing:-1.8px}
+#drawerBody[data-drawer-type="history"] .history-hero-main .desc{position:relative;z-index:1;color:#76584b}
+#drawerBody[data-drawer-type="history"] .history-time-panel{
+  padding:11px 12px;border-color:#e4e9f0;background:linear-gradient(180deg,#fafbfd,#fff);
+  box-shadow:0 10px 24px rgba(31,45,61,.06)
+}
+#drawerBody[data-drawer-type="history"] .history-time-card{min-height:76px}
+#drawerBody[data-drawer-type="history"] .history-time-card .v b{font-size:23px}
+#drawerBody[data-drawer-type="history"] .history-insight{
+  align-items:center;border-color:#f1cdc5;background:linear-gradient(90deg,#fff4f1,#fff9f7);
+  box-shadow:0 6px 16px rgba(181,52,45,.05)
+}
+#drawerBody[data-drawer-type="history"] .drawer-section-head{
+  padding:0 0 7px;border-bottom:1px solid #e8edf3
+}
+#drawerBody[data-drawer-type="history"] .drawer-section-head .sec-title{font-size:14px;font-weight:700}
+#drawerBody[data-drawer-type="history"] .history-flat-grid{gap:10px}
+#drawerBody[data-drawer-type="history"] .history-flat-card{box-shadow:0 7px 18px rgba(31,45,61,.055)}
+#drawerBody[data-drawer-type="history"] .history-flat-total .v{font-size:32px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .v{font-size:17px}
+#drawerBody[data-drawer-type="history"] .history-definition{
+  border-color:#e5eaf0;background:linear-gradient(180deg,#f8fafc,#fff)
+}
+@media(max-width:1366px){
+  .history-overview{grid-template-columns:1fr}
+  .history-total-card{padding:17px}
+  .history-time-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+</style>
+
+
+<style id="gofo-v266-history-refine">
+/* ===== V2.66 历史留仓布局精修：间距缩小 + 时间分布更合理 + 5位数优化 ===== */
+.history-overview{gap:12px}
+.history-total-card{padding:18px 18px 16px}
+.history-time-panel{margin-top:12px;padding:10px 11px}
+.history-time-panel-head{margin-bottom:8px}
+.history-time-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.history-time-card{min-height:74px;padding:10px 11px 9px}
+.history-time-card .v{margin-top:8px}
+.history-time-card .v b{font-size:23px}
+.history-total-card .history-time-card{min-height:70px;padding:9px 10px 8px}
+.history-total-card .history-time-card .v b{font-size:21px}
+.history-status-panel{padding:14px 14px 13px}
+.history-panel-head{margin-bottom:10px}
+.history-flat-grid{gap:8px}
+.history-flat-card{padding:12px 12px 10px}
+.history-flat-head{margin-bottom:8px}
+.history-flat-total{display:block;margin-top:4px}
+.history-flat-total .v{display:block;font-size:36px;line-height:1;letter-spacing:-1px}
+.history-flat-total .u{display:block;margin-top:3px;font-size:10.5px}
+.history-flat-section{padding:10px 11px}
+.history-flat-section + .history-flat-section{margin-top:8px}
+.history-flat-metric{padding:0 8px 0 0}
+.history-flat-metric + .history-flat-metric{padding-left:8px}
+.history-flat-metric .l{font-size:10.5px;line-height:1.2}
+.history-flat-metric .v{display:block;margin-top:5px;font-size:16px;line-height:1.05;letter-spacing:-.2px}
+.history-flat-metric .v .count-link{display:block;max-width:100%;color:inherit;text-decoration:none}
+.history-flat-metric .u{display:block;margin-top:3px;font-size:9px}
+.history-data-note{margin-top:6px}
+
+#drawerBody[data-drawer-type="history"] .history-drawer-hero{grid-template-columns:minmax(290px,.8fr) minmax(0,1.2fr);gap:10px;margin-bottom:8px}
+#drawerBody[data-drawer-type="history"] .history-hero-main{padding:15px 16px}
+#drawerBody[data-drawer-type="history"] .history-hero-main .value b{font-size:40px}
+#drawerBody[data-drawer-type="history"] .history-time-panel{padding:10px 11px}
+#drawerBody[data-drawer-type="history"] .history-time-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#drawerBody[data-drawer-type="history"] .history-time-card{min-height:68px;padding:8px 9px 8px}
+#drawerBody[data-drawer-type="history"] .history-time-card .l{font-size:11px}
+#drawerBody[data-drawer-type="history"] .history-time-card .pct{font-size:8.5px}
+#drawerBody[data-drawer-type="history"] .history-time-card .v{margin-top:6px}
+#drawerBody[data-drawer-type="history"] .history-time-card .v b{font-size:21px}
+#drawerBody[data-drawer-type="history"] .history-insight{margin-bottom:8px;padding:7px 9px}
+#drawerBody[data-drawer-type="history"] .drawer-section-head{padding-bottom:6px}
+#drawerBody[data-drawer-type="history"] .history-flat-grid{gap:8px}
+#drawerBody[data-drawer-type="history"] .history-flat-card{padding:10px 10px 9px}
+#drawerBody[data-drawer-type="history"] .history-flat-total .v{font-size:30px;letter-spacing:-.8px}
+#drawerBody[data-drawer-type="history"] .history-flat-section{padding:8px 9px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric{padding-right:7px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric + .history-flat-metric{padding-left:7px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .l{font-size:10px}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .v{font-size:15px}
+#drawerBody[data-drawer-type="history"] .history-data-note{padding:6px 8px;font-size:9.8px}
+#drawerBody[data-drawer-type="history"] .history-definition{margin-top:6px;padding:7px 9px;font-size:9.8px}
+@media(max-width:1366px){
+  .history-overview{grid-template-columns:1fr}
+  .history-time-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:1280px){
+  .history-time-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+
+
+<style id="gofo-v267-history-width">
+/* ===== V2.67 历史留仓左右宽度重新分配 ===== */
+.history-overview{
+  grid-template-columns:minmax(250px,.56fr) minmax(0,2.04fr);
+  gap:10px;
+}
+.history-total-card{min-width:0}
+.history-status-panel{min-width:0}
+@media(max-width:1366px){
+  .history-overview{
+    grid-template-columns:minmax(235px,.52fr) minmax(0,1.98fr);
+    gap:8px;
+  }
+}
+@media(max-width:1180px){
+  .history-overview{grid-template-columns:1fr}
+}
+</style>
+
+
+<style id="gofo-v268-history-title-remove">
+/* V2.68 去除“当前滞留环节”标题后收紧顶部留白 */
+.history-status-panel{padding-top:12px}
+#drawerBody[data-drawer-type="history"] .history-drawer-status{margin-top:0}
+</style>
+
+
+<style id="gofo-v269-gap-tighten">
+/* ===== V2.69 卡片间距再收紧 ===== */
+.history-overview{gap:10px !important;}
+.history-time-card-grid{gap:5px !important;}
+.history-flat-grid{gap:6px !important;}
+.history-flat-section + .history-flat-section{margin-top:6px !important;}
+.history-status-panel{padding:12px 12px 11px !important;}
+.history-flat-card{padding:10px 10px 9px !important;}
+.history-flat-section{padding:8px 9px !important;}
+#drawerBody[data-drawer-type="history"] .history-drawer-hero{gap:8px !important; margin-bottom:6px !important;}
+#drawerBody[data-drawer-type="history"] .history-time-card-grid{gap:5px !important;}
+#drawerBody[data-drawer-type="history"] .history-flat-grid{gap:6px !important;}
+#drawerBody[data-drawer-type="history"] .history-flat-section + .history-flat-section{margin-top:6px !important;}
+#drawerBody[data-drawer-type="history"] .history-data-note{margin-top:5px !important;}
+#drawerBody[data-drawer-type="history"] .history-definition{margin-top:5px !important;}
+</style>
+
+
+<style id="gofo-v270-compact-orderly">
+/* ===== V2.70 紧凑但更整齐 ===== */
+.history-overview{align-items:stretch;gap:9px !important}
+.history-total-card,.history-status-panel{height:100%;box-sizing:border-box}
+
+/* 时间分布：等高、等距、数字基线统一 */
+.history-time-card-grid{grid-auto-rows:1fr;gap:6px !important}
+.history-time-card{
+  min-height:72px;display:flex;flex-direction:column;justify-content:space-between;
+  padding:9px 10px 8px !important;box-sizing:border-box
+}
+.history-time-card .l{min-height:18px;line-height:18px}
+.history-time-card .v{margin-top:6px !important;min-height:24px;align-items:baseline}
+.history-time-card .v b{font-size:22px;line-height:1;letter-spacing:-.45px}
+.history-time-card .v small{line-height:1}
+
+/* 当前滞留环节：三张卡片等高、内容按统一网格排列 */
+.history-flat-grid{align-items:stretch;gap:7px !important}
+.history-flat-card{
+  display:flex;flex-direction:column;height:100%;min-width:0;
+  padding:10px !important;box-sizing:border-box
+}
+.history-flat-head{min-height:58px;margin-bottom:7px !important;padding-top:2px}
+.history-flat-head .name{line-height:18px}
+.history-flat-total{min-height:34px;margin-top:3px}
+.history-flat-total .v{font-size:34px;line-height:34px;white-space:nowrap}
+.history-flat-total .u{margin-top:2px}
+.history-flat-section{
+  display:flex;align-items:center;min-height:58px;padding:8px !important;box-sizing:border-box
+}
+.history-flat-section + .history-flat-section{margin-top:6px !important}
+.history-flat-section:last-child{flex:1}
+.history-flat-metrics{width:100%;align-items:start}
+.history-flat-metric{padding-right:7px !important;overflow:hidden}
+.history-flat-metric + .history-flat-metric{padding-left:7px !important}
+.history-flat-metric .l{min-height:14px;line-height:14px;overflow:hidden;text-overflow:ellipsis}
+.history-flat-metric .v{min-height:18px;margin-top:5px;line-height:18px;white-space:nowrap}
+.history-flat-metric .v .count-link{overflow:hidden;text-overflow:ellipsis}
+.history-flat-metric .u{margin-top:2px}
+
+/* 弹框同步保持等高与统一基线 */
+#drawerBody[data-drawer-type="history"] .history-drawer-hero{align-items:stretch;gap:7px !important}
+#drawerBody[data-drawer-type="history"] .history-time-card-grid{grid-auto-rows:1fr;gap:5px !important}
+#drawerBody[data-drawer-type="history"] .history-time-card{min-height:66px;padding:8px 9px !important}
+#drawerBody[data-drawer-type="history"] .history-time-card .v b{font-size:20px}
+#drawerBody[data-drawer-type="history"] .history-flat-grid{align-items:stretch;gap:6px !important}
+#drawerBody[data-drawer-type="history"] .history-flat-card{height:100%;padding:9px !important}
+#drawerBody[data-drawer-type="history"] .history-flat-head{min-height:52px;margin-bottom:6px !important}
+#drawerBody[data-drawer-type="history"] .history-flat-total .v{font-size:29px;line-height:30px}
+#drawerBody[data-drawer-type="history"] .history-flat-section{min-height:53px;padding:7px 8px !important}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .v{font-size:15px;line-height:17px}
+#drawerBody[data-drawer-type="history"] .history-data-note,
+#drawerBody[data-drawer-type="history"] .history-definition{margin-top:5px !important}
+
+@media(max-width:1180px){
+  .history-flat-card{height:auto}
+  .history-flat-section:last-child{flex:0 0 auto}
+}
+</style>
+
+
+<style id="gofo-v272-font-unified">
+/* ===== V2.72 字体统一：数字与文本共用同一字体 ===== */
+:root{
+  --gofo-ui-font: Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+html,body,
+body *,
+button,input,select,textarea,table,thead,tbody,tr,th,td{
+  font-family:var(--gofo-ui-font)!important;
+}
+.num,
+.tbl,
+.count-link,
+.bag-count-link,
+.main-flow-number-btn,
+.history-total-value,
+.history-flat-total,
+.history-flat-metric .v,
+.history-time-card .v,
+.backlog-time-card-value,
+.backlog-dimension-card .value,
+.history-age-count{
+  font-family:var(--gofo-ui-font)!important;
+  font-variant-numeric:tabular-nums;
+}
+</style>
+
+
+<style id="gofo-v273-backlog-cleanup">
+/* ===== V2.73 去除应/待分拣下钻冗余合计提示 ===== */
+.backlog-dimension-group-head:has(> div:only-child){justify-content:flex-start;}
+#drawerBody[data-drawer-type="backlog"] .section-head-actions,
+#drawerBody[data-drawer-type="pending"] .section-head-actions{gap:6px;}
+</style>
+
+
+<style id="gofo-v274-six-digit-fit">
+/* ===== V2.74 所有卡片数字按最大 6 位数适配（999,999） ===== */
+/* 通用数字：保持单行、完整显示，不截断 */
+.num,
+.count-link,
+.bag-count-link,
+.history-time-card .v b,
+.history-flat-total .v,
+.history-flat-metric .v,
+.backlog-filter-card .v,
+.backlog-time-card-value b,
+.backlog-dimension-card .value b,
+.kpi .v{
+  white-space:nowrap;
+  max-width:100%;
+  font-variant-numeric:tabular-nums;
+}
+
+/* 首页核心指标：6 位数仍保持视觉重点 */
+.kpi .v{
+  font-size:clamp(25px,2vw,30px) !important;
+  letter-spacing:-.7px !important;
+}
+
+/* 应分拣 / 待分拣顶部筛选卡 */
+#drawerBody[data-drawer-type="backlog"] .backlog-filter-card .v.num,
+#drawerBody[data-drawer-type="pending"] .backlog-filter-card .v.num{
+  font-size:clamp(24px,2.1vw,30px) !important;
+  letter-spacing:-.6px;
+}
+
+/* 时间分布卡片：可完整容纳 999,999 */
+.backlog-time-card-value,
+.history-time-card .v{
+  min-width:0;
+  overflow:visible;
+}
+.backlog-time-card-value b{
+  font-size:clamp(19px,1.7vw,24px) !important;
+  letter-spacing:-.45px;
+}
+.history-time-card .v b{
+  font-size:clamp(19px,1.65vw,22px) !important;
+  letter-spacing:-.4px !important;
+}
+
+/* 目的流向维度卡：5 列布局下也能展示 6 位数 */
+.backlog-dimension-card .value{
+  min-width:0;
+  overflow:visible;
+}
+.backlog-dimension-card .value b{
+  font-size:clamp(17px,1.45vw,22px) !important;
+  letter-spacing:-.5px;
+}
+
+/* 历史留仓三张大卡总数 */
+.history-flat-total{
+  min-width:0;
+  overflow:visible;
+}
+.history-flat-total .v{
+  width:auto;
+  overflow:visible;
+  text-overflow:clip;
+  font-size:clamp(28px,2.35vw,34px) !important;
+  letter-spacing:-1px !important;
+}
+
+/* 历史留仓子项：按 999,999 设计，不再使用省略号 */
+.history-flat-metrics{
+  min-width:0;
+}
+.history-flat-metric{
+  min-width:0;
+  overflow:visible !important;
+}
+.history-flat-metric .v{
+  width:100%;
+  min-width:0;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  font-size:clamp(13px,1.15vw,16px) !important;
+  letter-spacing:-.45px !important;
+}
+.history-flat-metric .v .count-link{
+  display:block;
+  width:100%;
+  max-width:none !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  white-space:nowrap;
+}
+.history-flat-metric .u{
+  white-space:nowrap;
+}
+
+/* 弹框中的数字略微收敛，确保一屏与 6 位数兼容 */
+#drawerBody[data-drawer-type="history"] .history-flat-total .v{
+  font-size:clamp(26px,2vw,30px) !important;
+}
+#drawerBody[data-drawer-type="history"] .history-flat-metric .v{
+  font-size:clamp(13px,1.05vw,15px) !important;
+}
+#drawerBody[data-drawer-type="history"] .history-time-card .v b{
+  font-size:clamp(18px,1.45vw,20px) !important;
+}
+
+/* 极窄卡片下，给 4 列子项更多有效宽度 */
+.history-flat-metrics.cols-4{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+@media(max-width:1366px){
+  .history-flat-metric{padding-right:5px !important;}
+  .history-flat-metric + .history-flat-metric{padding-left:5px !important;}
+  .history-flat-metric .v{font-size:13px !important;letter-spacing:-.6px !important;}
+  .backlog-dimension-card .value b{font-size:17px !important;}
+}
+</style>
+
+
+<style id="gofo-v275-contract-upgrade">
+/* ===== V2.75 GOFO 固定骨架 + dashboard-monitoring / query-table 规范化 ===== */
+gofo-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex:0 0 auto}
+gofo-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gofo-header-action,.gofo-tab-more,.gofo-tab-close{border:0;font-family:inherit}.gofo-header-action{background:transparent}.gofo-tab-close{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:8px;padding:0;background:transparent;color:#bfbfbf;cursor:pointer}.gofo-tab-close gofo-icon{width:14px;height:14px}.gofo-tab-more{padding:0;background:transparent;cursor:pointer}.gofo-menu-icon{font-size:inherit}
+main.gofo-content{position:relative!important;display:flex!important;flex-direction:column!important;gap:16px!important;padding:16px!important;margin-left:55px!important;width:calc(100% - 55px)!important;box-sizing:border-box}
+.gofo-business-nav-card,.gofo-filter-card{background:#fff;border:1px solid var(--gofo-border);border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.gofo-business-nav-card{padding:0 16px}
+.gofo-business-tabs{display:flex;align-items:flex-end;gap:4px;min-height:44px}
+.gofo-business-tabs button{height:40px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:#595959;font-family:inherit;font-size:13px;cursor:pointer}
+.gofo-business-tabs button:hover{color:var(--gofo-primary);background:#fff8f4}
+.gofo-business-tabs button.active{color:var(--gofo-primary);border-bottom-color:var(--gofo-primary);background:var(--gofo-primary-light);font-weight:600}
+.gofo-filter-card{padding:16px 24px}
+.gofo-filter-grid{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.gofo-filter-field{display:flex;flex-direction:column;gap:6px;min-width:112px}.gofo-filter-field.wide{min-width:245px}.gofo-filter-field.shift-field{min-width:232px}.gofo-filter-label{font-size:12px;color:#606266}.gofo-filter-value,.gofo-filter-control{height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#303133;font-family:inherit;font-size:12px;box-sizing:border-box}.gofo-filter-control{justify-content:space-between;min-width:92px;cursor:pointer}.gofo-filter-control:hover{border-color:var(--gofo-primary)}
+.gofo-filter-card .seg-group,.gofo-filter-card .filter-tabs{display:flex;height:32px;border:1px solid #dcdfe6;border-radius:2px;overflow:hidden;background:#fff}.gofo-filter-card .seg-group button,.gofo-filter-card .filter-tabs button{min-width:52px;padding:0 10px;border:0;border-left:1px solid #ebeef5;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}.gofo-filter-card .seg-group button:first-child,.gofo-filter-card .filter-tabs button:first-child{border-left:0}.gofo-filter-card .seg-group button.on,.gofo-filter-card .filter-tabs button.on{background:var(--gofo-primary-light);color:var(--gofo-primary);font-weight:600}.gofo-filter-actions{margin-left:auto;display:flex;align-items:center}.gofo-primary-btn{height:32px;padding:0 18px;border:1px solid var(--gofo-primary);border-radius:2px;background:var(--gofo-primary);color:#fff;font-family:inherit;font-size:13px;cursor:pointer}.gofo-primary-btn:hover{background:var(--gofo-primary-hover);border-color:var(--gofo-primary-hover)}.gofo-primary-btn:disabled{opacity:.65;cursor:wait}
+.dashboard-loading:after{content:'看板数据加载中…';position:fixed;left:50%;top:108px;transform:translateX(-50%);z-index:1450;padding:8px 14px;border:1px solid #ffd2bf;border-radius:2px;background:#fff;color:var(--gofo-primary);box-shadow:0 6px 18px rgba(31,45,61,.12);font-size:12px}
+
+/* 复杂运单/袋号列表使用右侧宽 Drawer */
+#lightbox{align-items:stretch!important;justify-content:flex-end!important;padding:0!important;background:rgba(12,20,32,.42)!important;backdrop-filter:blur(2px)!important}
+#lightbox .lightbox-box{width:min(1200px,calc(100vw - 55px))!important;max-width:none!important;height:100vh!important;max-height:none!important;margin:0!important;border-radius:2px 0 0 2px!important;border:0!important;box-shadow:-12px 0 34px rgba(15,23,42,.22)!important;animation:none!important;transform:translateX(100%);transition:transform .22s ease}
+#lightbox.on .lightbox-box{transform:translateX(0)}
+#lightbox .drawer-hd{flex:0 0 48px;height:48px;padding:0 16px!important}
+#lightbox .drawer-bd{min-height:0;padding:16px!important;overflow:auto}
+.drawer-x{display:inline-flex;align-items:center;justify-content:center;border-radius:2px!important}.drawer-x gofo-icon{width:16px;height:16px}
+
+/* query-table 配方 */
+.query-management-view{display:flex;flex-direction:column;gap:12px;min-height:100%;height:100%}
+.query-filter-card{flex:0 0 auto;padding:24px;border:1px solid #ebeef5;border-radius:2px;background:#fff}
+.query-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 18px;align-items:end}
+.query-filter-grid.compact-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.query-filter-grid.compact-grid .query-item:nth-child(1){grid-column:span 2}.query-filter-grid.compact-grid .query-item:nth-child(2){grid-column:span 2}
+.query-filter-card .query-item{display:flex;flex-direction:column;gap:7px;min-width:0}.query-filter-card .query-item label{font-size:12px;color:#606266}.query-input,.query-select{width:100%;height:32px;border:1px solid #dcdfe6;border-radius:2px!important;background:#fff;padding:0 10px;color:#303133;font-family:inherit;outline:0}.query-input:focus,.query-select:focus{border-color:var(--gofo-primary);box-shadow:0 0 0 2px rgba(252,76,2,.12)}
+.query-extra{display:none!important}.query-filter-card.is-expanded .query-extra{display:flex!important}
+.query-filter-actions{grid-column:1/-1;display:flex;justify-content:flex-end;align-items:center;gap:8px;padding-top:2px}.action-btn{height:32px;padding:0 14px;border-radius:2px!important;font-family:inherit;font-size:12px;cursor:pointer}.action-btn.primary{border:1px solid var(--gofo-primary);background:var(--gofo-primary);color:#fff}.action-btn.primary:hover{background:var(--gofo-primary-hover)}.action-btn.secondary{border:1px solid #dcdfe6;background:#fff;color:#606266}.action-btn.secondary:hover{border-color:var(--gofo-primary);color:var(--gofo-primary)}.action-btn.link{border:0;background:transparent;color:var(--gofo-primary);padding:0 4px}.action-btn:disabled{opacity:.65;cursor:wait}
+.query-table-card{position:relative;display:flex;flex:1 1 auto;min-height:0;flex-direction:column;border:1px solid #ebeef5;border-radius:2px;background:#fff;overflow:hidden}
+.query-table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 16px;border-bottom:1px solid #ebeef5}.query-toolbar-left,.query-toolbar-right{display:flex;align-items:center;gap:8px}.query-toolbar-icon{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#606266;cursor:pointer}.query-toolbar-icon:hover{border-color:var(--gofo-primary);color:var(--gofo-primary)}.query-toolbar-icon gofo-icon{width:16px;height:16px}
+.query-table-card .lightbox-summary{margin:0;padding:10px 16px;border-bottom:1px solid #ebeef5}.query-table-card .table-scroll{flex:1 1 auto;min-height:220px;max-height:calc(100vh - 340px);overflow:auto}.query-table-card .tbl{min-width:1500px;margin:0}.query-table-card .bag-list-table{min-width:880px}.query-table-card .tbl thead th{position:sticky;top:0;z-index:2;background:#f5f7fa}.query-table-card .detail-pagination{flex:0 0 auto;margin:0;border-width:1px 0 0;border-radius:0;padding:8px 16px}
+.query-table-card.is-loading:after{content:'加载中…';position:absolute;inset:56px 0 0;z-index:8;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);color:var(--gofo-primary);font-size:13px;backdrop-filter:blur(1px)}
+.query-table-card.is-fullscreen{position:fixed;inset:16px;z-index:1600;box-shadow:0 18px 60px rgba(15,23,42,.28)}.query-table-card.is-fullscreen .table-scroll{max-height:none}
+.count-link,.bag-count-link,.waybill-link,.bag-link{display:inline-flex;align-items:center;border:0;background:transparent;padding:0;color:var(--gofo-primary);font:inherit;font-weight:inherit;cursor:pointer;text-align:inherit}.count-link:hover,.bag-count-link:hover,.waybill-link:hover,.bag-link:hover{text-decoration:underline}.count-link:focus-visible,.bag-count-link:focus-visible,.waybill-link:focus-visible,.bag-link:focus-visible,.kpi:focus-visible,.abn-item:focus-visible{outline:2px solid var(--gofo-primary);outline-offset:2px}
+@media(max-width:1366px){#lightbox .lightbox-box{width:calc(100vw - 55px)!important}.query-filter-grid{grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.gofo-filter-grid{gap:10px}.gofo-filter-field.wide{min-width:220px}}
+</style>
+
+
+<style id="gofo-v276-duration-title">
+/* ===== V2.76 应/待分拣下钻：滞留时长标题优化 ===== */
+.backlog-duration-title{display:flex;align-items:baseline;gap:9px;min-width:0}
+.backlog-duration-title .sec-title{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap}
+.backlog-duration-title .sec-subtitle{font-size:10.5px;font-weight:400;color:var(--faint);white-space:nowrap}
+@media(max-width:900px){.backlog-duration-title{align-items:flex-start;flex-direction:column;gap:2px}.backlog-duration-title .sec-subtitle{white-space:normal}}
+</style>
+
+
+<style id="gofo-v277-card-gap-tighten">
+/* ===== V2.77 首页卡片间距收紧 ===== */
+main.gofo-content{gap:14px}
+.kpi-row{gap:10px !important}
+.grid-2-1,.grid-machine-status,.grid-2{gap:10px !important}
+.card-hd{margin-bottom:12px}
+@media(max-width:1360px){.kpi-row{gap:10px !important}.grid-machine-status{gap:10px !important}}
+</style>
+
+
+<style id="gofo-v279-unit-inline">
+/* ===== V2.79 数字与量词保持同一行 ===== */
+.history-flat-total{
+  display:inline-flex !important;
+  align-items:baseline !important;
+  gap:4px !important;
+  width:auto !important;
+  max-width:100%;
+  white-space:nowrap;
+}
+.history-flat-total .v{
+  display:inline-block !important;
+  width:auto !important;
+  min-width:0;
+  white-space:nowrap;
+}
+.history-flat-total .u{
+  display:inline-block !important;
+  margin:0 !important;
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+.history-flat-metric .v{
+  display:inline-flex !important;
+  align-items:baseline !important;
+  gap:3px !important;
+  width:auto !important;
+  max-width:100%;
+  white-space:nowrap;
+}
+.history-flat-metric .v .count-link{
+  display:inline-block !important;
+  width:auto !important;
+  max-width:100% !important;
+  white-space:nowrap;
+}
+.history-flat-metric .u{
+  display:inline-block !important;
+  margin:0 !important;
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+</style>
+
+
+<style id="gofo-v280-section-gap-tighten">
+/* ===== V2.80 区块级间距再收紧 ===== */
+main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
+.gofo-business-nav-card{padding:0 14px !important;}
+.gofo-filter-card{padding:14px 20px !important;}
+.card-hd{margin-bottom:10px !important;}
+</style>
+
 </head>
 <body>
 <header class="gofo-header">
@@ -789,65 +1594,53 @@ main.gofo-content{position:relative!important;z-index:1!important}
     <div class="gofo-search-wrap"><input class="gofo-search" type="search" placeholder="请输入菜单或功能" aria-label="全局搜索"></div>
   </div>
   <div class="gofo-header-right">
-    <div class="gofo-header-action gofo-notice" title="消息通知" aria-label="消息通知">♢</div>
+    <button type="button" class="gofo-header-action gofo-notice" title="消息通知" aria-label="消息通知"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></gofo-icon></button>
     <div class="gofo-header-action optional" title="语言">中文⌄</div>
     <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
     <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
-    <span class="gofo-version">V2.60</span>
+    <span class="gofo-version">V2.80</span>
   </div>
 </header>
 <aside class="gofo-sidebar" aria-label="主菜单">
   <nav class="gofo-menu">
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">⌂</span><span class="gofo-menu-text">工作台</span></div>
-    <div class="gofo-menu-item active" aria-current="page"><span class="gofo-menu-icon">▥</span><span class="gofo-menu-text">中心运营看板</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">◇</span><span class="gofo-menu-text">车辆与场地</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">⇄</span><span class="gofo-menu-text">分拣作业管理</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">!</span><span class="gofo-menu-text">异常监控</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">≡</span><span class="gofo-menu-text">报表中心</span></div>
+    <div class="gofo-menu-item" title="工作台"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h13V10M9 20v-6h6v6"/></svg></gofo-icon><span class="gofo-menu-text">工作台</span></div>
+    <div class="gofo-menu-item active" aria-current="page" title="中心运营看板"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M9 9v11"/></svg></gofo-icon><span class="gofo-menu-text">中心运营看板</span></div>
+    <div class="gofo-menu-item" title="车辆与场地"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4m11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/></svg></gofo-icon><span class="gofo-menu-text">车辆与场地</span></div>
+    <div class="gofo-menu-item" title="分拣作业管理"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h14M15 4l3 3-3 3M20 17H6M9 14l-3 3 3 3"/></svg></gofo-icon><span class="gofo-menu-text">分拣作业管理</span></div>
+    <div class="gofo-menu-item" title="异常监控"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4zM12 9v5M12 17.5v.5"/></svg></gofo-icon><span class="gofo-menu-text">异常监控</span></div>
+    <div class="gofo-menu-item" title="报表中心"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h8M8 17h5"/></svg></gofo-icon><span class="gofo-menu-text">报表中心</span></div>
   </nav>
-  <div class="gofo-sidebar-footer"><span class="gofo-menu-icon">«</span><span class="gofo-menu-text">收起菜单</span></div>
+  <div class="gofo-sidebar-footer" title="收起菜单"><gofo-icon class="gofo-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></gofo-icon><span class="gofo-menu-text">收起菜单</span></div>
 </aside>
 <div class="gofo-tabs-bar" aria-label="页面页签">
-  <div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">分拣区看板 <span class="gofo-tab-close">×</span></div></div>
-  <div class="gofo-tab-more" title="更多页签">•••</div>
-</div>
-
-<!-- ===== Top Tab Bar ===== -->
-<nav class="topbar">
-  <div class="brand"><span class="dot">中</span>中心看板</div>
-  <div class="tabs">
-    <a href="#">概览</a>
-    <a href="#">卸车区</a>
-    <a href="#" class="active">分拣区</a>
-    <a href="#">装车区</a>
-    <a href="#">异常区</a>
-  </div>
-</nav>
-
-<!-- ===== Sub Bar (Filters) ===== -->
-<div class="subbar">
-  <div class="center-pill">ATL H <span class="chev">▾</span></div>
-  <div class="date-tag">操作日 <b class="num">06-16 06:00 ~ 06-17 06:00</b></div>
-  <div class="seg-group">
-    <span class="on">今日</span>
-    <span>明日</span>
-  </div>
-  <div class="date-tag">卸车截单 <b class="num">0D 20:00</b></div>
-  <div class="date-tag">散货截单 <b class="num">1D 03:00</b></div>
-  <div class="date-tag cutoff-countdown-tag" title="距离散货截单时间">距离截单时间 <b class="num" id="cutoffCountdown">--:--:--</b></div>
-  <div class="spacer"></div>
-  <span class="area-label">分拣班次</span>
-  <div class="filter-tabs" id="sortingShiftTabs" role="tablist" aria-label="分拣班次">
-    <span class="on" role="tab" tabindex="0" data-shift="早班" aria-selected="true">早班</span>
-    <span role="tab" tabindex="0" data-shift="中班" aria-selected="false">中班</span>
-    <span role="tab" tabindex="0" data-shift="晚班" aria-selected="false">晚班</span>
-  </div>
-  <button class="query-btn">查询</button>
+  <div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">分拣区看板 <button type="button" class="gofo-tab-close" title="关闭页签" aria-label="关闭分拣区看板页签"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></gofo-icon></button></div></div>
+  <button type="button" class="gofo-tab-more" title="更多页签" aria-label="更多页签"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></gofo-icon></button>
 </div>
 
 <main class="gofo-content">
+  <section class="gofo-business-nav-card" aria-label="业务区域切换">
+    <div class="gofo-business-tabs" role="tablist" aria-label="中心看板业务区域">
+      <button type="button" role="tab" aria-selected="false" data-business-tab="overview">概览</button>
+      <button type="button" role="tab" aria-selected="false" data-business-tab="unload">卸车区</button>
+      <button type="button" role="tab" aria-selected="true" class="active" data-business-tab="sorting">分拣区</button>
+      <button type="button" role="tab" aria-selected="false" data-business-tab="loading">装车区</button>
+      <button type="button" role="tab" aria-selected="false" data-business-tab="exception">异常区</button>
+    </div>
+  </section>
 
-  <!-- ===== KPI Row ===== -->
+  <section class="gofo-filter-card" aria-label="分拣区筛选条件">
+    <div class="gofo-filter-grid">
+      <div class="gofo-filter-field compact"><span class="gofo-filter-label">中心</span><button type="button" class="gofo-filter-control center-control" aria-label="选择中心">ATL H <span aria-hidden="true">⌄</span></button></div>
+      <div class="gofo-filter-field wide"><span class="gofo-filter-label">操作日</span><div class="gofo-filter-value num">06-16 06:00 ~ 06-17 06:00</div></div>
+      <div class="gofo-filter-field compact"><span class="gofo-filter-label">日期范围</span><div class="seg-group" role="group" aria-label="日期范围"><button type="button" class="on">今日</button><button type="button">明日</button></div></div>
+      <div class="gofo-filter-field"><span class="gofo-filter-label">卸车截单</span><div class="gofo-filter-value num">0D 20:00</div></div>
+      <div class="gofo-filter-field"><span class="gofo-filter-label">散货截单</span><div class="gofo-filter-value num">1D 03:00</div></div>
+      <div class="gofo-filter-field"><span class="gofo-filter-label">距离截单时间</span><div class="gofo-filter-value cutoff-countdown-tag"><b class="num" id="cutoffCountdown">--:--:--</b></div></div>
+      <div class="gofo-filter-field shift-field"><span class="gofo-filter-label">分拣班次</span><div class="filter-tabs" id="sortingShiftTabs" role="tablist" aria-label="分拣班次"><button type="button" class="on" role="tab" data-shift="早班" aria-selected="true">早班</button><button type="button" role="tab" data-shift="中班" aria-selected="false">中班</button><button type="button" role="tab" data-shift="晚班" aria-selected="false">晚班</button></div></div>
+      <div class="gofo-filter-actions"><button type="button" class="gofo-primary-btn" data-action="dashboard-query">查询</button></div>
+    </div>
+  </section>
+<!-- ===== KPI Row ===== -->
   <section class="kpi-row">
     <div class="kpi" data-drawer="eta" role="button" tabindex="0" title="点击查看卸车区-预计到车图表界面" aria-label="查看卸车区-预计到车图表界面">
       <div class="label">预计到达</div>
@@ -865,7 +1658,7 @@ main.gofo-content{position:relative!important;z-index:1!important}
         <span>车辆 <b class="num">17</b> 车</span>
       </div>
     </div>
-    <div class="kpi k-red" data-drawer="backlog">
+    <div class="kpi k-red" data-drawer="backlog" role="button" tabindex="0" title="点击查看应分拣下钻" aria-label="查看应分拣下钻分析">
       <div class="label">应分拣</div>
       <div class="value"><span class="num v">6,795</span><span class="unit">票</span></div>
       <div class="meta kpi-breakdown">
@@ -888,7 +1681,7 @@ main.gofo-content{position:relative!important;z-index:1!important}
         <span>历史留仓 <b class="num">484</b></span>
       </div>
     </div>
-    <div class="kpi" data-drawer="reflowRate">
+    <div class="kpi" data-drawer="reflowRate" role="button" tabindex="0" title="点击查看回流率指标口径" aria-label="查看回流率指标口径">
       <div class="label">回流率</div>
       <div class="value"><span class="num v" style="color:var(--amber);">2.3</span><span class="unit">%</span></div>
       <div class="meta">回流运单 ÷ 已分拣</div>
@@ -949,14 +1742,14 @@ main.gofo-content{position:relative!important;z-index:1!important}
         </div>
       </div>
       <div class="abn-list">
-        <div class="abn-item" data-drawer="backlog">
+        <div class="abn-item" data-drawer="backlog" role="button" tabindex="0" title="查看应分拣问题明细" aria-label="查看应分拣问题明细">
           <span class="dot"></span>
           <div class="txt">
             <div class="ttl">应分拣 6,795 票</div>
             <div class="sub">今日已入库 6,311 · 历史留仓 484</div>
           </div>
         </div>
-        <div class="abn-item amber" data-drawer="history">
+        <div class="abn-item amber" data-drawer="history" role="button" tabindex="0" title="查看历史留仓明细" aria-label="查看历史留仓明细">
           <span class="dot"></span>
           <div class="txt">
             <div class="ttl">历史留仓 282,901 票</div>
@@ -1095,71 +1888,84 @@ main.gofo-content{position:relative!important;z-index:1!important}
       <div class="history-total-card">
         <div>
           <div class="history-total-label">历史留仓总量</div>
-          <div class="history-total-value"><a class="num v count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a><span class="u">票</span></div>
+          <div class="history-total-value"><button type="button" class="num v count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</button><span class="u">票</span></div>
           <div class="history-total-desc">跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
         </div>
-        <div class="history-time-table" aria-label="历史留仓时间分布">
-          <div class="history-time-row head"><span>时间分布</span><span>运单数</span></div>
-          <div class="history-time-row total"><span>合计</span><span><a class="count-link" data-waybill-name="历史留仓 · 时间分布合计" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a></span></div>
-          <div class="history-time-row"><span>&lt;24H</span><span>263,335</span></div>
-          <div class="history-time-row"><span>48H</span><span>16,483</span></div>
-          <div class="history-time-row"><span>72H</span><span>825</span></div>
-          <div class="history-time-row risk"><span>&gt;72H</span><span>2,258</span></div>
+        <div class="history-time-panel" aria-label="历史留仓时间分布">
+          <div class="history-time-panel-head"><span class="history-time-panel-title">时间分布</span><span class="history-time-panel-tip">点击卡片查看运单明细</span></div>
+          <div class="history-time-card-grid">
+            <button type="button" class="history-time-card count-link" data-waybill-name="历史留仓 · 时间分布 · &lt;24H" data-waybill-count="263335" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>&lt;24H</span><span class="pct">93.1%</span></span><span class="v"><b>263,335</b><small>票</small></span></button>
+            <button type="button" class="history-time-card watch count-link" data-waybill-name="历史留仓 · 时间分布 · 24-48H" data-waybill-count="16483" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>24-48H</span><span class="pct">5.8%</span></span><span class="v"><b>16,483</b><small>票</small></span></button>
+            <button type="button" class="history-time-card warning count-link" data-waybill-name="历史留仓 · 时间分布 · 48-72H" data-waybill-count="825" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>48-72H</span><span class="pct">0.3%</span></span><span class="v"><b>825</b><small>票</small></span></button>
+            <button type="button" class="history-time-card danger count-link" data-waybill-name="历史留仓 · 时间分布 · &gt;72H" data-waybill-count="2258" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>&gt;72H</span><span class="pct">0.8%</span></span><span class="v"><b>2,258</b><small>票</small></span></button>
+          </div>
         </div>
       </div>
       <div class="history-status-panel">
-        <div class="history-panel-head"><b>当前滞留环节</b><span>票数/袋数默认展示，点击展开子指标</span></div>
-        <div class="history-status-grid">
-          <div class="history-status-card history-stage-toggle danger" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
-            <div class="history-stage-head"><div class="name">待分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
-            <div class="history-stage-details">
-              <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 待分拣" data-waybill-count="110517" data-waybill-scope="历史留仓 · 待分拣">110,517</a> <small>票</small></span></div>
-              <div class="history-stage-hint">点击展开业务类型</div>
+        <div class="history-status-grid history-flat-grid">
+          <div class="history-flat-card">
+            <div class="history-flat-head">
+              <div class="name">待分拣</div>
+              <div class="history-flat-total"><button type="button" class="count-link num v" data-waybill-name="历史留仓 · 待分拣" data-waybill-count="52975" data-waybill-scope="历史留仓 · 待分拣">52,975</button><span class="u">票</span></div>
             </div>
-            <div class="history-stage-children">
-              <div class="history-child-grid">
-                <div class="history-child-item"><span class="l">中转</span><span class="v">45,394 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">揽收</span><span class="v">1,041 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">清关</span><span class="v">63,972 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">客户自送</span><span class="v">110 <small>票</small></span></div>
+            <div class="history-flat-section">
+              <div class="history-flat-metrics cols-4">
+                <div class="history-flat-metric"><span class="l">中转</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 中转" data-waybill-count="902" data-waybill-scope="历史留仓 · 待分拣">902</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">揽收</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 揽收" data-waybill-count="1303" data-waybill-scope="历史留仓 · 待分拣">1,303</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">清关</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 清关" data-waybill-count="50739" data-waybill-scope="历史留仓 · 待分拣">50,739</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">客户自送</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 客户自送" data-waybill-count="31" data-waybill-scope="历史留仓 · 待分拣">31</button><span class="u">票</span></span></div>
+              </div>
+            </div>
+            <div class="history-flat-section">
+              <div class="history-flat-metrics cols-4">
+                <div class="history-flat-metric"><span class="l">hub</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · hub" data-waybill-count="33766" data-waybill-scope="历史留仓 · 待分拣">33,766</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">站点</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 站点" data-waybill-count="18244" data-waybill-scope="历史留仓 · 待分拣">18,244</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">路区</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 路区" data-waybill-count="18244" data-waybill-scope="历史留仓 · 待分拣">18,244</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">服务渠道</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 服务渠道" data-waybill-count="965" data-waybill-scope="历史留仓 · 待分拣">965</button><span class="u">票</span></span></div>
               </div>
             </div>
           </div>
-          <div class="history-status-card history-stage-toggle orange" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
-            <div class="history-stage-head"><div class="name">已分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
-            <div class="history-stage-details">
-              <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 已分拣" data-waybill-count="172917" data-waybill-scope="历史留仓 · 已分拣">172,917</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
-              <div class="history-stage-hint">点击展开后续作业状态</div>
+          <div class="history-flat-card">
+            <div class="history-flat-head">
+              <div class="name">已分拣</div>
+              <div class="history-flat-total"><button type="button" class="count-link num v" data-waybill-name="历史留仓 · 已分拣" data-waybill-count="108033" data-waybill-scope="历史留仓 · 已分拣">108,033</button><span class="u">票</span></div>
             </div>
-            <div class="history-stage-children">
-              <div class="history-child-grid">
-                <div class="history-child-item"><span class="l">待装车</span><span class="v">131,897 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">已装未发</span><span class="v">41,004 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">已装已发</span><span class="v">16 <small>票</small></span></div>
+            <div class="history-flat-section">
+              <div class="history-flat-metrics cols-3">
+                <div class="history-flat-metric"><span class="l">待装车</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 待装车" data-waybill-count="74494" data-waybill-scope="历史留仓 · 已分拣">74,494</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">已装未发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 已装未发" data-waybill-count="19127" data-waybill-scope="历史留仓 · 已分拣">19,127</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">已装已发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 已装已发" data-waybill-count="14412" data-waybill-scope="历史留仓 · 已分拣">14,412</button><span class="u">票</span></span></div>
+              </div>
+            </div>
+            <div class="history-flat-section">
+              <div class="history-flat-metrics cols-4">
+                <div class="history-flat-metric"><span class="l">hub</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · hub" data-waybill-count="49597" data-waybill-scope="历史留仓 · 已分拣">49,597</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">站点</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 站点" data-waybill-count="0" data-waybill-scope="历史留仓 · 已分拣">0</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">路区</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 路区" data-waybill-count="54983" data-waybill-scope="历史留仓 · 已分拣">54,983</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">服务渠道</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 服务渠道" data-waybill-count="3437" data-waybill-scope="历史留仓 · 已分拣">3,437</button><span class="u">票</span></span></div>
               </div>
             </div>
           </div>
-          <div class="history-status-card history-stage-toggle gray" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
-            <div class="history-stage-head"><div class="name">箱中转</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
-            <div class="history-stage-details">
-              <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 箱中转" data-waybill-count="6195" data-waybill-scope="历史留仓 · 箱中转">6,195</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
-              <div class="history-stage-hint">点击展开后续作业状态</div>
+          <div class="history-flat-card">
+            <div class="history-flat-head">
+              <div class="name">箱中转</div>
+              <div class="history-flat-total"><button type="button" class="count-link num v" data-waybill-name="历史留仓 · 箱中转" data-waybill-count="3373" data-waybill-scope="历史留仓 · 箱中转">3,373</button><span class="u">票</span></div>
             </div>
-            <div class="history-stage-children">
-              <div class="history-child-grid">
-                <div class="history-child-item"><span class="l">待装车</span><span class="v">1,029 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">已装未发</span><span class="v">5,166 <small>票</small></span></div>
-                <div class="history-child-item"><span class="l">已装已发</span><span class="v">0 <small>票</small></span></div>
+            <div class="history-flat-section">
+              <div class="history-flat-metrics cols-3">
+                <div class="history-flat-metric"><span class="l">待装车</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 箱中转 · 待装车" data-waybill-count="1" data-waybill-scope="历史留仓 · 箱中转">1</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">已装未发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 箱中转 · 已装未发" data-waybill-count="0" data-waybill-scope="历史留仓 · 箱中转">0</button><span class="u">票</span></span></div>
+                <div class="history-flat-metric"><span class="l">已装已发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 箱中转 · 已装已发" data-waybill-count="3372" data-waybill-scope="历史留仓 · 箱中转">3,372</button><span class="u">票</span></span></div>
               </div>
             </div>
           </div>
         </div>
-        <div class="history-data-note">已分拣、箱中转的袋数当前用“--”占位，接入袋号统计口径后显示实际袋数。</div>
+        
       </div>
     </div>
   </section>
 
-  <div class="footer">中心看板 · 分拣区 V2.60</div>
+  <div class="footer">中心看板 · 分拣区 V2.80</div>
 </main>
 
 <!-- ===== Drawer (二级弹框) ===== -->
@@ -1169,7 +1975,7 @@ main.gofo-content{position:relative!important;z-index:1!important}
       <span class="ttl" id="drawerTitle">明细</span>
       <div class="drawer-hd-actions">
         <button type="button" class="action-btn secondary drawer-export-btn" id="drawerExportBtn" data-action="drawer-export" style="display:none;">导出</button>
-        <button class="drawer-x" id="drawerClose">✕</button>
+        <button type="button" class="drawer-x" id="drawerClose" title="关闭" aria-label="关闭下钻分析"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></gofo-icon></button>
       </div>
     </div>
     <div class="drawer-bd" id="drawerBody"></div>
@@ -1181,18 +1987,18 @@ main.gofo-content{position:relative!important;z-index:1!important}
   <div class="drawer drawer-wide" role="dialog" aria-modal="true" aria-labelledby="backlogFlowTitle">
     <div class="drawer-hd">
       <span class="ttl" id="backlogFlowTitle">目的流向汇总</span>
-      <button class="drawer-x" id="backlogFlowClose" aria-label="关闭当前目的流向层级">✕</button>
+      <button type="button" class="drawer-x" id="backlogFlowClose" title="关闭" aria-label="关闭当前目的流向层级"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></gofo-icon></button>
     </div>
     <div class="drawer-bd" id="backlogFlowBody"></div>
   </div>
 </div>
 
 <!-- ===== Lightbox（运单/袋号明细） ===== -->
-<div class="lightbox" id="lightbox">
-  <div class="lightbox-box">
+<div class="lightbox detail-drawer-mask" id="lightbox" aria-hidden="true">
+  <div class="lightbox-box detail-management-drawer" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
     <div class="drawer-hd">
-      <span class="ttl">运单明细</span>
-      <button class="drawer-x" id="lightboxClose">✕</button>
+      <span class="ttl" id="lightboxTitle">运单明细</span>
+      <button type="button" class="drawer-x" id="lightboxClose" title="关闭" aria-label="关闭运单或袋号明细"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></gofo-icon></button>
     </div>
     <div class="drawer-bd" id="lightboxBody"></div>
   </div>
@@ -1243,6 +2049,7 @@ function openDrawer(type, extra) {
   if (lightbox) lightbox.classList.remove('on');
   drawerTitle.textContent = drawerTitles[type] || '明细';
   drawerBody.innerHTML = buildDrawer(type, extra);
+  drawerBody.setAttribute('data-drawer-type', type);
   const drawerPanel = drawerMask.querySelector('.drawer');
   const exportable = type === 'backlog' || type === 'pending' || type === 'sorted' || type === 'history';
   if (drawerPanel) drawerPanel.classList.toggle('drawer-wide', exportable);
@@ -1258,6 +2065,7 @@ function openBacklogFlowDrawer(context, extra) {
   const drawerContext = context === 'pending' ? 'pending' : 'backlog';
   if (backlogFlowTitle) backlogFlowTitle.textContent = `${drawerContext === 'pending' ? '待分拣' : '应分拣'} · 目的流向汇总`;
   backlogFlowBody.innerHTML = buildDrawer(drawerContext, { ...(extra || {}), stage:'destination' });
+  backlogFlowBody.setAttribute('data-drawer-type', drawerContext);
   backlogFlowMask.classList.add('on');
   backlogFlowMask.setAttribute('aria-hidden', 'false');
 }
@@ -1265,11 +2073,13 @@ function closeBacklogFlowDrawer() {
   if (!backlogFlowMask) return;
   backlogFlowMask.classList.remove('on');
   backlogFlowMask.setAttribute('aria-hidden', 'true');
+  backlogFlowBody.removeAttribute('data-drawer-type');
 }
 function closeDrawer() {
   if (lightbox) lightbox.classList.remove('on');
   closeBacklogFlowDrawer();
   drawerMask.classList.remove('on');
+  drawerBody.removeAttribute('data-drawer-type');
 }
 drawerClose.addEventListener('click', closeDrawer);
 drawerMask.addEventListener('click', (e) => { if (e.target === drawerMask) closeDrawer(); });
@@ -1296,38 +2106,29 @@ function openLightbox(name, count, scope) {
     pageButtons += `<span class="pagination-ellipsis">...</span><button type="button" class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
   }
   const detailRows = isSortedScope ? `
-    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160201">WB202606160201</a></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户A</td><td style="text-align:left;">06-16 08:30</td><td style="text-align:left;">06-16 08:42</td><td style="text-align:left;">06-16 11:08</td><td style="text-align:left;">LAX01</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</a></td></tr>
-    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160202">WB202606160202</a></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户B</td><td style="text-align:left;">06-16 09:05</td><td style="text-align:left;">06-16 09:12</td><td style="text-align:left;">06-16 12:16</td><td style="text-align:left;">ONT02</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">ATL H</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</a></td></tr>
-    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160203">WB202606160203</a></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户C</td><td style="text-align:left;">06-16 10:18</td><td style="text-align:left;">06-16 10:35</td><td style="text-align:left;">06-16 13:22</td><td style="text-align:left;">SFO03</td><td style="text-align:left;">SFO H</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH02</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</a></td></tr>` : `
-    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160001">WB202606160001</a></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户A</td><td style="text-align:left;">06-16 08:30</td><td style="text-align:left;">06-16 08:42</td><td style="text-align:left;">—</td><td style="text-align:left;">LAX01</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-001">BAG-DFW-001</a></td></tr>
-    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606160002">WB202606160002</a></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户B</td><td style="text-align:left;">06-16 09:05</td><td style="text-align:left;">06-16 09:12</td><td style="text-align:left;">06-16 09:20</td><td style="text-align:left;">ONT02</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">ATL H</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-016">BAG-ATL-016</a></td></tr>
-    <tr><td style="text-align:left;"><a class="waybill-link" data-waybill="WB202606150128">WB202606150128</a></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户C</td><td style="text-align:left;">06-15 22:18</td><td style="text-align:left;">06-15 22:35</td><td style="text-align:left;">—</td><td style="text-align:left;">SFO03</td><td style="text-align:left;">SFO H</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH02</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-009">BAG-IAH-009</a></td></tr>`;
+    <tr><td style="text-align:left;"><button type="button" class="waybill-link" data-waybill="WB202606160201">WB202606160201</button></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户A</td><td style="text-align:left;">06-16 08:30</td><td style="text-align:left;">06-16 08:42</td><td style="text-align:left;">06-16 11:08</td><td style="text-align:left;">LAX01</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</button></td></tr>
+    <tr><td style="text-align:left;"><button type="button" class="waybill-link" data-waybill="WB202606160202">WB202606160202</button></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户B</td><td style="text-align:left;">06-16 09:05</td><td style="text-align:left;">06-16 09:12</td><td style="text-align:left;">06-16 12:16</td><td style="text-align:left;">ONT02</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">ATL H</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</button></td></tr>
+    <tr><td style="text-align:left;"><button type="button" class="waybill-link" data-waybill="WB202606160203">WB202606160203</button></td><td style="text-align:left;">已分拣</td><td style="text-align:left;">客户C</td><td style="text-align:left;">06-16 10:18</td><td style="text-align:left;">06-16 10:35</td><td style="text-align:left;">06-16 13:22</td><td style="text-align:left;">SFO03</td><td style="text-align:left;">SFO H</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH02</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</button></td></tr>` : `
+    <tr><td style="text-align:left;"><button type="button" class="waybill-link" data-waybill="WB202606160001">WB202606160001</button></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户A</td><td style="text-align:left;">06-16 08:30</td><td style="text-align:left;">06-16 08:42</td><td style="text-align:left;">—</td><td style="text-align:left;">LAX01</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW01</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-DFW-001">BAG-DFW-001</button></td></tr>
+    <tr><td style="text-align:left;"><button type="button" class="waybill-link" data-waybill="WB202606160002">WB202606160002</button></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户B</td><td style="text-align:left;">06-16 09:05</td><td style="text-align:left;">06-16 09:12</td><td style="text-align:left;">06-16 09:20</td><td style="text-align:left;">ONT02</td><td style="text-align:left;">LAX H</td><td style="text-align:left;">ATL H</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-ATL-016">BAG-ATL-016</button></td></tr>
+    <tr><td style="text-align:left;"><button type="button" class="waybill-link" data-waybill="WB202606150128">WB202606150128</button></td><td style="text-align:left;">待分拣</td><td style="text-align:left;">客户C</td><td style="text-align:left;">06-15 22:18</td><td style="text-align:left;">06-15 22:35</td><td style="text-align:left;">—</td><td style="text-align:left;">SFO03</td><td style="text-align:left;">SFO H</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH02</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-IAH-009">BAG-IAH-009</button></td></tr>`;
   document.querySelector('#lightbox .drawer-hd .ttl').textContent = '运单管理';
   lightboxBody.innerHTML = `
-    <div class="query-panel">
-      <div class="query-item">
-        <label>运单号</label>
-        <input class="query-input" id="waybillQuery" placeholder="支持多值精确查询，逗号分隔">
+    <div class="query-management-view">
+    <div class="query-filter-card">
+      <div class="query-filter-grid">
+        <div class="query-item"><label>运单号</label><input class="query-input" id="waybillQuery" placeholder="支持多值精确查询，逗号分隔"></div>
+        <div class="query-item"><label>目的中心</label><select class="query-select"><option>全部</option><option>ATL H</option><option>DFW H</option><option>IAH H</option><option>SFO H</option></select></div>
+        <div class="query-item"><label>目的站点</label><select class="query-select"><option>全部</option><option>ATL01</option><option>ATL03</option><option>SDF</option><option>BNA</option></select></div>
+        <div class="query-item"><label>目的路区</label><select class="query-select"><option>全部</option><option>ATL-R01</option><option>ATL-R02</option><option>DFW-R01</option></select></div>
+        <div class="query-item query-extra"><label>服务渠道</label><select class="query-select"><option>全部</option><option>LAX.H-USPS(TT)</option><option>LAX.H-USPS(PM)</option><option>次日达</option></select></div>
+        <div class="query-filter-actions"><button type="button" class="action-btn secondary" data-action="waybill-reset">重置</button><button type="button" class="action-btn primary" data-action="waybill-query">查询</button><button type="button" class="action-btn link" data-action="filter-toggle" aria-expanded="false">展开</button></div>
       </div>
-      <div class="query-item">
-        <label>目的中心</label>
-        <select class="query-select"><option>全部</option><option>ATL H</option><option>DFW H</option><option>IAH H</option><option>SFO H</option></select>
-      </div>
-      <div class="query-item">
-        <label>目的站点</label>
-        <select class="query-select"><option>全部</option><option>ATL01</option><option>ATL03</option><option>SDF</option><option>BNA</option></select>
-      </div>
-      <div class="query-item">
-        <label>目的路区</label>
-        <select class="query-select"><option>全部</option><option>ATL-R01</option><option>ATL-R02</option><option>DFW-R01</option></select>
-      </div>
-      <div class="query-item">
-        <label>服务渠道</label>
-        <select class="query-select"><option>全部</option><option>LAX.H-USPS(TT)</option><option>LAX.H-USPS(PM)</option><option>次日达</option></select>
-      </div>
-      <button class="action-btn primary" data-action="waybill-query">查询</button>
-      <button class="action-btn secondary" data-action="waybill-reset">重置</button>
-      <button class="action-btn secondary" data-action="waybill-export">导出</button>
+    </div>
+    <div class="query-table-card">
+    <div class="query-table-toolbar">
+      <div class="query-toolbar-left"><button type="button" class="action-btn secondary" data-action="waybill-export">导出</button></div>
+      <div class="query-toolbar-right"><button type="button" class="query-toolbar-icon" data-action="table-refresh" title="刷新" aria-label="刷新运单列表"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 8.5A7 7 0 0 1 18.5 7M17.9 15.5A7 7 0 0 1 5.5 17"/></svg></gofo-icon></button><button type="button" class="query-toolbar-icon" data-action="table-columns" title="列设置" aria-label="设置运单列表列"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h7M15 18h5"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="13" cy="18" r="2"/></svg></gofo-icon></button><button type="button" class="query-toolbar-icon" data-action="table-fullscreen" title="全屏" aria-label="全屏查看运单列表"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg></gofo-icon></button></div>
     </div>
     <div class="lightbox-summary">
       <div class="desc">当前明细状态：<span class="status-pill">${waybillStatus}</span></div>
@@ -1376,8 +2177,12 @@ function openLightbox(name, count, scope) {
         <span class="pagination-total">共 <b>${count}</b> 条记录</span>
       </div>
     </div>
+    </div>
+    </div>
   `;
   lightbox.classList.add('on');
+  lightbox.setAttribute('aria-hidden', 'false');
+  setTimeout(() => lightboxClose.focus(), 0);
 }
 
 let prototypeToastTimer;
@@ -1415,18 +2220,18 @@ function openSortedBagList(name, count, scope) {
   }
   document.querySelector('#lightbox .drawer-hd .ttl').textContent = '袋号查询';
   lightboxBody.innerHTML = `
-    <div class="query-panel">
-      <div class="query-item">
-        <label>袋号</label>
-        <input class="query-input" placeholder="支持多值精确查询，逗号分隔">
+    <div class="query-management-view">
+    <div class="query-filter-card">
+      <div class="query-filter-grid compact-grid">
+        <div class="query-item"><label>袋号</label><input class="query-input" placeholder="支持多值精确查询，逗号分隔"></div>
+        <div class="query-item"><label>目的组织</label><select class="query-select"><option>全部</option><option>DFW H</option><option>IAH H</option><option>ATL01</option><option>ATL03</option><option>SFO03</option></select></div>
+        <div class="query-filter-actions"><button type="button" class="action-btn secondary" data-action="bag-reset">重置</button><button type="button" class="action-btn primary" data-action="bag-query">查询</button></div>
       </div>
-      <div class="query-item">
-        <label>目的组织</label>
-        <select class="query-select"><option>全部</option><option>DFW H</option><option>IAH H</option><option>ATL01</option><option>ATL03</option><option>SFO03</option></select>
-      </div>
-      <button class="action-btn primary" data-action="bag-query">查询</button>
-      <button class="action-btn secondary" data-action="bag-reset">重置</button>
-      <button class="action-btn secondary" data-action="bag-export">导出</button>
+    </div>
+    <div class="query-table-card">
+    <div class="query-table-toolbar">
+      <div class="query-toolbar-left"><button type="button" class="action-btn secondary" data-action="bag-export">导出</button></div>
+      <div class="query-toolbar-right"><button type="button" class="query-toolbar-icon" data-action="table-refresh" title="刷新" aria-label="刷新袋号列表"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 8.5A7 7 0 0 1 18.5 7M17.9 15.5A7 7 0 0 1 5.5 17"/></svg></gofo-icon></button><button type="button" class="query-toolbar-icon" data-action="table-columns" title="列设置" aria-label="设置袋号列表列"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h7M15 18h5"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="13" cy="18" r="2"/></svg></gofo-icon></button><button type="button" class="query-toolbar-icon" data-action="table-fullscreen" title="全屏" aria-label="全屏查看袋号列表"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg></gofo-icon></button></div>
     </div>
     <div class="lightbox-summary">
       <div class="desc">统计口径：取运单最后一次集包扫描记录中的袋号，按袋号去重。</div>
@@ -1443,9 +2248,9 @@ function openSortedBagList(name, count, scope) {
           <th style="text-align:left;">集包类型</th>
         </tr></thead>
         <tbody>
-          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-DFW-201 · 运单" data-waybill-count="36" data-waybill-scope="${currentScope} · 袋号查询">36</a></td><td style="text-align:left;">DFW</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;">自动集包</td></tr>
-          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-ATL-216 · 运单" data-waybill-count="42" data-waybill-scope="${currentScope} · 袋号查询">42</a></td><td style="text-align:left;">ATL</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;">人工集包</td></tr>
-          <tr><td style="text-align:left;"><a class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</a></td><td><a class="count-link" data-waybill-name="袋号 BAG-IAH-209 · 运单" data-waybill-count="31" data-waybill-scope="${currentScope} · 袋号查询">31</a></td><td style="text-align:left;">IAH</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;">自动集包</td></tr>
+          <tr><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-DFW-201">BAG-DFW-201</button></td><td><button type="button" class="count-link" data-waybill-name="袋号 BAG-DFW-201 · 运单" data-waybill-count="36" data-waybill-scope="${currentScope} · 袋号查询">36</button></td><td style="text-align:left;">DFW</td><td style="text-align:left;">DFW H</td><td style="text-align:left;">DFW-R01</td><td style="text-align:left;">LAX.H-USPS(TT)</td><td style="text-align:left;">自动集包</td></tr>
+          <tr><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-ATL-216">BAG-ATL-216</button></td><td><button type="button" class="count-link" data-waybill-name="袋号 BAG-ATL-216 · 运单" data-waybill-count="42" data-waybill-scope="${currentScope} · 袋号查询">42</button></td><td style="text-align:left;">ATL</td><td style="text-align:left;">ATL01</td><td style="text-align:left;">ATL-R02</td><td style="text-align:left;">次日达</td><td style="text-align:left;">人工集包</td></tr>
+          <tr><td style="text-align:left;"><button type="button" class="bag-link" data-bag="BAG-IAH-209">BAG-IAH-209</button></td><td><button type="button" class="count-link" data-waybill-name="袋号 BAG-IAH-209 · 运单" data-waybill-count="31" data-waybill-scope="${currentScope} · 袋号查询">31</button></td><td style="text-align:left;">IAH</td><td style="text-align:left;">IAH H</td><td style="text-align:left;">IAH-R03</td><td style="text-align:left;">LAX.H-USPS(PM)</td><td style="text-align:left;">自动集包</td></tr>
         </tbody>
       </table>
     </div>
@@ -1468,8 +2273,12 @@ function openSortedBagList(name, count, scope) {
         <span class="pagination-total">共 <b>${count}</b> 条记录</span>
       </div>
     </div>
+    </div>
+    </div>
   `;
   lightbox.classList.add('on');
+  lightbox.setAttribute('aria-hidden', 'false');
+  setTimeout(() => lightboxClose.focus(), 0);
 }
 
 function openBagQuery(bagNo) {
@@ -1495,11 +2304,13 @@ function openBagQuery(bagNo) {
     </table>
   `;
 }
-function closeLightbox() { lightbox.classList.remove('on'); }
+function closeLightbox() { lightbox.classList.remove('on'); lightbox.setAttribute('aria-hidden', 'true'); }
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
+  const fullscreenTable = document.querySelector('.query-table-card.is-fullscreen');
+  if (fullscreenTable) { fullscreenTable.classList.remove('is-fullscreen'); return; }
   if (lightbox.classList.contains('on')) { closeLightbox(); return; }
   if (backlogFlowMask && backlogFlowMask.classList.contains('on')) { closeBacklogFlowDrawer(); return; }
   if (drawerMask.classList.contains('on')) closeDrawer();
@@ -1646,7 +2457,7 @@ function buildUnsortedDrawer(type, extra) {
     const destinationTotal = destinationRows.reduce((sum,row)=>sum+row.count,0);
     const flowRows = destinationRows.map(row => `<tr>
       <td>${row.name}</td>
-      <td><a class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · ${typeLabels[row.type]} · ${row.name}" data-waybill-count="${formatNumber(row.count)}" data-waybill-scope="${d.label}">${formatNumber(row.count)}</a></td>
+      <td><button type="button" class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · ${typeLabels[row.type]} · ${row.name}" data-waybill-count="${formatNumber(row.count)}" data-waybill-scope="${d.label}">${formatNumber(row.count)}</button></td>
     </tr>`).join('');
     return `
       <div class="backlog-flow-path" data-backlog-dimension-page>
@@ -1657,7 +2468,7 @@ function buildUnsortedDrawer(type, extra) {
         <div class="sec-title">目的流向汇总</div>
         <div class="section-head-actions"><span class="scope-tag">${groupLabel}：${selectedLabel}</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · ${groupLabel}-${selectedLabel} · 目的流向汇总">导出</button></div>
       </div>
-      <div class="table-scroll"><table class="tbl backlog-flow-table"><thead><tr><th>目的流向</th><th>运单数量</th></tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · 目的流向合计" data-waybill-count="${formatNumber(destinationTotal)}" data-waybill-scope="${d.label}">${formatNumber(destinationTotal)}</a></td></tr>${flowRows}</tbody></table></div>
+      <div class="table-scroll"><table class="tbl backlog-flow-table"><thead><tr><th>目的流向</th><th>运单数量</th></tr></thead><tbody><tr class="total"><td>合计</td><td><button type="button" class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · 目的流向合计" data-waybill-count="${formatNumber(destinationTotal)}" data-waybill-scope="${d.label}">${formatNumber(destinationTotal)}</button></td></tr>${flowRows}</tbody></table></div>
       <div class="backlog-flow-footnote">点击运单数量进入运单明细。关闭本页后，上一级“${baseLabel} · 下钻分析”仍保留。</div>
     `;
   }
@@ -1675,26 +2486,26 @@ function buildUnsortedDrawer(type, extra) {
     </div>
     <div class="metric-note"><b>统计口径：</b>${definition}</div>
     <div class="drawer-section-head">
-      <div class="sec-title">时间分布</div>
-      <div class="section-head-actions"><span class="scope-tag">${d.label} · ${d.count} 票</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 时间分布">导出</button></div>
+      <div class="backlog-duration-title"><div class="sec-title">滞留时长分布</div><div class="sec-subtitle">按运单当前滞留时长统计</div></div>
+      <div class="section-head-actions"><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 滞留时长分布">导出</button></div>
     </div>
     <div class="backlog-time-grid">${timeCards}</div>
-    <div class="backlog-time-definition"><span>ⓘ</span><span><b>时间分布口径：</b>当前时间 −【到件时间、签入时间、集包时间】中的最早时间；点击任一卡片可查看对应运单明细。</span></div>
+    <div class="backlog-time-definition"><span>ⓘ</span><span><b>时长统计口径：</b>当前时间 −【到件时间、签入时间、集包时间】中的最早时间；点击任一卡片可查看对应运单明细。</span></div>
     <div class="drawer-section-head">
       <div class="sec-title">目的流向 · 维度汇总</div>
-      <div class="section-head-actions"><span class="scope-tag">先选维度，再查看目的流向</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 流向维度汇总">导出</button></div>
+      <div class="section-head-actions"><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 流向维度汇总">导出</button></div>
     </div>
     <div class="backlog-flow-overview">
       <section class="backlog-dimension-group">
-        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">货物来源</div><div class="backlog-dimension-group-desc">按进入分拣环节前的业务来源汇总，点击后查看该来源下的目的流向。</div></div><span class="scope-tag">明细合计 = ${d.count} 票</span></div>
+        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">货物来源</div><div class="backlog-dimension-group-desc">按业务来源汇总，点击卡片查看对应目的流向。</div></div></div>
         <div class="backlog-dimension-grid">${sourceCards}</div>
       </section>
       <section class="backlog-dimension-group">
-        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">分拣维度</div><div class="backlog-dimension-group-desc">HUB、站点、路区、服务渠道按互斥分拣类型汇总，每票仅归入一项。</div></div><span class="scope-tag">明细合计 = ${d.count} 票</span></div>
+        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">分拣维度</div><div class="backlog-dimension-group-desc">按分拣类型汇总，每票仅归入一项。</div></div></div>
         <div class="backlog-dimension-grid">${sortCards}</div>
       </section>
     </div>
-    <div class="flow-dimension-note">点击“全部”或任一维度卡片进入目的流向汇总，再点击运单数进入运单管理。</div>
+    <div class="flow-dimension-note">点击卡片进入目的流向汇总，再点击运单数查看运单明细。</div>
   `;
 }
 
@@ -1718,19 +2529,19 @@ function buildDrawer(type, extra) {
     const totalBags = rows.reduce((sum,row)=>sum+row.bags,0);
     const totalHours = mainFlowHours.map((_,index)=>rows.reduce((sum,row)=>sum+row.hours[index],0));
     const hourHeaders = mainFlowHours.map(hour=>`<th>${hour}</th>`).join('');
-    const totalHourCells = totalHours.map((count,index)=>`<td><a class="count-link" data-waybill-name="已分拣 · 分拣类型合计 · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</a></td>`).join('');
+    const totalHourCells = totalHours.map((count,index)=>`<td><button type="button" class="count-link" data-waybill-name="已分拣 · 分拣类型合计 · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</button></td>`).join('');
     const rowHtml = rows.map(row=>{
-      const hourCells = row.hours.map((count,index)=>`<td><a class="count-link" data-waybill-name="${row.name} · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</a></td>`).join('');
-      return `<tr><td>${row.name}</td><td><a class="count-link" data-waybill-name="${row.name} · 合计" data-waybill-count="${mainFlowFormat(row.tickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(row.tickets)}</a></td><td><a class="bag-count-link" data-bag-name="${row.name}" data-bag-count="${mainFlowFormat(row.bags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(row.bags)}</a></td>${hourCells}</tr>`;
+      const hourCells = row.hours.map((count,index)=>`<td><button type="button" class="count-link" data-waybill-name="${row.name} · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</button></td>`).join('');
+      return `<tr><td>${row.name}</td><td><button type="button" class="count-link" data-waybill-name="${row.name} · 合计" data-waybill-count="${mainFlowFormat(row.tickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(row.tickets)}</button></td><td><button type="button" class="bag-count-link" data-bag-name="${row.name}" data-bag-count="${mainFlowFormat(row.bags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(row.bags)}</button></td>${hourCells}</tr>`;
     }).join('');
     return `
       <div class="stats-row sorted-stats">
         <div class="stat sorted-stat-main sorted-stat-clickable" role="button" tabindex="0" title="点击查看已分拣运单" aria-label="查看已分拣运单，共45823票" data-waybill-name="已分拣：全部运单" data-waybill-count="45,823" data-waybill-scope="已分拣 · 当前班次"><div class="l">已分拣</div><div class="v num">45,823 <span style="font-size:11px;font-weight:500;color:var(--faint);">票</span></div></div>
-        <div class="stat"><div class="l">袋数</div><div class="v num"><a class="bag-count-link" data-bag-name="已分拣：全部袋号" data-bag-count="1,203" data-bag-scope="已分拣 · 当前班次">1,203</a> <span style="font-size:11px;font-weight:500;color:var(--faint);">袋</span></div></div>
+        <div class="stat"><div class="l">袋数</div><div class="v num"><button type="button" class="bag-count-link" data-bag-name="已分拣：全部袋号" data-bag-count="1,203" data-bag-scope="已分拣 · 当前班次">1,203</button> <span style="font-size:11px;font-weight:500;color:var(--faint);">袋</span></div></div>
       </div>
       <div class="metric-note"><b>业务定义：</b>当前操作日内已经完成分拣的运单。<br><b>统计口径：</b><ol class="sorted-rule-list"><li>操作类型为“集包”，操作组织为当前组织，取运单最后一次集包扫描记录及对应袋号；</li><li>按左上角分拣班次时间统计，满足“班次开始时间 &lt; 扫描时间 ≤ 班次结束时间”。</li></ol></div>
       <div class="drawer-section-head"><div class="sec-title">已分拣 · 目的流向（按分拣类型）</div><div class="section-head-actions"><div class="shift-scope"><span>当前班次</span><b class="num">06-16 06:00 ~ 06-17 06:00</b></div><button type="button" class="section-export-btn" data-action="section-export" data-export-name="已分拣 · 目的流向（按分拣类型）">导出</button></div></div>
-      <div class="sorted-table-wrap"><table class="tbl sorted-detail-table"><thead><tr><th style="text-align:left;">分拣类型</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr></thead><tbody><tr class="total"><td>合计</td><td><a class="count-link" data-waybill-name="已分拣 · 分拣类型合计" data-waybill-count="${mainFlowFormat(totalTickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(totalTickets)}</a></td><td><a class="bag-count-link" data-bag-name="已分拣 · 分拣类型合计" data-bag-count="${mainFlowFormat(totalBags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(totalBags)}</a></td>${totalHourCells}</tr>${rowHtml}</tbody></table></div>
+      <div class="sorted-table-wrap"><table class="tbl sorted-detail-table"><thead><tr><th style="text-align:left;">分拣类型</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr></thead><tbody><tr class="total"><td>合计</td><td><button type="button" class="count-link" data-waybill-name="已分拣 · 分拣类型合计" data-waybill-count="${mainFlowFormat(totalTickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(totalTickets)}</button></td><td><button type="button" class="bag-count-link" data-bag-name="已分拣 · 分拣类型合计" data-bag-count="${mainFlowFormat(totalBags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(totalBags)}</button></td>${totalHourCells}</tr>${rowHtml}</tbody></table></div>
       <div class="flow-dimension-note">HUB、站点、路区、服务渠道四种分拣类型互斥，合计按运单号去重，每票仅计入一种分拣类型。</div>
     `;
   }
@@ -1754,72 +2565,80 @@ function buildDrawer(type, extra) {
     <div class="history-drawer-hero">
       <div class="history-hero-main">
         <div class="label">历史留仓总量</div>
-        <div class="value"><b class="num"><a class="count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a></b><span>票</span></div>
+        <div class="value"><b class="num"><button type="button" class="count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</button></b><span>票</span></div>
         <div class="desc">跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
       </div>
-      <div class="history-drawer-time">
-        <div class="history-time-table" aria-label="历史留仓时间分布">
-          <div class="history-time-row head"><span>时间分布</span><span>运单数</span></div>
-          <div class="history-time-row total"><span>合计</span><span><a class="count-link" data-waybill-name="历史留仓 · 时间分布合计" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</a></span></div>
-          <div class="history-time-row"><span>&lt;24H</span><span>263,335</span></div>
-          <div class="history-time-row"><span>48H</span><span>16,483</span></div>
-          <div class="history-time-row"><span>72H</span><span>825</span></div>
-          <div class="history-time-row risk"><span>&gt;72H</span><span>2,258</span></div>
+      <div class="history-time-panel history-drawer-time" aria-label="历史留仓时间分布">
+        <div class="history-time-panel-head"><span class="history-time-panel-title">时间分布</span><span class="history-time-panel-tip">点击卡片查看明细</span></div>
+        <div class="history-time-card-grid">
+          <button type="button" class="history-time-card count-link" data-waybill-name="历史留仓 · 时间分布 · &lt;24H" data-waybill-count="263335" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>&lt;24H</span><span class="pct">93.1%</span></span><span class="v"><b>263,335</b><small>票</small></span></button>
+          <button type="button" class="history-time-card watch count-link" data-waybill-name="历史留仓 · 时间分布 · 24-48H" data-waybill-count="16483" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>24-48H</span><span class="pct">5.8%</span></span><span class="v"><b>16,483</b><small>票</small></span></button>
+          <button type="button" class="history-time-card warning count-link" data-waybill-name="历史留仓 · 时间分布 · 48-72H" data-waybill-count="825" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>48-72H</span><span class="pct">0.3%</span></span><span class="v"><b>825</b><small>票</small></span></button>
+          <button type="button" class="history-time-card danger count-link" data-waybill-name="历史留仓 · 时间分布 · &gt;72H" data-waybill-count="2258" data-waybill-scope="历史留仓 · 全部"><span class="l"><span>&gt;72H</span><span class="pct">0.8%</span></span><span class="v"><b>2,258</b><small>票</small></span></button>
         </div>
       </div>
     </div>
     <div class="history-insight"><span>⚠</span><span><b>重点关注：</b>&gt;72H 运单共 2,258 票，建议优先按当前实际滞留环节分派处理责任。</span></div>
 
-    <div class="drawer-section-head">
-      <div class="sec-title">当前滞留环节</div>
-      <span class="scope-tag">票数/袋数默认展示，点击展开子指标</span>
+    <div class="history-drawer-status history-flat-grid">
+      <div class="history-flat-card">
+        <div class="history-flat-head">
+          <div class="name">待分拣</div>
+          <div class="history-flat-total"><button type="button" class="count-link num v" data-waybill-name="历史留仓 · 待分拣" data-waybill-count="52975" data-waybill-scope="历史留仓 · 待分拣">52,975</button><span class="u">票</span></div>
+        </div>
+        <div class="history-flat-section">
+          <div class="history-flat-metrics cols-4">
+            <div class="history-flat-metric"><span class="l">中转</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 中转" data-waybill-count="902" data-waybill-scope="历史留仓 · 待分拣">902</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">揽收</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 揽收" data-waybill-count="1303" data-waybill-scope="历史留仓 · 待分拣">1,303</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">清关</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 清关" data-waybill-count="50739" data-waybill-scope="历史留仓 · 待分拣">50,739</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">客户自送</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 客户自送" data-waybill-count="31" data-waybill-scope="历史留仓 · 待分拣">31</button><span class="u">票</span></span></div>
+          </div>
+        </div>
+        <div class="history-flat-section">
+          <div class="history-flat-metrics cols-4">
+            <div class="history-flat-metric"><span class="l">hub</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · hub" data-waybill-count="33766" data-waybill-scope="历史留仓 · 待分拣">33,766</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">站点</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 站点" data-waybill-count="18244" data-waybill-scope="历史留仓 · 待分拣">18,244</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">路区</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 路区" data-waybill-count="18244" data-waybill-scope="历史留仓 · 待分拣">18,244</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">服务渠道</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 待分拣 · 服务渠道" data-waybill-count="965" data-waybill-scope="历史留仓 · 待分拣">965</button><span class="u">票</span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="history-flat-card">
+        <div class="history-flat-head">
+          <div class="name">已分拣</div>
+          <div class="history-flat-total"><button type="button" class="count-link num v" data-waybill-name="历史留仓 · 已分拣" data-waybill-count="108033" data-waybill-scope="历史留仓 · 已分拣">108,033</button><span class="u">票</span></div>
+        </div>
+        <div class="history-flat-section">
+          <div class="history-flat-metrics cols-3">
+            <div class="history-flat-metric"><span class="l">待装车</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 待装车" data-waybill-count="74494" data-waybill-scope="历史留仓 · 已分拣">74,494</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">已装未发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 已装未发" data-waybill-count="19127" data-waybill-scope="历史留仓 · 已分拣">19,127</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">已装已发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 已装已发" data-waybill-count="14412" data-waybill-scope="历史留仓 · 已分拣">14,412</button><span class="u">票</span></span></div>
+          </div>
+        </div>
+        <div class="history-flat-section">
+          <div class="history-flat-metrics cols-4">
+            <div class="history-flat-metric"><span class="l">hub</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · hub" data-waybill-count="49597" data-waybill-scope="历史留仓 · 已分拣">49,597</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">站点</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 站点" data-waybill-count="0" data-waybill-scope="历史留仓 · 已分拣">0</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">路区</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 路区" data-waybill-count="54983" data-waybill-scope="历史留仓 · 已分拣">54,983</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">服务渠道</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 已分拣 · 服务渠道" data-waybill-count="3437" data-waybill-scope="历史留仓 · 已分拣">3,437</button><span class="u">票</span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="history-flat-card">
+        <div class="history-flat-head">
+          <div class="name">箱中转</div>
+          <div class="history-flat-total"><button type="button" class="count-link num v" data-waybill-name="历史留仓 · 箱中转" data-waybill-count="3373" data-waybill-scope="历史留仓 · 箱中转">3,373</button><span class="u">票</span></div>
+        </div>
+        <div class="history-flat-section">
+          <div class="history-flat-metrics cols-3">
+            <div class="history-flat-metric"><span class="l">待装车</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 箱中转 · 待装车" data-waybill-count="1" data-waybill-scope="历史留仓 · 箱中转">1</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">已装未发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 箱中转 · 已装未发" data-waybill-count="0" data-waybill-scope="历史留仓 · 箱中转">0</button><span class="u">票</span></span></div>
+            <div class="history-flat-metric"><span class="l">已装已发</span><span class="v"><button type="button" class="count-link" data-waybill-name="历史留仓 · 箱中转 · 已装已发" data-waybill-count="3372" data-waybill-scope="历史留仓 · 箱中转">3,372</button><span class="u">票</span></span></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="history-drawer-status">
-      <div class="history-status-card history-stage-toggle danger" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
-        <div class="history-stage-head"><div class="name">待分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
-        <div class="history-stage-details">
-          <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 待分拣" data-waybill-count="110517" data-waybill-scope="历史留仓 · 待分拣">110,517</a> <small>票</small></span></div>
-          <div class="history-stage-hint">点击展开业务类型</div>
-        </div>
-        <div class="history-stage-children">
-          <div class="history-child-grid">
-            <div class="history-child-item"><span class="l">中转</span><span class="v">45,394 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">揽收</span><span class="v">1,041 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">清关</span><span class="v">63,972 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">客户自送</span><span class="v">110 <small>票</small></span></div>
-          </div>
-        </div>
-      </div>
-      <div class="history-status-card history-stage-toggle orange" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
-        <div class="history-stage-head"><div class="name">已分拣</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
-        <div class="history-stage-details">
-          <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 已分拣" data-waybill-count="172917" data-waybill-scope="历史留仓 · 已分拣">172,917</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
-          <div class="history-stage-hint">点击展开后续作业状态</div>
-        </div>
-        <div class="history-stage-children">
-          <div class="history-child-grid">
-            <div class="history-child-item"><span class="l">待装车</span><span class="v">131,897 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">已装未发</span><span class="v">41,004 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">已装已发</span><span class="v">16 <small>票</small></span></div>
-          </div>
-        </div>
-      </div>
-      <div class="history-status-card history-stage-toggle gray" data-history-stage-toggle role="button" tabindex="0" aria-expanded="false">
-        <div class="history-stage-head"><div class="name">箱中转</div><span class="history-stage-chevron" aria-hidden="true">⌄</span></div>
-        <div class="history-stage-details">
-          <div class="metric-pair"><span class="ticket"><a class="count-link" data-waybill-name="历史留仓 · 箱中转" data-waybill-count="6195" data-waybill-scope="历史留仓 · 箱中转">6,195</a> <small>票</small></span><span class="bag">-- <small>袋</small></span></div>
-          <div class="history-stage-hint">点击展开后续作业状态</div>
-        </div>
-        <div class="history-stage-children">
-          <div class="history-child-grid">
-            <div class="history-child-item"><span class="l">待装车</span><span class="v">1,029 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">已装未发</span><span class="v">5,166 <small>票</small></span></div>
-            <div class="history-child-item"><span class="l">已装已发</span><span class="v">0 <small>票</small></span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="history-data-note">已分拣、箱中转的袋数当前用“--”占位，接入袋号统计口径后显示实际袋数。</div>
+    
     <div class="history-definition"><b>统计口径：</b>跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。时间分布按运单当前滞留时长统计。</div>
   `;
   if (type === 'abnormal') return `
@@ -2039,7 +2858,7 @@ document.addEventListener('click', (e) => {
 
   const bagLink = e.target.closest('.bag-link');
   if (bagLink) {
-    showPrototypeToast(`袋号 ${bagLink.getAttribute('data-bag')}：正式系统中可进入袋号查询`);
+    openBagQuery(bagLink.getAttribute('data-bag'));
     return;
   }
 
@@ -2072,8 +2891,12 @@ document.addEventListener('click', (e) => {
       showPrototypeToast(`已导出：${exportName}（按当前筛选条件，静态原型示意）`);
     }
     if (actionName === 'waybill-query') {
-      action.textContent = '已查询';
-      setTimeout(() => action.textContent = '查询', 900);
+      const view = action.closest('.query-management-view');
+      const card = view && view.querySelector('.query-table-card');
+      if (card) card.classList.add('is-loading');
+      action.disabled = true;
+      action.textContent = '查询中';
+      setTimeout(() => { if (card) card.classList.remove('is-loading'); action.disabled = false; action.textContent = '查询'; showPrototypeToast('运单列表已更新'); }, 650);
     }
     if (actionName === 'waybill-reset') {
       const panel = action.closest('.query-panel');
@@ -2084,11 +2907,15 @@ document.addEventListener('click', (e) => {
       showPrototypeToast('筛选条件已重置');
     }
     if (actionName === 'waybill-export') {
-      alert('已按当前筛选条件导出运单明细（静态原型示意）');
+      showPrototypeToast('已按当前筛选条件导出运单明细（静态原型示意）');
     }
     if (actionName === 'bag-query') {
-      action.textContent = '已查询';
-      setTimeout(() => action.textContent = '查询', 900);
+      const view = action.closest('.query-management-view');
+      const card = view && view.querySelector('.query-table-card');
+      if (card) card.classList.add('is-loading');
+      action.disabled = true;
+      action.textContent = '查询中';
+      setTimeout(() => { if (card) card.classList.remove('is-loading'); action.disabled = false; action.textContent = '查询'; showPrototypeToast('袋号列表已更新'); }, 650);
     }
     if (actionName === 'bag-reset') {
       const panel = action.closest('.query-panel');
@@ -2099,7 +2926,40 @@ document.addEventListener('click', (e) => {
       showPrototypeToast('袋号查询条件已重置');
     }
     if (actionName === 'bag-export') {
-      alert('已按当前筛选条件导出袋号明细（静态原型示意）');
+      showPrototypeToast('已按当前筛选条件导出袋号明细（静态原型示意）');
+    }
+    if (actionName === 'filter-toggle') {
+      const card = action.closest('.query-filter-card');
+      if (card) {
+        const expanded = !card.classList.contains('is-expanded');
+        card.classList.toggle('is-expanded', expanded);
+        action.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        action.textContent = expanded ? '收起' : '展开';
+      }
+    }
+    if (actionName === 'table-refresh') {
+      const card = action.closest('.query-table-card');
+      if (card) card.classList.add('is-loading');
+      setTimeout(() => { if (card) card.classList.remove('is-loading'); showPrototypeToast('列表已刷新'); }, 600);
+    }
+    if (actionName === 'table-columns') {
+      showPrototypeToast('列设置：支持显隐、排序、列宽与冻结（静态原型示意）');
+    }
+    if (actionName === 'table-fullscreen') {
+      const card = action.closest('.query-table-card');
+      if (card) {
+        const fullscreen = !card.classList.contains('is-fullscreen');
+        card.classList.toggle('is-fullscreen', fullscreen);
+        action.setAttribute('aria-label', fullscreen ? '退出全屏' : '全屏查看列表');
+        action.setAttribute('title', fullscreen ? '退出全屏' : '全屏');
+      }
+    }
+    if (actionName === 'dashboard-query') {
+      const main = document.querySelector('main.gofo-content');
+      if (main) main.classList.add('dashboard-loading');
+      action.disabled = true;
+      action.textContent = '查询中';
+      setTimeout(() => { if (main) main.classList.remove('dashboard-loading'); action.disabled = false; action.textContent = '查询'; showPrototypeToast('看板数据已更新'); }, 650);
     }
   }
 });
@@ -2115,6 +2975,34 @@ document.addEventListener('change', (e) => {
     setPaginationPage(e.target.closest('.detail-pagination'), e.target.value);
   }
 });
+
+/* ============== Business line tabs ============== */
+const businessTabs = document.querySelector('.gofo-business-tabs');
+if (businessTabs) {
+  businessTabs.addEventListener('click', event => {
+    const tab = event.target.closest('[data-business-tab]');
+    if (!tab) return;
+    if (tab.getAttribute('data-business-tab') !== 'sorting') {
+      showPrototypeToast(`${tab.textContent.trim()}：当前原型仅展示分拣区内容`);
+      return;
+    }
+    businessTabs.querySelectorAll('[data-business-tab]').forEach(item => {
+      const selected = item === tab;
+      item.classList.toggle('active', selected);
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+  });
+}
+
+/* ============== Dashboard date segmented ============== */
+const dashboardDateSegments = document.querySelector('.gofo-filter-card .seg-group');
+if (dashboardDateSegments) {
+  dashboardDateSegments.addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button) return;
+    dashboardDateSegments.querySelectorAll('button').forEach(item => item.classList.toggle('on', item === button));
+  });
+}
 
 /* ============== Sorting shift filter ============== */
 const sortingShiftTabs = document.getElementById('sortingShiftTabs');
