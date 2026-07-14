@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>卸车区看板 · GOFO 管理后台 V2.08</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>卸车区看板 - GOFO 管理后台 V3.10（分拣区视觉与滚动统一版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -112,13 +113,10 @@
   .lightbox .lbcap{margin-top:10px;font-size:13px;color:#16202e;}
   .lightbox .lbclose{margin-top:10px;border:1px solid #d6dde6;background:#fff;border-radius:2px;padding:6px 16px;cursor:pointer;font-size:12px;color:#64718a;font-family:inherit;}
 </style>
-<style>
-/* 2026 visual refresh */
+<style>/* 2026 visual refresh · component layer only (shell follows sorting dashboard) */
 :root{--ui-primary:#ff5a1f;--ui-primary-dark:#e9470d;--ui-ink:#182230;--ui-line:#e7ebf1;--ui-shadow:0 8px 28px rgba(31,45,61,.07)}
-html{background:#eef2f7;scroll-behavior:smooth}body{min-width:1180px;color:var(--ui-ink);background:radial-gradient(circle at 8% -5%,rgba(255,90,31,.10),transparent 23rem),linear-gradient(180deg,#f7f9fc 0,#eef2f7 100%)}
-body>div:first-of-type{position:sticky;top:0;z-index:40!important;border-bottom:1px solid rgba(226,232,240,.88)!important;box-shadow:0 8px 30px rgba(15,23,42,.08)!important;backdrop-filter:blur(16px);background:rgba(255,255,255,.94)!important}
-body>div:first-of-type>div:first-child{min-height:58px;padding:12px 30px!important}body>div:first-of-type>div:first-child:before{content:'GOFO  ·  运营中心';display:inline-flex;align-items:center;height:34px;padding-right:24px;border-right:1px solid #e8edf3;color:#111827;font-size:15px;font-weight:800;letter-spacing:.2px}body>div:first-of-type>div:first-child span{transition:all .2s ease!important}body>div:first-of-type>div:first-child span:hover{background:#fff4ee!important;color:var(--ui-primary)!important}body>div:first-of-type>div:nth-child(2){padding:11px 30px!important;background:rgba(248,250,252,.88)!important}
-body>div:nth-of-type(2){max-width:1680px;margin:0 auto;padding:22px 30px 56px!important;gap:18px!important}body>div:nth-of-type(2)>div{border-color:var(--ui-line)!important;border-radius:16px!important;box-shadow:var(--ui-shadow)!important;transition:box-shadow .2s ease}body>div:nth-of-type(2)>div:hover{box-shadow:0 14px 38px rgba(31,45,61,.10)!important}
+html{background:#eef2f7;scroll-behavior:auto}
+body{min-width:1180px;color:var(--ui-ink);background:radial-gradient(circle at 8% -5%,rgba(255,90,31,.10),transparent 23rem),linear-gradient(180deg,#f7f9fc 0,#eef2f7 100%)}
 .chain-node,.aux-card{border-radius:13px!important;border-color:#e7ebf1!important;box-shadow:none!important}.chain-node{position:relative;overflow:hidden;padding:18px 20px!important}.chain-node:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#cbd5e1}.chain-node.core:before{background:#ef4444}.chain-node.done:before{background:#22c55e}.chain-node:hover,.aux-card:hover{transform:translateY(-3px)!important;box-shadow:0 12px 24px rgba(30,41,59,.10)!important}.chain-arrow .ar{color:#ff7a45;font-size:25px!important}.aux-card{background:linear-gradient(145deg,#fff,#fafbfd)!important;padding:16px 18px!important}
 body button,.dexport,.dquery{border-radius:9px!important;transition:transform .15s ease,box-shadow .15s ease}body button:not(:disabled):hover,.dexport:hover,.dquery:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(252,76,2,.22)}.seg{height:34px!important;border-radius:9px!important;padding:3px;border-color:#e4e9f0!important;background:#f5f7fa!important}.seg span{border-radius:6px;padding:0 13px!important}.seg .on{background:#fff!important;box-shadow:0 2px 7px rgba(31,41,55,.10);color:var(--ui-primary)!important}.dd,.mtlink{color:var(--ui-primary-dark)!important;font-weight:600}.dfilters select,.dfilters input{height:34px;border-radius:8px!important;border-color:#dfe5ec!important;outline:none}.dfilters select:focus,.dfilters input:focus{border-color:#ff8a5c!important;box-shadow:0 0 0 3px rgba(255,90,31,.10)}
 [id^='chart-']{border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#fff)}.scroll{border:1px solid #edf0f4;border-radius:12px}thead th{background:#f6f8fb!important;color:#536174!important}th,td{padding:11px 13px!important}tbody tr{transition:background .15s ease}tbody tr:hover{background:#fff7f2!important}.lbadge{padding:3px 9px!important;border-radius:999px!important}.drawer-panel{border-radius:18px!important;border:0!important;box-shadow:0 28px 80px rgba(15,23,42,.25)!important}.drawer-head{padding:18px 24px!important;background:linear-gradient(180deg,#fff,#fafbfd)}.drawer-head .drawer-close{border-radius:8px!important}.drawer-body .drawer-stat{border-radius:12px!important;background:#f8fafc!important}.lightbox .lbinner{border-radius:16px!important;box-shadow:0 24px 70px rgba(0,0,0,.24)}
@@ -203,198 +201,578 @@ main.gofo-content{position:relative!important;z-index:1!important}
 <style id="gofo-business-nav-consistency-fix">
 .gofo-business-shell.topbar{display:flex!important;align-items:center!important;gap:28px!important;height:46px!important;min-height:46px!important;position:sticky!important;top:89px!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:0 26px!important;background:#fff!important;border-bottom:1px solid #e8edf3!important;box-shadow:none!important;box-sizing:border-box!important;z-index:2700!important}.gofo-business-shell.topbar .brand{display:flex!important;align-items:center!important;gap:8px!important;color:#16202e!important;font-size:13px!important;font-weight:700!important}.gofo-business-shell.topbar .brand .dot{width:22px!important;height:22px!important;border-radius:6px!important;background:linear-gradient(135deg,#fc4c02,#f76121)!important;color:#fff!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:12px!important}.gofo-business-shell.topbar .tabs{display:flex!important;gap:4px!important}.gofo-business-shell.topbar .tabs a{padding:6px 14px!important;border-radius:7px!important;color:#64718a!important;background:transparent!important;border:0!important;box-shadow:none!important;text-decoration:none!important;font-size:13.5px!important;font-weight:500!important}.gofo-business-shell.topbar .tabs a.active{background:#fc4c02!important;color:#fff!important;font-weight:600!important}.gofo-business-shell.topbar .tabs a:hover{background:#fff1e6!important;color:#fc4c02!important}
 .gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:12px!important;flex-wrap:nowrap!important;position:sticky!important;top:135px!important;z-index:2690!important;width:calc(100% - 55px)!important;min-height:54px!important;margin-left:55px!important;padding:10px 26px!important;box-sizing:border-box!important;background:#fafbfd!important;border-bottom:1px solid #e8edf3!important}.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag{display:flex!important;align-items:center!important;gap:7px!important;height:32px!important;padding:0 12px!important;border:1px solid #d6dde6!important;border-radius:9px!important;background:#fff!important;color:#64718a!important;white-space:nowrap!important;font-size:12.5px!important;box-sizing:border-box!important}.gofo-business-filterbar .center-pill{color:#16202e!important;font-size:13px!important}.gofo-business-filterbar .date-tag b{color:#16202e!important;font-weight:500!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;height:32px!important;border:1px solid #d6dde6!important;border-radius:9px!important;overflow:hidden!important;background:#fff!important;white-space:nowrap!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;padding:0 13px!important;border:0!important;color:#64718a!important;background:#fff!important;font-size:12.5px!important}.gofo-business-filterbar .seg-group span.on,.gofo-business-filterbar .filter-tabs span.on{background:#fff1e6!important;color:#fc4c02!important;font-weight:600!important}.gofo-business-filterbar .spacer{flex:1!important}.gofo-business-filterbar .area-label{color:#9aa6b6!important;font-size:12px!important;white-space:nowrap!important}.gofo-business-filterbar .query-btn{height:32px!important;padding:0 18px!important;border:0!important;border-radius:9px!important;background:#fc4c02!important;color:#fff!important;font-size:13px!important;font-weight:600!important}.gofo-content{position:relative!important;z-index:1!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:16px!important;box-sizing:border-box!important}@media(max-width:1200px){.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1125px!important}}
-</style><style id="gofo-standalone-dashboard-final">
-/* Explicit standalone variant requested by user: two-row business header only. */
-html,body{margin:0!important;padding:0!important;width:100%!important;min-width:1180px!important;background:#f0f2f5!important;font-family:Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif!important;font-size:14px!important;color:#16202e!important}.gofo-header,.gofo-sidebar,.gofo-tabs-bar{display:none!important}
-.gofo-business-shell.topbar{display:flex!important;align-items:flex-end!important;height:42px!important;min-height:42px!important;position:sticky!important;top:0!important;z-index:2700!important;width:100%!important;max-width:none!important;margin:0!important;padding:0 12px!important;background:#fff!important;border-bottom:1px solid #e8edf3!important;box-shadow:none!important;box-sizing:border-box!important}.gofo-business-shell.topbar .brand{display:none!important}.gofo-business-shell.topbar .tabs{display:flex!important;align-items:stretch!important;height:42px!important;gap:4px!important}.gofo-business-shell.topbar .tabs a{display:inline-flex!important;align-items:center!important;height:42px!important;padding:0 13px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;color:#536b88!important;box-shadow:none!important;text-decoration:none!important;font-size:13px!important;font-weight:400!important;line-height:40px!important;box-sizing:border-box!important}.gofo-business-shell.topbar .tabs a:hover{background:#fff8f4!important;color:#fc4c02!important}.gofo-business-shell.topbar .tabs a.active{background:#fff7f2!important;color:#fc4c02!important;border-bottom-color:#fc4c02!important;font-weight:600!important}
-.gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:12px!important;flex-wrap:nowrap!important;position:sticky!important;top:42px!important;z-index:2690!important;width:100%!important;max-width:none!important;min-height:58px!important;margin:0!important;padding:10px 12px!important;box-sizing:border-box!important;background:#fafbfd!important;border-bottom:1px solid #e8edf3!important;box-shadow:0 2px 8px rgba(16,32,64,.04)!important}.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag{display:inline-flex!important;align-items:center!important;gap:7px!important;height:34px!important;padding:0 12px!important;border:1px solid #d8e0ea!important;border-radius:2px!important;background:#fff!important;color:#64718a!important;white-space:nowrap!important;font-size:12px!important;box-sizing:border-box!important}.gofo-business-filterbar .center-pill{border-color:#ff8a5c!important;color:#fc4c02!important;font-size:13px!important}.gofo-business-filterbar .date-tag b{color:#16202e!important;font-weight:500!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;height:34px!important;border:1px solid #d8e0ea!important;border-radius:2px!important;overflow:hidden!important;background:#f5f7fa!important;white-space:nowrap!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;height:32px!important;padding:0 13px!important;border:0!important;border-radius:0!important;color:#536b88!important;background:transparent!important;font-size:12px!important;box-sizing:border-box!important}.gofo-business-filterbar .seg-group span.on,.gofo-business-filterbar .filter-tabs span.on{background:#fff!important;color:#fc4c02!important;box-shadow:0 1px 4px rgba(16,32,64,.10)!important;font-weight:600!important}.gofo-business-filterbar .spacer{flex:1!important}.gofo-business-filterbar .area-label{color:#98a2b3!important;font-size:12px!important;white-space:nowrap!important}.gofo-business-filterbar .query-btn{height:34px!important;padding:0 19px!important;border:0!important;border-radius:2px!important;background:#fc4c02!important;color:#fff!important;box-shadow:none!important;font-family:inherit!important;font-size:13px!important;font-weight:600!important;cursor:pointer!important}.gofo-business-filterbar .query-btn:hover{background:#f76121!important}
-.gofo-content{position:relative!important;z-index:1!important;width:100%!important;max-width:none!important;margin:0!important;padding:16px!important;gap:16px!important;box-sizing:border-box!important;background:#f0f2f5!important}.gofo-content .panel,.gofo-content .ops-section,.gofo-content .card{border-color:#e8edf3!important;box-shadow:0 1px 2px rgba(16,32,64,.04)!important}.gofo-content .panel,.gofo-content .ops-section{border-radius:2px!important}.gofo-content h2,.gofo-content .ops-title,.gofo-content .card-title .h1{font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif!important;font-weight:600!important;letter-spacing:0!important}.drawer-panel,.drawer{border-radius:2px!important}.drawer-head{min-height:48px!important}.drawer-body,.drawer-bd{max-height:calc(100vh - 96px)!important;overflow:auto!important}
-@media(max-width:1280px){.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1180px!important}}
-</style><style id="gofo-enterprise-shell-final">
-/* GOFO Web Design v2 immutable L-shell restoration. */
-html,body{margin:0!important;padding:0!important;padding-top:48px!important;width:100%!important;min-width:1180px!important;background:#f0f2f5!important;font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif!important}
-.gofo-header{display:flex!important;position:fixed!important;inset:0 0 auto 0!important;height:48px!important;z-index:3000!important;background:#001529!important;padding:0 16px!important;box-sizing:border-box!important}.gofo-header-left,.gofo-header-right{display:flex!important;align-items:center!important}.gofo-header-left{gap:21px!important}.gofo-header-right{gap:16px!important}.gofo-logo{width:113px!important}.gofo-search{width:224px!important;height:30px!important}.gofo-avatar{width:24px!important;height:24px!important}
-.gofo-sidebar{display:block!important;position:fixed!important;left:0!important;top:48px!important;bottom:0!important;width:55px!important;z-index:2900!important;background:#fff!important;border-right:1px solid #f0f0f0!important;box-shadow:0 2px 8px rgba(0,0,0,.15)!important;overflow:hidden!important;transition:width .2s ease!important}.gofo-sidebar:hover{width:270px!important}.gofo-sidebar .gofo-menu-item{height:40px!important;padding:0 16px!important}.gofo-sidebar .gofo-menu-text{opacity:0!important;max-width:0!important}.gofo-sidebar:hover .gofo-menu-text{opacity:1!important;max-width:190px!important}.gofo-sidebar .gofo-menu-item.active{background:#fff1e6!important;color:#fc4c02!important;box-shadow:inset -3px 0 0 #fc4c02!important}
-.gofo-tabs-bar{display:flex!important;position:sticky!important;top:48px!important;z-index:2800!important;width:calc(100% - 55px)!important;height:41px!important;margin-left:55px!important;margin-right:0!important;padding-left:16px!important;box-sizing:border-box!important;background:#fff!important;border-bottom:1px solid #f0f0f0!important}.gofo-tab-card{height:40px!important;padding:0 16px!important}.gofo-tab-card.active{background:#fff1e6!important;color:#fc4c02!important}
-.gofo-business-shell.topbar{display:flex!important;position:sticky!important;top:89px!important;z-index:2700!important;width:calc(100% - 55px)!important;height:42px!important;min-height:42px!important;margin-left:55px!important;margin-right:0!important;padding:0 12px!important;box-sizing:border-box!important}.gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:131px!important;z-index:2690!important;width:calc(100% - 55px)!important;height:58px!important;min-height:58px!important;margin-left:55px!important;margin-right:0!important;padding:10px 12px!important;align-items:center!important;box-sizing:border-box!important}.gofo-content{position:relative!important;z-index:1!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:16px!important;box-sizing:border-box!important}
-.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag,.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs,.gofo-business-filterbar .query-btn{height:34px!important;min-height:34px!important;max-height:34px!important;align-self:center!important;box-sizing:border-box!important;margin-top:0!important;margin-bottom:0!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;align-items:stretch!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;height:32px!important;line-height:32px!important;padding-top:0!important;padding-bottom:0!important;box-sizing:border-box!important}.gofo-business-filterbar .query-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:34px!important;padding-top:0!important;padding-bottom:0!important}
-body.unload-dashboard .gofo-business-filterbar>*{align-self:center!important}body.unload-dashboard .gofo-business-filterbar .filter-tabs,body.unload-dashboard .gofo-business-filterbar .query-btn{height:34px!important;min-height:34px!important;max-height:34px!important}
-.drawer-layer,.drawer-stack,.drawer-backdrop{z-index:4000!important}@media(max-width:1200px){.gofo-tabs-bar,.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1125px!important}}
-</style><style id="gofo-top-gap-fix">
-/* Remove duplicate 48px top spacer; header itself occupies the first row. */
-html,body{padding-top:0!important}
-.gofo-header{position:sticky!important;top:0!important;inset:auto!important;width:100%!important}
-.gofo-tabs-bar{top:48px!important}
-.gofo-business-shell.topbar{top:89px!important}
-.gofo-business-filterbar{top:131px!important}
-</style><style id="unload-filter-height-final-fix">
-/* Lock unload filter row and controls to the same geometry as other dashboards. */
-body.unload-dashboard .gofo-business-filterbar{display:flex!important;position:sticky!important;top:131px!important;width:calc(100% - 55px)!important;height:54px!important;min-height:54px!important;max-height:54px!important;block-size:54px!important;padding:10px 12px!important;margin-top:0!important;margin-bottom:0!important;align-items:center!important;align-content:center!important;overflow:visible!important;box-sizing:border-box!important}
-body.unload-dashboard .gofo-business-filterbar>*{flex-shrink:0!important;align-self:center!important;margin-top:0!important;margin-bottom:0!important;box-sizing:border-box!important}
-body.unload-dashboard .gofo-business-filterbar .center-pill,body.unload-dashboard .gofo-business-filterbar .date-tag,body.unload-dashboard .gofo-business-filterbar .seg-group,body.unload-dashboard .gofo-business-filterbar .filter-tabs,body.unload-dashboard .gofo-business-filterbar .query-btn{height:34px!important;min-height:34px!important;max-height:34px!important;block-size:34px!important;padding-top:0!important;padding-bottom:0!important;line-height:32px!important}
-body.unload-dashboard .gofo-business-filterbar .seg-group span,body.unload-dashboard .gofo-business-filterbar .filter-tabs span{height:32px!important;min-height:32px!important;max-height:32px!important;line-height:32px!important}
-body.unload-dashboard .gofo-business-filterbar .spacer{flex:1 1 auto!important}
-</style><style id="remove-unload-gofo-label">body>div:first-of-type>div:first-child::before,body>div:first-of-type>div:first-child:before,.gofo-business-shell::before,.gofo-business-shell:before{content:none!important;display:none!important}</style></head>
+</style><style id="remove-unload-gofo-label">body>div:first-of-type>div:first-child::before,body>div:first-of-type>div:first-child:before,.gofo-business-shell::before,.gofo-business-shell:before{content:none!important;display:none!important}</style><style id="unload-sort-visual-unification-v309">
+
+/* ===== V2.72 字体统一：数字与文本共用同一字体 ===== */
+:root{
+  --gofo-ui-font: Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+html,body,
+body *,
+button,input,select,textarea,table,thead,tbody,tr,th,td{
+  font-family:var(--gofo-ui-font)!important;
+}
+.num,
+.tbl,
+.count-link,
+.bag-count-link,
+.main-flow-number-btn,
+.history-total-value,
+.history-flat-total,
+.history-flat-metric .v,
+.history-time-card .v,
+.backlog-time-card-value,
+.backlog-dimension-card .value,
+.history-age-count{
+  font-family:var(--gofo-ui-font)!important;
+  font-variant-numeric:tabular-nums;
+}
+
+
+/* ===== V2.75 GOFO 固定骨架 + dashboard-monitoring / query-table 规范化 ===== */
+gofo-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex:0 0 auto}
+gofo-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gofo-header-action,.gofo-tab-more,.gofo-tab-close{border:0;font-family:inherit}.gofo-header-action{background:transparent}.gofo-tab-close{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:8px;padding:0;background:transparent;color:#bfbfbf;cursor:pointer}.gofo-tab-close gofo-icon{width:14px;height:14px}.gofo-tab-more{padding:0;background:transparent;cursor:pointer}.gofo-menu-icon{font-size:inherit}
+main.gofo-content{position:relative!important;display:flex!important;flex-direction:column!important;gap:16px!important;padding:16px!important;margin-left:55px!important;width:calc(100% - 55px)!important;box-sizing:border-box}
+.gofo-business-nav-card,.gofo-filter-card{background:#fff;border:1px solid var(--gofo-border);border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.gofo-business-nav-card{padding:0 16px}
+.gofo-business-tabs{display:flex;align-items:flex-end;gap:4px;min-height:44px}
+.gofo-business-tabs button{height:40px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:#595959;font-family:inherit;font-size:13px;cursor:pointer}
+.gofo-business-tabs button:hover{color:var(--gofo-primary);background:#fff8f4}
+.gofo-business-tabs button.active{color:var(--gofo-primary);border-bottom-color:var(--gofo-primary);background:var(--gofo-primary-light);font-weight:600}
+.gofo-filter-card{padding:16px 24px}
+.gofo-filter-grid{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.gofo-filter-field{display:flex;flex-direction:column;gap:6px;min-width:112px}.gofo-filter-field.wide{min-width:245px}.gofo-filter-field.shift-field{min-width:232px}.gofo-filter-label{font-size:12px;color:#606266}.gofo-filter-value,.gofo-filter-control{height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#303133;font-family:inherit;font-size:12px;box-sizing:border-box}.gofo-filter-control{justify-content:space-between;min-width:92px;cursor:pointer}.gofo-filter-control:hover{border-color:var(--gofo-primary)}
+.gofo-filter-card .seg-group,.gofo-filter-card .filter-tabs{display:flex;height:32px;border:1px solid #dcdfe6;border-radius:2px;overflow:hidden;background:#fff}.gofo-filter-card .seg-group button,.gofo-filter-card .filter-tabs button{min-width:52px;padding:0 10px;border:0;border-left:1px solid #ebeef5;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}.gofo-filter-card .seg-group button:first-child,.gofo-filter-card .filter-tabs button:first-child{border-left:0}.gofo-filter-card .seg-group button.on,.gofo-filter-card .filter-tabs button.on{background:var(--gofo-primary-light);color:var(--gofo-primary);font-weight:600}.gofo-filter-actions{margin-left:auto;display:flex;align-items:center}.gofo-primary-btn{height:32px;padding:0 18px;border:1px solid var(--gofo-primary);border-radius:2px;background:var(--gofo-primary);color:#fff;font-family:inherit;font-size:13px;cursor:pointer}.gofo-primary-btn:hover{background:var(--gofo-primary-hover);border-color:var(--gofo-primary-hover)}.gofo-primary-btn:disabled{opacity:.65;cursor:wait}
+.dashboard-loading:after{content:'看板数据加载中…';position:fixed;left:50%;top:108px;transform:translateX(-50%);z-index:1450;padding:8px 14px;border:1px solid #ffd2bf;border-radius:2px;background:#fff;color:var(--gofo-primary);box-shadow:0 6px 18px rgba(31,45,61,.12);font-size:12px}
+
+/* 复杂运单/袋号列表使用右侧宽 Drawer */
+#lightbox{align-items:stretch!important;justify-content:flex-end!important;padding:0!important;background:rgba(12,20,32,.42)!important;backdrop-filter:blur(2px)!important}
+#lightbox .lightbox-box{width:min(1200px,calc(100vw - 55px))!important;max-width:none!important;height:100vh!important;max-height:none!important;margin:0!important;border-radius:2px 0 0 2px!important;border:0!important;box-shadow:-12px 0 34px rgba(15,23,42,.22)!important;animation:none!important;transform:translateX(100%);transition:transform .22s ease}
+#lightbox.on .lightbox-box{transform:translateX(0)}
+#lightbox .drawer-hd{flex:0 0 48px;height:48px;padding:0 16px!important}
+#lightbox .drawer-bd{min-height:0;padding:16px!important;overflow:auto}
+.drawer-x{display:inline-flex;align-items:center;justify-content:center;border-radius:2px!important}.drawer-x gofo-icon{width:16px;height:16px}
+
+/* query-table 配方 */
+.query-management-view{display:flex;flex-direction:column;gap:12px;min-height:100%;height:100%}
+.query-filter-card{flex:0 0 auto;padding:24px;border:1px solid #ebeef5;border-radius:2px;background:#fff}
+.query-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 18px;align-items:end}
+.query-filter-grid.compact-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.query-filter-grid.compact-grid .query-item:nth-child(1){grid-column:span 2}.query-filter-grid.compact-grid .query-item:nth-child(2){grid-column:span 2}
+.query-filter-card .query-item{display:flex;flex-direction:column;gap:7px;min-width:0}.query-filter-card .query-item label{font-size:12px;color:#606266}.query-input,.query-select{width:100%;height:32px;border:1px solid #dcdfe6;border-radius:2px!important;background:#fff;padding:0 10px;color:#303133;font-family:inherit;outline:0}.query-input:focus,.query-select:focus{border-color:var(--gofo-primary);box-shadow:0 0 0 2px rgba(252,76,2,.12)}
+.query-extra{display:none!important}.query-filter-card.is-expanded .query-extra{display:flex!important}
+.query-filter-actions{grid-column:1/-1;display:flex;justify-content:flex-end;align-items:center;gap:8px;padding-top:2px}.action-btn{height:32px;padding:0 14px;border-radius:2px!important;font-family:inherit;font-size:12px;cursor:pointer}.action-btn.primary{border:1px solid var(--gofo-primary);background:var(--gofo-primary);color:#fff}.action-btn.primary:hover{background:var(--gofo-primary-hover)}.action-btn.secondary{border:1px solid #dcdfe6;background:#fff;color:#606266}.action-btn.secondary:hover{border-color:var(--gofo-primary);color:var(--gofo-primary)}.action-btn.link{border:0;background:transparent;color:var(--gofo-primary);padding:0 4px}.action-btn:disabled{opacity:.65;cursor:wait}
+.query-table-card{position:relative;display:flex;flex:1 1 auto;min-height:0;flex-direction:column;border:1px solid #ebeef5;border-radius:2px;background:#fff;overflow:hidden}
+.query-table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 16px;border-bottom:1px solid #ebeef5}.query-toolbar-left,.query-toolbar-right{display:flex;align-items:center;gap:8px}.query-toolbar-icon{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#606266;cursor:pointer}.query-toolbar-icon:hover{border-color:var(--gofo-primary);color:var(--gofo-primary)}.query-toolbar-icon gofo-icon{width:16px;height:16px}
+.query-table-card .lightbox-summary{margin:0;padding:10px 16px;border-bottom:1px solid #ebeef5}.query-table-card .table-scroll{flex:1 1 auto;min-height:220px;max-height:calc(100vh - 340px);overflow:auto}.query-table-card .tbl{min-width:1500px;margin:0}.query-table-card .bag-list-table{min-width:880px}.query-table-card .tbl thead th{position:sticky;top:0;z-index:2;background:#f5f7fa}.query-table-card .detail-pagination{flex:0 0 auto;margin:0;border-width:1px 0 0;border-radius:0;padding:8px 16px}
+.query-table-card.is-loading:after{content:'加载中…';position:absolute;inset:56px 0 0;z-index:8;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);color:var(--gofo-primary);font-size:13px;backdrop-filter:blur(1px)}
+.query-table-card.is-fullscreen{position:fixed;inset:16px;z-index:1600;box-shadow:0 18px 60px rgba(15,23,42,.28)}.query-table-card.is-fullscreen .table-scroll{max-height:none}
+.count-link,.bag-count-link,.waybill-link,.bag-link{display:inline-flex;align-items:center;border:0;background:transparent;padding:0;color:var(--gofo-primary);font:inherit;font-weight:inherit;cursor:pointer;text-align:inherit}.count-link:hover,.bag-count-link:hover,.waybill-link:hover,.bag-link:hover{text-decoration:underline}.count-link:focus-visible,.bag-count-link:focus-visible,.waybill-link:focus-visible,.bag-link:focus-visible,.kpi:focus-visible,.abn-item:focus-visible{outline:2px solid var(--gofo-primary);outline-offset:2px}
+@media(max-width:1366px){#lightbox .lightbox-box{width:calc(100vw - 55px)!important}.query-filter-grid{grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.gofo-filter-grid{gap:10px}.gofo-filter-field.wide{min-width:220px}}
+
+
+/* ===== V2.80 区块级间距再收紧 ===== */
+main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
+.gofo-business-nav-card{padding:0 14px !important;}
+.gofo-filter-card{padding:14px 20px !important;}
+.card-hd{margin-bottom:10px !important;}
+
+
+/* ===== V2.86 页面超链接 / 界面切换入口 ===== */
+.gofo-interface-switch{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:32px;
+}
+.gofo-interface-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  height:32px;
+  padding:0 12px;
+  border:1px solid #dcdfe6;
+  border-radius:2px;
+  background:#fff;
+  color:#303133;
+  font-size:13px;
+  font-weight:500;
+  line-height:1;
+  text-decoration:none;
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+  transition:border-color .16s ease,color .16s ease,background .16s ease;
+}
+.gofo-interface-link:hover,
+.gofo-interface-link:focus-visible{
+  border-color:var(--gofo-primary);
+  color:var(--gofo-primary);
+  background:#fffaf7;
+  outline:0;
+}
+.gofo-interface-link[aria-current="page"]{
+  border-color:#cfd5dd;
+  background:#fff;
+  color:#1f2937;
+  box-shadow:inset 0 -2px 0 var(--gofo-primary);
+}
+.gofo-interface-link gofo-icon{
+  width:15px;
+  height:15px;
+  flex:0 0 15px;
+}
+@media(max-width:1100px){
+  .gofo-interface-switch{overflow-x:auto;padding-bottom:1px;}
+  .gofo-interface-link{white-space:nowrap;}
+}
+
+
+/* ===== V2.89 业务导航与界面入口同排 ===== */
+.gofo-business-nav-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:44px;
+}
+.gofo-interface-switch{margin-left:auto;flex:0 0 auto;}
+@media(max-width:1180px){
+  .gofo-business-nav-card{overflow-x:auto;}
+  .gofo-business-tabs,.gofo-interface-switch{flex:0 0 auto;}
+}
+
+
+/* ===== 卸车区 V3.09：对齐分拣区 UI / 字体 / 视觉（仅卸车区） ===== */
+:root{
+  --bg:#f0f2f5;
+  --card:#fff;
+  --line:#f0f0f0;
+  --line-2:#ebeef5;
+  --text:#303133;
+  --muted:#606266;
+  --faint:#909399;
+  --accent:#fc4c02;
+  --accent-soft:#fff1e6;
+  --accent-line:#ffd9c7;
+  --red:#e5484d;
+  --amber:#e0921a;
+  --green:#16a34a;
+  --shadow:0 1px 2px rgba(0,0,0,.04);
+  --r-card:2px;
+}
+html,body{background:#f0f2f5!important;color:#303133!important;}
+body.unload-dashboard{min-width:1180px!important;}
+main.gofo-content{gap:10px!important;padding:14px 16px 16px!important;}
+
+/* 页面卡片：与分拣区最终直角规范一致 */
+.ops-section,.chart-panel,.chain-node,.aux-card,.risk-item,.ops-legend,
+.drawer-panel,.drawer-stat,.lightbox .lbinner,.scroll{
+  border-radius:2px!important;
+}
+.ops-section{
+  padding:16px!important;
+  background:#fff!important;
+  border:1px solid #f0f0f0!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;
+  transition:none!important;
+}
+.ops-section:hover{box-shadow:0 1px 2px rgba(0,0,0,.04)!important;}
+.ops-head,.chart-toolbar{margin-bottom:10px!important;}
+.ops-title{
+  gap:10px!important;
+  color:#303133!important;
+  font-size:16px!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+}
+.ops-title:before{
+  width:5px!important;
+  height:20px!important;
+  border-radius:0!important;
+  background:#fc4c02!important;
+}
+.ops-sub{color:#909399!important;}
+
+/* 到车链路：保留卸车业务表达，外观采用分拣区 KPI 语言 */
+.flow-chain{grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr) 54px minmax(0,1fr)!important;}
+.flow-chain .chain-node{
+  min-height:112px!important;
+  padding:14px 16px!important;
+  border:1px solid #e5eaf0!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(16,32,64,.04)!important;
+  transform:none!important;
+}
+.flow-chain .chain-node:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.chain-node:before{width:4px!important;border-radius:0!important;background:#cbd5e1!important;}
+.chain-node.core:before{background:#e5484d!important;}
+.chain-node.done:before{background:#16a34a!important;}
+.chain-node.done{background:#fff!important;border-color:#e5eaf0!important;}
+.node-tag{padding:3px 8px!important;border-radius:999px!important;background:#f5f7fa!important;color:#909399!important;}
+.node-number{margin-top:8px!important;}
+.node-number .big{font-size:30px!important;font-weight:600!important;letter-spacing:-.6px!important;}
+.node-number .unit{color:#909399!important;}
+.node-detail{color:#909399!important;}
+.chain-arrow{color:#909399!important;}
+.chain-arrow .ar{font-size:20px!important;color:#fc4c02!important;}
+.aux-line{margin-top:12px!important;padding-top:10px!important;border-color:#ebeef5!important;}
+
+/* 预计到车 / 重点关注布局 */
+.arrival-layout{grid-template-columns:2fr 1.1fr!important;gap:10px!important;}
+.risk-panel{
+  background:linear-gradient(180deg,#fff7f6,#fff)!important;
+  border-color:#f6cdc8!important;
+}
+.risk-list{gap:6px!important;}
+.risk-item{
+  min-height:58px!important;
+  grid-template-columns:28px minmax(0,1fr) auto!important;
+  gap:10px!important;
+  padding:10px 12px!important;
+  border:1px solid #f0f0f0!important;
+  border-left:3px solid #e5484d!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;
+  transform:none!important;
+}
+.risk-item:nth-child(2){border-left-color:#e0921a!important;}
+.risk-item:hover{background:#fafafa!important;border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.risk-icon{width:26px!important;height:26px!important;border-radius:2px!important;background:#fff1ee!important;color:#e5484d!important;font-size:13px!important;}
+.risk-icon.orange{background:#fff8eb!important;color:#e0921a!important;}
+.risk-name{font-size:13px!important;font-weight:600!important;color:#303133!important;}
+.risk-desc{font-size:11px!important;color:#909399!important;}
+.risk-value{font-size:15px!important;font-weight:600!important;}
+
+/* 图表卡、Tab、链接 */
+.progress-panels{gap:10px!important;}
+.chart-panel{padding:14px 16px!important;border:1px solid #ebeef5!important;background:#fff!important;}
+.chart-panel-title{font-size:13px!important;color:#606266!important;}
+.seg{
+  height:32px!important;
+  padding:0!important;
+  border:1px solid #dcdfe6!important;
+  border-radius:2px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.seg span{height:30px!important;padding:0 12px!important;border-radius:0!important;color:#606266!important;background:#fff!important;}
+.seg .on{background:#fff1e6!important;color:#fc4c02!important;box-shadow:none!important;font-weight:600!important;}
+.dd,.mtlink{color:#fc4c02!important;font-weight:600!important;}
+.dd:hover,.mtlink:hover{text-decoration:underline;}
+.aux-card{
+  border:1px solid #ebeef5!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.aux-card:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.aux-card .al{color:#606266!important;font-weight:500!important;}
+.aux-card .av{font-weight:600!important;}
+
+/* 表格、筛选和分页 */
+table{font-family:var(--gofo-ui-font)!important;}
+thead th{background:#f5f7fa!important;color:#606266!important;}
+th,td{padding:9px 12px!important;}
+tbody tr:hover{background:#fafafa!important;}
+.scroll{border:1px solid #ebeef5!important;overflow:auto!important;}
+.dfilters select,.dfilters input,.dreset,.dexport,.dquery,.dpager select,.dpager input,.dpager button{
+  border-radius:2px!important;
+  font-family:var(--gofo-ui-font)!important;
+}
+.dexport,.dquery{background:#fc4c02!important;}
+.dexport:hover,.dquery:hover{background:#f76121!important;transform:none!important;box-shadow:none!important;}
+
+/* 图例和弹层 */
+.ops-legend{padding:10px 16px!important;border-color:#f0f0f0!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;}
+.drawer-panel{border:1px solid #ebeef5!important;box-shadow:0 30px 80px rgba(12,20,32,.28)!important;}
+.drawer-head{height:48px!important;padding:0 16px!important;background:#fff!important;}
+.drawer-head .drawer-close{border-radius:2px!important;}
+.drawer-body{padding:16px!important;}
+.drawer-body .drawer-stat{background:#f7f9fc!important;border-color:#ebeef5!important;}
+.lightbox .lbinner{box-shadow:0 30px 80px rgba(12,20,32,.28)!important;}
+
+/* 禁止旧版大圆角、浮动抬升和渐变造成视觉偏差 */
+body.unload-dashboard button{border-radius:2px!important;}
+body.unload-dashboard button:not(:disabled):hover{transform:none!important;}
+@media(max-width:1366px){
+  .arrival-layout{grid-template-columns:minmax(0,1.8fr) minmax(330px,1fr)!important;}
+  .flow-chain{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) 44px minmax(0,1fr)!important;}
+}
+
+</style>
+<style id="unload-shell-sync-v310">
+/* ===== V3.10 卸车区：顶部菜单与页面滚动完全同步分拣区 ===== */
+html{scroll-behavior:auto!important;overflow-x:auto;}
+body.unload-dashboard{
+  width:100%!important;
+  min-width:1180px!important;
+  padding-top:48px!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+}
+.gofo-header{
+  display:flex!important;
+  position:fixed!important;
+  inset:0 0 auto 0!important;
+  top:0!important;
+  width:100%!important;
+  height:48px!important;
+  z-index:1000!important;
+  padding:0 16px!important;
+  background:#001529!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.gofo-sidebar{
+  display:block!important;
+  position:fixed!important;
+  left:0!important;
+  top:48px!important;
+  bottom:0!important;
+  width:55px!important;
+  z-index:900!important;
+}
+.gofo-tabs-bar{
+  display:flex!important;
+  position:fixed!important;
+  top:48px!important;
+  left:55px!important;
+  right:0!important;
+  z-index:100!important;
+  width:calc(100% - 55px)!important;
+  height:41px!important;
+  min-height:41px!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding:0 0 0 16px!important;
+  background:#fff!important;
+  border-bottom:1px solid #f0f0f0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  box-sizing:border-box!important;
+}
+.gofo-tabs-bar>.gofo-tabs-list{
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:4px!important;
+  min-height:0!important;
+  height:41px!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.gofo-tabs-bar>.gofo-tabs-list:before{content:none!important;display:none!important;}
+.gofo-tabs-bar>.gofo-tab-more{
+  width:32px!important;
+  height:32px!important;
+  margin:4px!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.gofo-tab-card{
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 16px!important;
+  border-radius:0!important;
+}
+main.gofo-content{
+  position:relative!important;
+  z-index:1!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:calc(100% - 55px)!important;
+  max-width:none!important;
+  margin-left:55px!important;
+  margin-right:0!important;
+  margin-top:41px!important;
+  padding:14px 16px 16px!important;
+  gap:10px!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:1200px){
+  .gofo-tabs-bar,main.gofo-content{min-width:1125px!important;}
+}
+</style></head>
 <body class="unload-dashboard">
 <header class="gofo-header">
-  <div class="gofo-header-left">
-    <div class="gofo-logo" aria-label="GOFO"><em>GO</em>FO</div>
-    <div class="gofo-search-wrap"><input class="gofo-search" type="search" placeholder="请输入菜单或功能" aria-label="全局搜索"></div>
-  </div>
-  <div class="gofo-header-right">
-    <div class="gofo-header-action gofo-notice" title="消息通知" aria-label="消息通知">♢</div>
-    <div class="gofo-header-action optional" title="语言">中文⌄</div>
-    <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
-    <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
-    <span class="gofo-version">V2.08</span>
-  </div>
+<div class="gofo-header-left">
+<div aria-label="GOFO" class="gofo-logo"><em>GO</em>FO</div>
+<div class="gofo-search-wrap"><input aria-label="全局搜索" class="gofo-search" placeholder="请输入菜单或功能" type="search"/></div>
+</div>
+<div class="gofo-header-right">
+<button aria-label="消息通知" class="gofo-header-action gofo-notice" title="消息通知" type="button"><gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></gofo-icon></button>
+<div class="gofo-header-action optional" title="语言">中文⌄</div>
+<div class="gofo-header-action optional" title="时区">北京时间⌄</div>
+<div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
+<span class="gofo-version">V3.10</span>
+</div>
 </header>
-<aside class="gofo-sidebar" aria-label="主菜单">
-  <nav class="gofo-menu">
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">⌂</span><span class="gofo-menu-text">工作台</span></div>
-    <div class="gofo-menu-item active" aria-current="page"><span class="gofo-menu-icon">▥</span><span class="gofo-menu-text">中心运营看板</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">◇</span><span class="gofo-menu-text">车辆与场地</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">⇄</span><span class="gofo-menu-text">分拣作业管理</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">!</span><span class="gofo-menu-text">异常监控</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">≡</span><span class="gofo-menu-text">报表中心</span></div>
-  </nav>
-  <div class="gofo-sidebar-footer"><span class="gofo-menu-icon">«</span><span class="gofo-menu-text">收起菜单</span></div>
+<aside aria-label="主菜单" class="gofo-sidebar">
+<nav class="gofo-menu">
+<div class="gofo-menu-item" title="工作台"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h13V10M9 20v-6h6v6"></path></svg></gofo-icon><span class="gofo-menu-text">工作台</span></div>
+<div aria-current="page" class="gofo-menu-item active" title="中心运营看板"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><rect height="16" rx="1" width="18" x="3" y="4"></rect><path d="M3 9h18M9 9v11"></path></svg></gofo-icon><span class="gofo-menu-text">中心运营看板</span></div>
+<div class="gofo-menu-item" title="车辆与场地"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4m11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4"></path></svg></gofo-icon><span class="gofo-menu-text">车辆与场地</span></div>
+<div class="gofo-menu-item" title="分拣作业管理"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M4 7h14M15 4l3 3-3 3M20 17H6M9 14l-3 3 3 3"></path></svg></gofo-icon><span class="gofo-menu-text">分拣作业管理</span></div>
+<div class="gofo-menu-item" title="异常监控"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M12 3 2.8 20h18.4zM12 9v5M12 17.5v.5"></path></svg></gofo-icon><span class="gofo-menu-text">异常监控</span></div>
+<div class="gofo-menu-item" title="报表中心"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h8M8 17h5"></path></svg></gofo-icon><span class="gofo-menu-text">报表中心</span></div>
+</nav>
+<div class="gofo-sidebar-footer" title="收起菜单"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></svg></gofo-icon><span class="gofo-menu-text">收起菜单</span></div>
 </aside>
-<div class="gofo-tabs-bar" aria-label="页面页签">
-  <div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">卸车区看板 <span class="gofo-tab-close">×</span></div></div>
-  <div class="gofo-tab-more" title="更多页签">•••</div>
+<div aria-label="页面页签" class="gofo-tabs-bar">
+<div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">卸车区看板 <button aria-label="关闭卸车区看板页签" class="gofo-tab-close" title="关闭页签" type="button"><gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"></path></svg></gofo-icon></button></div></div>
+<button aria-label="更多页签" class="gofo-tab-more" title="更多页签" type="button"><gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></gofo-icon></button>
 </div>
-<nav class="gofo-business-shell topbar"><div class="tabs"><a href="#">概况</a><a href="#" class="active">卸车区</a><a href="#">分拣区</a><a href="#">装车区</a><a href="#">异常区</a></div></nav><div class="gofo-business-filterbar"><div class="center-pill">ATL H <span style="color:#9aa6b6;">▾</span></div><div class="date-tag">操作日 <b class="num">06-16 06:00 ~ 06-17 06:00</b></div><div class="seg-group"><span class="on">今日</span><span>明日</span></div><div class="date-tag">卸车截单 <b class="num">0D 20:00</b></div><div class="date-tag">散货截单 <b class="num">1D 03:00</b></div><div class="date-tag">距离截单时间 <b class="num" style="color:#fc4c02!important;">16:21:00</b></div><div class="spacer"></div><span class="area-label">卸车班次</span><div class="filter-tabs"><span class="on">早班</span><span>中班</span><span>晚班</span></div><button class="query-btn">查询</button></div>
-
 <!-- ============ 内容区 ============ -->
-<div class="gofo-content" style="padding:16px 26px 44px;display:flex;flex-direction:column;gap:15px;">
-
-  <!-- FR-2 到车—卸车进度（链式） -->
-  <div class="ops-section">
-    <div class="ops-head">
-      <div>
-        <div class="ops-title">卸车作业总览</div>
-      </div>
-    </div>
-
-    <div class="flow-chain">
-      <div class="chain-node" data-drawer="eta">
-        <div>
-          <div class="node-top"><b style="font-size:13px;">预计到车</b><span class="node-tag">未来 24H</span></div>
-          <div class="node-number"><span class="num dd big">8</span><span class="unit">辆</span></div>
-          <div class="node-detail">155 袋 · 56,592 票</div>
-        </div>
-      </div>
-      <div class="chain-arrow">到车<div class="ar">→</div></div>
-      <div class="chain-node core" data-drawer="unload">
-        <div>
-          <div class="node-top"><b style="font-size:13px;color:#c0362f;">已到未卸</b><span class="node-tag" style="background:#fff0ed;color:#d94712;">重点关注</span></div>
-          <div class="node-number"><span class="num dd big" style="color:#e5484d;">17</span><span class="unit">辆</span></div>
-          <div class="node-detail">1,829 袋 · 59,753 票</div>
-        </div>
-      </div>
-      <div class="chain-arrow">卸车<div class="ar">→</div></div>
-      <div class="chain-node done" data-drawer="unloaded">
-        <div>
-          <div class="node-top"><b style="font-size:13px;">已卸</b><span class="node-tag" style="background:#eef9f2;color:#268b50;">当班累计</span></div>
-          <div class="node-number"><span class="num dd big" style="color:#16a34a;">10</span><span class="unit">辆</span></div>
-          <div class="node-detail">184 袋 · 59,585 票</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="aux-line">
-      <span class="dd" id="aux-toggle" style="font-size:12px;font-weight:700;">展开上游状态（未发车 / 在途 / 异常未到 / 截单后到）▾</span>
-      <span class="hint">辅助判断未来到车压力与异常到达风险</span>
-    </div>
-    <div id="aux-cards" style="margin-top:10px;display:none;grid-template-columns:repeat(4,1fr);gap:12px;">
-      <div class="aux-card" data-drawer="upstream"><div class="al">上游未发车</div><div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
-      <div class="aux-card" data-drawer="transit"><div class="al">在途</div><div class="av"><span class="num dd">7</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div><div class="as">276 袋 · 48,877 票</div></div>
-      <div class="aux-card" data-drawer="abnormal"><div class="al">异常未到</div><div class="av" style="color:#e5484d;"><span class="num dd">2</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div><div class="as">166 袋 · 4,064 票</div></div>
-      <div class="aux-card" data-drawer="latest"><div class="al">截单后到</div><div class="av"><span class="num dd">3</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div><div class="as">49 袋 · 17,403 票</div></div>
-    </div>
-  </div>
-
-  <!-- FR-3 预计到车 + 风险处置区 -->
-  <div class="arrival-layout">
-    <div class="ops-section">
-      <div class="chart-toolbar">
-        <div>
-          <div class="ops-title">预计到车</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-          <div class="seg" id="seg-eta-line"><span class="on" data-line="all">全部</span><span data-line="trunk">干线</span><span data-line="branch">支线</span></div>
-          <div class="seg" id="seg-eta-mode"><span class="on" data-mode="hour">单小时</span><span data-mode="cum">累计</span></div>
-          <div class="seg" id="seg-eta-metric"><span class="on" data-metric="bag">袋数</span><span data-metric="bill">票数</span></div>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0 4px;">
-        <span class="dd" data-drawer="flow" style="font-size:12px;font-weight:700;">查询目的流向明细 ›</span>
-        <span class="dd" data-drawer="etaveh" style="font-size:12px;">查看车辆明细 ›</span>
-      </div>
-      <div id="chart-eta" style="width:100%;height:286px;"></div>
-    </div>
-
-    <div class="ops-section risk-panel">
-      <div class="ops-head" style="margin-bottom:12px;">
-        <div><div class="ops-title">重点关注</div></div>
-      </div>
-      <div class="risk-list">
-        <div class="risk-item" data-drawer="overtime"><div class="risk-icon">!</div><div><div class="risk-name">超时未卸</div><div class="risk-desc">到达后超过 1H 仍未卸完</div></div><div class="risk-value num">16 辆</div></div>
-        <div class="risk-item" data-drawer="wait"><div class="risk-icon orange">⌛</div><div><div class="risk-name">超长等待</div><div class="risk-desc">等待时间超过 12H，需优先排台</div></div><div class="risk-value orange num">6 辆</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 卸车进度 -->
-  <div class="ops-section">
-    <div class="ops-head">
-      <div class="ops-title">卸车进度与时效</div>
-      <span style="font-size:11px;color:#8c98a9;">数据刷新：17:36</span>
-    </div>
-    <div class="progress-panels">
-      <div class="chart-panel">
-        <div class="chart-panel-title"><span>等待卸车 · 时长分布</span><span class="dd" data-drawer="wait" style="font-size:11px;font-weight:600;">查看明细 ›</span></div>
-        <div id="chart-wait" style="width:100%;height:248px;"></div>
-      </div>
-      <div class="chart-panel">
-        <div class="chart-panel-title"><span>卸车及时率</span><span class="dd" data-drawer="timely" style="font-size:11px;font-weight:600;">查看明细 ›</span></div>
-        <div id="chart-timely" style="width:100%;height:154px;"></div>
-        <div style="display:flex;gap:10px;margin-top:8px;">
-          <div class="aux-card" data-drawer="timelyveh" style="flex:1;text-align:center;padding:11px 12px!important;"><div class="al" style="color:#16a34a;">及时（≤1H）</div><div class="av" style="color:#16a34a;font-size:21px;"><span class="num">1</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
-          <div class="aux-card" data-drawer="lateveh" style="flex:1;text-align:center;padding:11px 12px!important;"><div class="al" style="color:#e5484d;">不及时（&gt;1H）</div><div class="av" style="color:#e5484d;font-size:21px;"><span class="num">16</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 颜色规范图例 -->
-  <div style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;">
-    <div style="font-size:12px;color:#9aa6b6;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16202e;margin-right:4px;"></span>正常</span>
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16a34a;margin-right:4px;"></span>达标</span>
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e0921a;margin-right:4px;"></span>接近达标</span>
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fc4c02;margin-right:4px;"></span>定量清零</span>
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e5484d;margin-right:4px;"></span>重点关注</span>
-      <span><span style="color:#fc4c02;text-decoration:underline;">下划线</span>＝可下钻</span>
-    </div>
-    <span style="font-size:12px;color:#9aa6b6;">专业优化版 · 卸车区作业驾驶舱 · 仅供讨论</span>
-  </div>
-
+<main class="gofo-content">
+<section aria-label="业务区域与界面切换" class="gofo-business-nav-card">
+<div aria-label="中心看板业务区域" class="gofo-business-tabs" role="tablist">
+<button aria-selected="false" data-business-tab="overview" role="tab" type="button">概况</button>
+<button aria-selected="true" class="active" data-business-tab="unload" role="tab" type="button">卸车区</button>
+<button aria-selected="false" data-business-tab="sorting" role="tab" type="button">分拣区</button>
+<button aria-selected="false" data-business-tab="loading" role="tab" type="button">装车区</button>
+<button aria-selected="false" data-business-tab="exception" role="tab" type="button">异常区</button>
 </div>
-
+<nav aria-label="页面入口与界面切换" class="gofo-interface-switch">
+<a aria-current="page" class="gofo-interface-link" href="#center-dashboard-old">
+<gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="M15 5 8 12l7 7M8 12h11"></path></svg></gofo-icon>
+<span>中心看板（旧）</span>
+</a>
+<a class="gofo-interface-link" href="#operations-cockpit">
+<span>运营驾驶舱</span>
+<gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></gofo-icon>
+</a>
+<a class="gofo-interface-link" href="#mobile-view">
+<span>移动端（观辰）</span>
+<gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></gofo-icon>
+</a>
+</nav>
+</section>
+<section aria-label="卸车区筛选条件" class="gofo-filter-card">
+<div class="gofo-filter-grid">
+<div class="gofo-filter-field compact"><span class="gofo-filter-label">中心</span><button aria-label="选择中心" class="gofo-filter-control center-control" type="button">ATL H <span aria-hidden="true">⌄</span></button></div>
+<div class="gofo-filter-field wide"><span class="gofo-filter-label">操作日</span><div class="gofo-filter-value num">06-16 06:00 ~ 06-17 06:00</div></div>
+<div class="gofo-filter-field compact"><span class="gofo-filter-label">日期范围</span><div aria-label="日期范围" class="seg-group" role="group"><button class="on" type="button">今日</button><button type="button">明日</button></div></div>
+<div class="gofo-filter-field"><span class="gofo-filter-label">卸车截单</span><div class="gofo-filter-value num">0D 20:00</div></div>
+<div class="gofo-filter-field"><span class="gofo-filter-label">散货截单</span><div class="gofo-filter-value num">1D 03:00</div></div>
+<div class="gofo-filter-field"><span class="gofo-filter-label">距离截单时间</span><div class="gofo-filter-value cutoff-countdown-tag"><b class="num">16:21:00</b></div></div>
+<div class="gofo-filter-actions"><button class="gofo-primary-btn" type="button">查询</button></div>
+</div>
+</section>
+<!-- FR-2 到车—卸车进度（链式） -->
+<div class="ops-section">
+<div class="ops-head">
+<div>
+<div class="ops-title">卸车作业总览</div>
+</div>
+</div>
+<div class="flow-chain">
+<div class="chain-node" data-drawer="eta">
+<div>
+<div class="node-top"><b style="font-size:13px;">预计到车</b><span class="node-tag">未来 24H</span></div>
+<div class="node-number"><span class="num dd big">8</span><span class="unit">辆</span></div>
+<div class="node-detail">155 袋 · 56,592 票</div>
+</div>
+</div>
+<div class="chain-arrow">到车<div class="ar">→</div></div>
+<div class="chain-node core" data-drawer="unload">
+<div>
+<div class="node-top"><b style="font-size:13px;color:#c0362f;">已到未卸</b><span class="node-tag" style="background:#fff0ed;color:#d94712;">重点关注</span></div>
+<div class="node-number"><span class="num dd big" style="color:#e5484d;">17</span><span class="unit">辆</span></div>
+<div class="node-detail">1,829 袋 · 59,753 票</div>
+</div>
+</div>
+<div class="chain-arrow">卸车<div class="ar">→</div></div>
+<div class="chain-node done" data-drawer="unloaded">
+<div>
+<div class="node-top"><b style="font-size:13px;">已卸</b><span class="node-tag" style="background:#eef9f2;color:#268b50;">当班累计</span></div>
+<div class="node-number"><span class="num dd big" style="color:#16a34a;">10</span><span class="unit">辆</span></div>
+<div class="node-detail">184 袋 · 59,585 票</div>
+</div>
+</div>
+</div>
+<div class="aux-line">
+<span class="dd" id="aux-toggle" style="font-size:12px;font-weight:700;">展开上游状态（未发车 / 在途 / 异常未到 / 截单后到）▾</span>
+<span class="hint">辅助判断未来到车压力与异常到达风险</span>
+</div>
+<div id="aux-cards" style="margin-top:10px;display:none;grid-template-columns:repeat(4,1fr);gap:12px;">
+<div class="aux-card" data-drawer="upstream"><div class="al">上游未发车</div><div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
+<div class="aux-card" data-drawer="transit"><div class="al">在途</div><div class="av"><span class="num dd">7</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div><div class="as">276 袋 · 48,877 票</div></div>
+<div class="aux-card" data-drawer="abnormal"><div class="al">异常未到</div><div class="av" style="color:#e5484d;"><span class="num dd">2</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div><div class="as">166 袋 · 4,064 票</div></div>
+<div class="aux-card" data-drawer="latest"><div class="al">截单后到</div><div class="av"><span class="num dd">3</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div><div class="as">49 袋 · 17,403 票</div></div>
+</div>
+</div>
+<!-- FR-3 预计到车 + 风险处置区 -->
+<div class="arrival-layout">
+<div class="ops-section">
+<div class="chart-toolbar">
+<div>
+<div class="ops-title">预计到车</div>
+</div>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+<div class="seg" id="seg-eta-line"><span class="on" data-line="all">全部</span><span data-line="trunk">干线</span><span data-line="branch">支线</span></div>
+<div class="seg" id="seg-eta-mode"><span class="on" data-mode="hour">单小时</span><span data-mode="cum">累计</span></div>
+<div class="seg" id="seg-eta-metric"><span class="on" data-metric="bag">袋数</span><span data-metric="bill">票数</span></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0 4px;">
+<span class="dd" data-drawer="flow" style="font-size:12px;font-weight:700;">查询目的流向明细 ›</span>
+<span class="dd" data-drawer="etaveh" style="font-size:12px;">查看车辆明细 ›</span>
+</div>
+<div id="chart-eta" style="width:100%;height:286px;"></div>
+</div>
+<div class="ops-section risk-panel">
+<div class="ops-head" style="margin-bottom:12px;">
+<div><div class="ops-title">重点关注</div></div>
+</div>
+<div class="risk-list">
+<div class="risk-item" data-drawer="overtime"><div class="risk-icon">!</div><div><div class="risk-name">超时未卸</div><div class="risk-desc">到达后超过 1H 仍未卸完</div></div><div class="risk-value num">16 辆</div></div>
+<div class="risk-item" data-drawer="wait"><div class="risk-icon orange">⌛</div><div><div class="risk-name">超长等待</div><div class="risk-desc">等待时间超过 12H，需优先排台</div></div><div class="risk-value orange num">6 辆</div></div>
+</div>
+</div>
+</div>
+<!-- 卸车进度 -->
+<div class="ops-section">
+<div class="ops-head">
+<div class="ops-title">卸车进度与时效</div>
+<span style="font-size:11px;color:#8c98a9;">数据刷新：17:36</span>
+</div>
+<div class="progress-panels">
+<div class="chart-panel">
+<div class="chart-panel-title"><span>等待卸车 · 时长分布</span><span class="dd" data-drawer="wait" style="font-size:11px;font-weight:600;">查看明细 ›</span></div>
+<div id="chart-wait" style="width:100%;height:248px;"></div>
+</div>
+<div class="chart-panel">
+<div class="chart-panel-title"><span>卸车及时率</span><span class="dd" data-drawer="timely" style="font-size:11px;font-weight:600;">查看明细 ›</span></div>
+<div id="chart-timely" style="width:100%;height:154px;"></div>
+<div style="display:flex;gap:10px;margin-top:8px;">
+<div class="aux-card" data-drawer="timelyveh" style="flex:1;text-align:center;padding:11px 12px!important;"><div class="al" style="color:#16a34a;">及时（≤1H）</div><div class="av" style="color:#16a34a;font-size:21px;"><span class="num">1</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
+<div class="aux-card" data-drawer="lateveh" style="flex:1;text-align:center;padding:11px 12px!important;"><div class="al" style="color:#e5484d;">不及时（&gt;1H）</div><div class="av" style="color:#e5484d;font-size:21px;"><span class="num">16</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 颜色规范图例 -->
+<div class="ops-legend" style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;">
+<div style="font-size:12px;color:#9aa6b6;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16202e;margin-right:4px;"></span>正常</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16a34a;margin-right:4px;"></span>达标</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e0921a;margin-right:4px;"></span>接近达标</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fc4c02;margin-right:4px;"></span>定量清零</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e5484d;margin-right:4px;"></span>重点关注</span>
+<span><span style="color:#fc4c02;text-decoration:underline;">下划线</span>＝可下钻</span>
+</div>
+<span style="font-size:12px;color:#9aa6b6;">专业优化版 · 卸车区作业驾驶舱 · 仅供讨论</span>
+</div>
+</main>
 <!-- 多级抽屉叠层容器 -->
 <div class="drawer-stack" id="drawer-stack"></div>
-
 <!-- 照片预览 lightbox -->
 <div class="lightbox" id="lightbox">
-  <div class="lbinner">
-    <div class="lbimg" id="lb-img">📷 照片预览（示例占位）</div>
-    <div class="lbcap" id="lb-cap"></div>
-    <button class="lbclose" id="lb-close">关闭</button>
-  </div>
+<div class="lbinner">
+<div class="lbimg" id="lb-img">📷 照片预览（示例占位）</div>
+<div class="lbcap" id="lb-cap"></div>
+<button class="lbclose" id="lb-close">关闭</button>
 </div>
-
+</div>
 <script>
 // 预计到车
 (function(){
