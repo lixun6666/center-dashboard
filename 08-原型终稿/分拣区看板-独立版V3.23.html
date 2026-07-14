@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分拣区看板 - GOFO 管理后台 V3.09（分拣班次增加全部）</title>
+<title>分拣区看板 - GOFO 管理后台 V3.20（当日次日时间筛选器）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   /* ===== Design Tokens (GOFO) ===== */
@@ -555,6 +555,28 @@ button{transition:transform .15s ease,box-shadow .15s ease}button:not(:disabled)
 .sorted-rule-list { margin:0; padding-left:18px; }
 .sorted-rule-list li+li { margin-top:2px; }
 @media(max-width:1200px){.query-panel{grid-template-columns:repeat(3,1fr)}.query-panel .action-btn{width:100%}.lightbox-box{width:96vw}}
+
+/* ===== V3.23 GOFO 查询区样式优化 ===== */
+.gofo-filter-card .gofo-filter-label{font-size:12px;font-weight:600;color:#606266}
+.gofo-filter-card .gofo-filter-value,
+.gofo-filter-card .gofo-filter-control,
+.gofo-filter-card .seg-group,
+.gofo-filter-card .filter-tabs{height:36px}
+.gofo-filter-card .seg-group button,
+.gofo-filter-card .filter-tabs button{min-width:56px;padding:0 12px;font-size:12px}
+.datetime-range-filter{height:36px;gap:8px}
+.shift-datetime-picker{width:206px}
+.shift-datetime-trigger{height:36px;padding:0 32px 0 8px;border-color:#f3c2ad;background:#fff;font-size:12px}
+.shift-datetime-trigger:hover{border-color:var(--gofo-primary);box-shadow:0 0 0 2px rgba(252,76,2,.08)}
+.shift-datetime-picker.open .shift-datetime-trigger,.shift-datetime-trigger:focus-visible{border-color:var(--gofo-primary);box-shadow:0 0 0 2px rgba(252,76,2,.12)}
+.shift-time-day{height:24px;padding:0 8px;background:#fff1e9;color:var(--gofo-primary);font-size:11px}
+.shift-time-value{font-size:12.5px;font-weight:600}
+.gofo-filter-actions{display:flex;align-items:flex-end}
+.gofo-primary-btn{min-width:64px;height:36px;padding:0 18px;border:1px solid var(--gofo-primary);border-radius:2px;background:var(--gofo-primary);color:#fff;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:.5px;cursor:pointer;box-shadow:0 2px 6px rgba(252,76,2,.16)}
+.gofo-primary-btn:hover{background:var(--gofo-primary-hover);border-color:var(--gofo-primary-hover)}
+.gofo-primary-btn:active{transform:translateY(1px);box-shadow:0 1px 3px rgba(252,76,2,.2)}
+@media(max-width:1366px){.shift-datetime-picker{width:190px}.gofo-primary-btn{min-width:72px}}
+
 </style>
 
 <style>
@@ -1484,8 +1506,8 @@ main.gofo-content{position:relative!important;display:flex!important;flex-direct
 .gofo-business-tabs button.active{color:var(--gofo-primary);border-bottom-color:var(--gofo-primary);background:var(--gofo-primary-light);font-weight:600}
 .gofo-filter-card{padding:16px 24px}
 .gofo-filter-grid{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.gofo-filter-field{display:flex;flex-direction:column;gap:6px;min-width:112px}.gofo-filter-field.wide{min-width:245px}.gofo-filter-field.shift-field{min-width:232px}.gofo-filter-label{font-size:12px;color:#606266}.gofo-filter-value,.gofo-filter-control{height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#303133;font-family:inherit;font-size:12px;box-sizing:border-box}.gofo-filter-control{justify-content:space-between;min-width:92px;cursor:pointer}.gofo-filter-control:hover{border-color:var(--gofo-primary)}
-.gofo-filter-card .seg-group,.gofo-filter-card .filter-tabs{display:flex;height:32px;border:1px solid #dcdfe6;border-radius:2px;overflow:hidden;background:#fff}.gofo-filter-card .seg-group button,.gofo-filter-card .filter-tabs button{min-width:52px;padding:0 10px;border:0;border-left:1px solid #ebeef5;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}.gofo-filter-card .seg-group button:first-child,.gofo-filter-card .filter-tabs button:first-child{border-left:0}.gofo-filter-card .seg-group button.on,.gofo-filter-card .filter-tabs button.on{background:var(--gofo-primary-light);color:var(--gofo-primary);font-weight:600}.gofo-filter-actions{margin-left:auto;display:flex;align-items:center}.gofo-primary-btn{height:32px;padding:0 18px;border:1px solid var(--gofo-primary);border-radius:2px;background:var(--gofo-primary);color:#fff;font-family:inherit;font-size:13px;cursor:pointer}.gofo-primary-btn:hover{background:var(--gofo-primary-hover);border-color:var(--gofo-primary-hover)}.gofo-primary-btn:disabled{opacity:.65;cursor:wait}
+.gofo-filter-field{display:flex;flex-direction:column;gap:6px;min-width:112px}.gofo-filter-field.wide{min-width:245px}.gofo-filter-field.datetime-field{min-width:420px}.gofo-filter-label{font-size:12px;color:#606266}.gofo-filter-value,.gofo-filter-control{height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#303133;font-family:inherit;font-size:12px;box-sizing:border-box}.gofo-filter-control{justify-content:space-between;min-width:92px;cursor:pointer}.gofo-filter-control:hover{border-color:var(--gofo-primary)}
+.gofo-filter-card .seg-group,.gofo-filter-card .filter-tabs{display:flex;height:32px;border:1px solid #dcdfe6;border-radius:2px;overflow:hidden;background:#fff}.gofo-filter-card .seg-group button,.gofo-filter-card .filter-tabs button{min-width:52px;padding:0 10px;border:0;border-left:1px solid #ebeef5;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}.gofo-filter-card .seg-group button:first-child,.gofo-filter-card .filter-tabs button:first-child{border-left:0}.gofo-filter-card .seg-group button.on,.gofo-filter-card .filter-tabs button.on{background:var(--gofo-primary-light);color:var(--gofo-primary);font-weight:600}.datetime-range-filter{display:flex;align-items:center;gap:7px;height:32px}.shift-datetime-picker{position:relative;width:194px}.shift-datetime-trigger{position:relative;display:flex;align-items:center;width:100%;height:32px;padding:0 29px 0 5px;border:1px solid #dcdfe6;border-radius:3px;background:#fff;color:#303133;font-family:inherit;cursor:pointer;text-align:left;transition:border-color .15s ease,box-shadow .15s ease}.shift-datetime-trigger:hover{border-color:#c0c4cc}.shift-datetime-picker.open .shift-datetime-trigger,.shift-datetime-trigger:focus-visible{border-color:var(--gofo-primary);box-shadow:0 0 0 2px rgba(252,76,2,.10);outline:none}.shift-datetime-picker.is-invalid .shift-datetime-trigger{border-color:#e5484d;background:#fff6f5}.shift-time-day{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;height:22px;padding:0 7px;border-radius:3px;background:#fff1e9;color:var(--gofo-primary);font-size:10.5px;font-weight:700;white-space:nowrap}.shift-time-value{min-width:0;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;font-size:12px}.shift-datetime-trigger:after{content:'';position:absolute;right:11px;top:50%;width:6px;height:6px;margin-top:-5px;border-right:1.5px solid #909399;border-bottom:1.5px solid #909399;transform:rotate(45deg);transition:transform .15s ease}.shift-datetime-picker.open .shift-datetime-trigger:after{margin-top:-1px;transform:rotate(225deg)}.shift-datetime-panel{display:none;position:absolute;left:0;top:38px;z-index:1600;width:314px;border:1px solid #dcdfe6;border-radius:8px;background:#fff;box-shadow:0 12px 30px rgba(31,45,61,.18);overflow:hidden}.shift-datetime-picker.open .shift-datetime-panel{display:block}.shift-datetime-panel-title{padding:10px 12px;border-bottom:1px solid #ebeef5;background:#fafafa;color:#606266;font-size:12px;font-weight:600}.shift-datetime-columns{display:grid;grid-template-columns:110px 1fr 1fr;height:240px}.shift-datetime-column{display:flex;flex-direction:column;min-width:0}.shift-datetime-column+.shift-datetime-column{border-left:1px solid #ebeef5}.shift-datetime-column-title{padding:8px 10px;border-bottom:1px solid #f1f2f4;color:#909399;font-size:11px}.shift-datetime-list{flex:1;overflow:auto;padding:6px}.shift-datetime-option{display:flex;align-items:center;justify-content:center;width:100%;min-height:32px;padding:6px 8px;border:0;border-radius:4px;background:#fff;color:#303133;font-family:inherit;font-size:12px;cursor:pointer;text-align:center;line-height:1.3}.shift-datetime-option:hover{background:#f5f7fa;color:var(--gofo-primary);transform:none}.shift-datetime-option.selected{background:#ecf5ff;color:#409eff;font-weight:700}.shift-datetime-option.disabled{color:#c0c4cc;background:#fff;cursor:not-allowed}.shift-datetime-option.day-option{flex-direction:column;align-items:flex-start;justify-content:center;text-align:left}.shift-datetime-option .day-main{font-size:12px;font-weight:700}.shift-datetime-option .day-sub{margin-top:2px;color:#909399;font-size:10px}.shift-datetime-option.selected .day-sub{color:#409eff}.shift-datetime-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-top:1px solid #ebeef5;background:#fff}.shift-datetime-link{padding:0;border:0;background:transparent;color:#409eff;font-family:inherit;font-size:12px;cursor:pointer}.shift-datetime-link:hover{text-decoration:underline;transform:none}.shift-datetime-confirm{min-width:72px;height:32px;padding:0 16px;border:0;border-radius:4px;background:#409eff;color:#fff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}.shift-datetime-confirm:hover{background:#66b1ff;transform:none}
 .dashboard-loading:after{content:'看板数据加载中…';position:fixed;left:50%;top:108px;transform:translateX(-50%);z-index:1450;padding:8px 14px;border:1px solid #ffd2bf;border-radius:2px;background:#fff;color:var(--gofo-primary);box-shadow:0 6px 18px rgba(31,45,61,.12);font-size:12px}
 
 /* 复杂运单/袋号列表使用右侧宽 Drawer */
@@ -1510,7 +1532,7 @@ main.gofo-content{position:relative!important;display:flex!important;flex-direct
 .query-table-card.is-loading:after{content:'加载中…';position:absolute;inset:56px 0 0;z-index:8;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);color:var(--gofo-primary);font-size:13px;backdrop-filter:blur(1px)}
 .query-table-card.is-fullscreen{position:fixed;inset:16px;z-index:1600;box-shadow:0 18px 60px rgba(15,23,42,.28)}.query-table-card.is-fullscreen .table-scroll{max-height:none}
 .count-link,.bag-count-link,.waybill-link,.bag-link{display:inline-flex;align-items:center;border:0;background:transparent;padding:0;color:var(--gofo-primary);font:inherit;font-weight:inherit;cursor:pointer;text-align:inherit}.count-link:hover,.bag-count-link:hover,.waybill-link:hover,.bag-link:hover{text-decoration:underline}.count-link:focus-visible,.bag-count-link:focus-visible,.waybill-link:focus-visible,.bag-link:focus-visible,.kpi:focus-visible,.abn-item:focus-visible{outline:2px solid var(--gofo-primary);outline-offset:2px}
-@media(max-width:1366px){#lightbox .lightbox-box{width:calc(100vw - 55px)!important}.query-filter-grid{grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.gofo-filter-grid{gap:10px}.gofo-filter-field.wide{min-width:220px}}
+@media(max-width:1366px){#lightbox .lightbox-box{width:calc(100vw - 55px)!important}.query-filter-grid{grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.gofo-filter-grid{gap:10px}.gofo-filter-field.wide{min-width:220px}.gofo-filter-field.datetime-field{min-width:390px}.shift-datetime-picker{width:178px}}
 </style>
 
 
@@ -1985,7 +2007,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 </head>
 <body>
 <!-- V3.06：按组织维度新增“全部”，合计按分拣类型去重。 -->
-<!-- V3.09：分拣班次新增“全部”筛选，并设为默认选中。 -->
+<!-- V3.20：保持 V3.09 布局；操作日只读，分拣班次使用可搜索的“当日/次日”时间筛选器。 -->
 <header class="gofo-header">
   <div class="gofo-header-left">
     <div class="gofo-logo" aria-label="GOFO"><em>GO</em>FO</div>
@@ -2043,12 +2065,40 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
   <section class="gofo-filter-card" aria-label="分拣区筛选条件">
     <div class="gofo-filter-grid">
       <div class="gofo-filter-field compact"><span class="gofo-filter-label">中心</span><button type="button" class="gofo-filter-control center-control" aria-label="选择中心">ATL H <span aria-hidden="true">⌄</span></button></div>
-      <div class="gofo-filter-field wide"><span class="gofo-filter-label">操作日</span><div class="gofo-filter-value num">06-16 06:00 ~ 06-17 06:00</div></div>
+      <div class="gofo-filter-field wide"><span class="gofo-filter-label">操作日</span><div class="gofo-filter-value num" id="operationDayRange" data-start="2026-06-16T06:00" data-end="2026-06-17T06:00" aria-readonly="true" title="操作日由系统确定，不可修改">2026-06-16 06:00 ~ 2026-06-17 06:00</div></div>
       <div class="gofo-filter-field compact"><span class="gofo-filter-label">日期范围</span><div class="seg-group" role="group" aria-label="日期范围"><button type="button" class="on">今日</button><button type="button">明日</button></div></div>
       <div class="gofo-filter-field"><span class="gofo-filter-label">集货截单</span><div class="gofo-filter-value num">0D 20:00</div></div>
       <div class="gofo-filter-field"><span class="gofo-filter-label">散货截单</span><div class="gofo-filter-value num">1D 03:00</div></div>
       <div class="gofo-filter-field"><span class="gofo-filter-label">距离截单时间</span><div class="gofo-filter-value cutoff-countdown-tag"><b class="num" id="cutoffCountdown">--:--:--</b></div></div>
-      <div class="gofo-filter-field shift-field"><span class="gofo-filter-label">分拣班次</span><div class="filter-tabs" id="sortingShiftTabs" role="tablist" aria-label="分拣班次"><button type="button" class="on" role="tab" data-shift="全部" aria-selected="true">全部</button><button type="button" role="tab" data-shift="早班" aria-selected="false">早班</button><button type="button" role="tab" data-shift="中班" aria-selected="false">中班</button><button type="button" role="tab" data-shift="晚班" aria-selected="false">晚班</button></div></div>
+      <div class="gofo-filter-field datetime-field"><span class="gofo-filter-label">分拣班次时间</span><div class="datetime-range-filter" id="sortingDateTimeRange" role="group" aria-label="分拣班次时间范围">
+        <div class="shift-datetime-picker" id="sortingStartSelectWrap">
+          <button type="button" class="shift-datetime-trigger" id="sortingStartFilterTrigger" aria-haspopup="dialog" aria-expanded="false"><span class="shift-time-day" id="sortingStartDayBadge">当日</span><span class="shift-time-value" id="sortingStartTimeText">06:00</span></button>
+          <div class="shift-datetime-panel" id="sortingStartFilterPanel" aria-hidden="true">
+            <div class="shift-datetime-panel-title">开始时间</div>
+            <div class="shift-datetime-columns">
+              <div class="shift-datetime-column"><div class="shift-datetime-column-title">日期</div><div class="shift-datetime-list" id="sortingStartDateList"></div></div>
+              <div class="shift-datetime-column"><div class="shift-datetime-column-title">时</div><div class="shift-datetime-list" id="sortingStartHourList"></div></div>
+              <div class="shift-datetime-column"><div class="shift-datetime-column-title">分</div><div class="shift-datetime-list" id="sortingStartMinuteList"></div></div>
+            </div>
+            <div class="shift-datetime-footer"><button type="button" class="shift-datetime-link" id="sortingStartNowBtn">此刻</button><button type="button" class="shift-datetime-confirm" id="sortingStartConfirmBtn">确定</button></div>
+          </div>
+          <input type="hidden" id="sortingStartDateTime" value="">
+        </div>
+        <span class="datetime-range-separator" aria-hidden="true">至</span>
+        <div class="shift-datetime-picker" id="sortingEndSelectWrap">
+          <button type="button" class="shift-datetime-trigger" id="sortingEndFilterTrigger" aria-haspopup="dialog" aria-expanded="false"><span class="shift-time-day" id="sortingEndDayBadge">次日</span><span class="shift-time-value" id="sortingEndTimeText">06:00</span></button>
+          <div class="shift-datetime-panel" id="sortingEndFilterPanel" aria-hidden="true">
+            <div class="shift-datetime-panel-title">结束时间</div>
+            <div class="shift-datetime-columns">
+              <div class="shift-datetime-column"><div class="shift-datetime-column-title">日期</div><div class="shift-datetime-list" id="sortingEndDateList"></div></div>
+              <div class="shift-datetime-column"><div class="shift-datetime-column-title">时</div><div class="shift-datetime-list" id="sortingEndHourList"></div></div>
+              <div class="shift-datetime-column"><div class="shift-datetime-column-title">分</div><div class="shift-datetime-list" id="sortingEndMinuteList"></div></div>
+            </div>
+            <div class="shift-datetime-footer"><button type="button" class="shift-datetime-link" id="sortingEndNowBtn">此刻</button><button type="button" class="shift-datetime-confirm" id="sortingEndConfirmBtn">确定</button></div>
+          </div>
+          <input type="hidden" id="sortingEndDateTime" value="">
+        </div>
+      </div></div>
       <div class="gofo-filter-actions"><button type="button" class="gofo-primary-btn" data-action="dashboard-query">查询</button></div>
     </div>
   </section>
@@ -2127,10 +2177,10 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
           <div class="v num" id="trendStat2Value">2,000</div>
           <div class="s" id="trendStat2Sub">06:00</div>
         </div>
-        <div class="ms-card" title="当前班次累计已分拣票数 ÷ 当前班次已过时长（小时）">
+        <div class="ms-card" title="当前筛选时间累计已分拣票数 ÷ 当前筛选时间已过时长（小时）">
           <div class="l" id="trendStat3Label">小时均值</div>
           <div class="v num" id="trendStat3Value">5,990</div>
-          <div class="s" id="trendStat3Sub">当前班次</div>
+          <div class="s" id="trendStat3Sub">当前筛选时间</div>
         </div>
         <div class="ms-card blue" title="当前小时截至当前时刻的已分拣票数 ÷ 当前小时已过分钟数 × 60">
           <div class="l" id="trendStat4Label">当前时速</div>
@@ -2182,7 +2232,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
             <div class="h2">分拣机 VS 人工分拣</div>
           </div>
         </div>
-        <span class="machine-manual-scope">当前班次</span>
+        <span class="machine-manual-scope">当前筛选时间</span>
       </div>
       <div id="pieChart" style="width:100%;height:158px;"></div>
       <div class="compare-table" aria-label="分拣机与人工分拣票数袋数对比">
@@ -2301,7 +2351,7 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
         <div>
           <div class="history-total-label">历史留仓总量</div>
           <div class="history-total-value"><button type="button" class="num v count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</button><span class="u">票</span></div>
-          <div class="history-total-desc">跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
+          <div class="history-total-desc">跨筛选周期仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
         </div>
         <div class="history-time-panel" aria-label="历史留仓时间分布">
           <div class="history-time-panel-head"><span class="history-time-panel-title">时间分布</span><span class="history-time-panel-tip">点击卡片查看运单明细</span></div>
@@ -2621,7 +2671,7 @@ function showPrototypeToast(message) {
 }
 
 function openSortedBagList(name, count, scope) {
-  const currentScope = scope || '已分拣 · 当前班次';
+  const currentScope = scope || '已分拣 · 当前筛选时间';
   const totalRecords = Number(String(count).replace(/[^\d]/g, '')) || 0;
   const pageSize = 10;
   const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
@@ -3228,7 +3278,7 @@ function buildDrawer(type, extra) {
     <div class="metric-note">
       <b>业务定义：</b>已完成分拣后，因未匹配到货、格口或路由异常等原因重新回到分拣环节的运单占比。<br>
       <b>计算公式：</b>发生回流的去重运单数 ÷ 已分拣去重运单数 × 100%。<br>
-      <b>研发逻辑：</b>按当前组织、当前分拣班次统计；分子取存在有效回流扫描记录的运单，分母与“已分拣”指标保持同一统计口径；同一运单多次回流只计一次。
+      <b>研发逻辑：</b>按当前组织、当前日期时间范围统计；分子取存在有效回流扫描记录的运单，分母与“已分拣”指标保持同一统计口径；同一运单多次回流只计一次。
     </div>
   `;
   if (type === 'backlog' || type === 'pending') return buildUnsortedDrawer(type, extra);
@@ -3238,19 +3288,19 @@ function buildDrawer(type, extra) {
     const totalBags = rows.reduce((sum,row)=>sum+row.bags,0);
     const totalHours = mainFlowHours.map((_,index)=>rows.reduce((sum,row)=>sum+row.hours[index],0));
     const hourHeaders = mainFlowHours.map(hour=>`<th>${hour}</th>`).join('');
-    const totalHourCells = totalHours.map((count,index)=>`<td><button type="button" class="count-link" data-waybill-name="已分拣 · 分拣类型合计 · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</button></td>`).join('');
+    const totalHourCells = totalHours.map((count,index)=>`<td><button type="button" class="count-link" data-waybill-name="已分拣 · 分拣类型合计 · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前筛选时间">${mainFlowFormat(count)}</button></td>`).join('');
     const rowHtml = rows.map(row=>{
-      const hourCells = row.hours.map((count,index)=>`<td><button type="button" class="count-link" data-waybill-name="${row.name} · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(count)}</button></td>`).join('');
-      return `<tr><td>${row.name}</td><td><button type="button" class="count-link" data-waybill-name="${row.name} · 合计" data-waybill-count="${mainFlowFormat(row.tickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(row.tickets)}</button></td><td><button type="button" class="bag-count-link" data-bag-name="${row.name}" data-bag-count="${mainFlowFormat(row.bags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(row.bags)}</button></td>${hourCells}</tr>`;
+      const hourCells = row.hours.map((count,index)=>`<td><button type="button" class="count-link" data-waybill-name="${row.name} · ${mainFlowHours[index]}" data-waybill-count="${mainFlowFormat(count)}" data-waybill-scope="已分拣 · 当前筛选时间">${mainFlowFormat(count)}</button></td>`).join('');
+      return `<tr><td>${row.name}</td><td><button type="button" class="count-link" data-waybill-name="${row.name} · 合计" data-waybill-count="${mainFlowFormat(row.tickets)}" data-waybill-scope="已分拣 · 当前筛选时间">${mainFlowFormat(row.tickets)}</button></td><td><button type="button" class="bag-count-link" data-bag-name="${row.name}" data-bag-count="${mainFlowFormat(row.bags)}" data-bag-scope="已分拣 · 当前筛选时间">${mainFlowFormat(row.bags)}</button></td>${hourCells}</tr>`;
     }).join('');
     return `
       <div class="stats-row sorted-stats">
-        <div class="stat sorted-stat-main sorted-stat-clickable" role="button" tabindex="0" title="点击查看已分拣运单" aria-label="查看已分拣运单，共45823票" data-waybill-name="已分拣：全部运单" data-waybill-count="45,823" data-waybill-scope="已分拣 · 当前班次"><div class="l">已分拣</div><div class="v num">45,823 <span style="font-size:11px;font-weight:500;color:var(--faint);">票</span></div></div>
-        <div class="stat"><div class="l">袋数</div><div class="v num"><button type="button" class="bag-count-link" data-bag-name="已分拣：全部袋号" data-bag-count="1,203" data-bag-scope="已分拣 · 当前班次">1,203</button> <span style="font-size:11px;font-weight:500;color:var(--faint);">袋</span></div></div>
+        <div class="stat sorted-stat-main sorted-stat-clickable" role="button" tabindex="0" title="点击查看已分拣运单" aria-label="查看已分拣运单，共45823票" data-waybill-name="已分拣：全部运单" data-waybill-count="45,823" data-waybill-scope="已分拣 · 当前筛选时间"><div class="l">已分拣</div><div class="v num">45,823 <span style="font-size:11px;font-weight:500;color:var(--faint);">票</span></div></div>
+        <div class="stat"><div class="l">袋数</div><div class="v num"><button type="button" class="bag-count-link" data-bag-name="已分拣：全部袋号" data-bag-count="1,203" data-bag-scope="已分拣 · 当前筛选时间">1,203</button> <span style="font-size:11px;font-weight:500;color:var(--faint);">袋</span></div></div>
       </div>
-      <div class="metric-note"><b>业务定义：</b>当前操作日内已经完成分拣的运单。<br><b>统计口径：</b><ol class="sorted-rule-list"><li>操作类型为“集包”，操作组织为当前组织，取运单最后一次集包扫描记录及对应袋号；</li><li>按左上角分拣班次时间统计，满足“班次开始时间 &lt; 扫描时间 ≤ 班次结束时间”。</li></ol></div>
-      <div class="drawer-section-head"><div class="sec-title">已分拣 · 目的流向（按分拣类型）</div><div class="section-head-actions"><div class="shift-scope"><span>当前班次</span><b class="num">06-16 06:00 ~ 06-17 06:00</b></div><button type="button" class="section-export-btn" data-action="section-export" data-export-name="已分拣 · 目的流向（按分拣类型）">导出</button></div></div>
-      <div class="sorted-table-wrap"><table class="tbl sorted-detail-table"><thead><tr><th style="text-align:left;">分拣类型</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr></thead><tbody><tr class="total"><td>合计</td><td><button type="button" class="count-link" data-waybill-name="已分拣 · 分拣类型合计" data-waybill-count="${mainFlowFormat(totalTickets)}" data-waybill-scope="已分拣 · 当前班次">${mainFlowFormat(totalTickets)}</button></td><td><button type="button" class="bag-count-link" data-bag-name="已分拣 · 分拣类型合计" data-bag-count="${mainFlowFormat(totalBags)}" data-bag-scope="已分拣 · 当前班次">${mainFlowFormat(totalBags)}</button></td>${totalHourCells}</tr>${rowHtml}</tbody></table></div>
+      <div class="metric-note"><b>业务定义：</b>当前操作日内已经完成分拣的运单。<br><b>统计口径：</b><ol class="sorted-rule-list"><li>操作类型为“集包”，操作组织为当前组织，取运单最后一次集包扫描记录及对应袋号；</li><li>按左上角分拣班次时间范围统计，满足“开始日期时间 &lt; 扫描时间 ≤ 结束日期时间”。</li></ol></div>
+      <div class="drawer-section-head"><div class="sec-title">已分拣 · 目的流向（按分拣类型）</div><div class="section-head-actions"><div class="shift-scope"><span>当前筛选时间</span><b class="num sorting-scope-value">${getSortingDateTimeScope()}</b></div><button type="button" class="section-export-btn" data-action="section-export" data-export-name="已分拣 · 目的流向（按分拣类型）">导出</button></div></div>
+      <div class="sorted-table-wrap"><table class="tbl sorted-detail-table"><thead><tr><th style="text-align:left;">分拣类型</th><th>合计票</th><th>合计袋</th>${hourHeaders}</tr></thead><tbody><tr class="total"><td>合计</td><td><button type="button" class="count-link" data-waybill-name="已分拣 · 分拣类型合计" data-waybill-count="${mainFlowFormat(totalTickets)}" data-waybill-scope="已分拣 · 当前筛选时间">${mainFlowFormat(totalTickets)}</button></td><td><button type="button" class="bag-count-link" data-bag-name="已分拣 · 分拣类型合计" data-bag-count="${mainFlowFormat(totalBags)}" data-bag-scope="已分拣 · 当前筛选时间">${mainFlowFormat(totalBags)}</button></td>${totalHourCells}</tr>${rowHtml}</tbody></table></div>
       <div class="flow-dimension-note">HUB、站点、路区、服务渠道四种分拣类型互斥，合计按运单号去重，每票仅计入一种分拣类型。</div>
     `;
   }
@@ -3261,7 +3311,7 @@ function buildDrawer(type, extra) {
       <div class="history-hero-main">
         <div class="label">历史留仓总量</div>
         <div class="value"><b class="num"><button type="button" class="count-link" data-waybill-name="历史留仓总量" data-waybill-count="282901" data-waybill-scope="历史留仓 · 全部">282,901</button></b><span>票</span></div>
-        <div class="desc">跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
+        <div class="desc">跨筛选周期仍未完成后续作业的运单，按当前实际滞留环节归类。</div>
       </div>
       <div class="history-time-panel history-drawer-time" aria-label="历史留仓时间分布">
         <div class="history-time-panel-head"><span class="history-time-panel-title">时间分布</span><span class="history-time-panel-tip">点击卡片查看明细</span></div>
@@ -3334,7 +3384,7 @@ function buildDrawer(type, extra) {
       </div>
     </div>
     
-    <div class="history-definition"><b>统计口径：</b>跨班次仍未完成后续作业的运单，按当前实际滞留环节归类。时间分布按运单当前滞留时长统计。</div>
+    <div class="history-definition"><b>统计口径：</b>跨筛选周期仍未完成后续作业的运单，按当前实际滞留环节归类。时间分布按运单当前滞留时长统计。</div>
   `;
   if (type === 'abnormal') return `
     <div class="sec-title">异常清单</div>
@@ -3753,11 +3803,18 @@ document.addEventListener('click', (e) => {
       }
     }
     if (actionName === 'dashboard-query') {
+      const range = validateSortingDateTimeRange();
+      if (!range.valid) {
+        showPrototypeToast(range.message);
+        return;
+      }
+      sortingDateTimeScopeText = range.text;
+      document.querySelectorAll('.sorting-scope-value').forEach(item => { item.textContent = sortingDateTimeScopeText; });
       const main = document.querySelector('main.gofo-content');
       if (main) main.classList.add('dashboard-loading');
       action.disabled = true;
       action.textContent = '查询中';
-      setTimeout(() => { if (main) main.classList.remove('dashboard-loading'); action.disabled = false; action.textContent = '查询'; showPrototypeToast('看板数据已更新'); }, 650);
+      setTimeout(() => { if (main) main.classList.remove('dashboard-loading'); action.disabled = false; action.textContent = '查询'; showPrototypeToast(`看板数据已更新：${sortingDateTimeScopeText}`); }, 650);
     }
   }
 });
@@ -3802,28 +3859,412 @@ if (dashboardDateSegments) {
   });
 }
 
-/* ============== Sorting shift filter ============== */
-const sortingShiftTabs = document.getElementById('sortingShiftTabs');
-if (sortingShiftTabs) {
-  const activateSortingShift = tab => {
-    sortingShiftTabs.querySelectorAll('[data-shift]').forEach(item => {
-      const selected = item === tab;
-      item.classList.toggle('on', selected);
-      item.setAttribute('aria-selected', selected ? 'true' : 'false');
-    });
-  };
+/* ============== Sorting date-time filter ============== */
+const operationDayRange = document.getElementById('operationDayRange');
+const sortingStartDateTime = document.getElementById('sortingStartDateTime');
+const sortingEndDateTime = document.getElementById('sortingEndDateTime');
+const sortingStartDayBadge = document.getElementById('sortingStartDayBadge');
+const sortingEndDayBadge = document.getElementById('sortingEndDayBadge');
+const sortingStartSelectWrap = document.getElementById('sortingStartSelectWrap');
+const sortingEndSelectWrap = document.getElementById('sortingEndSelectWrap');
+const sortingStartFilterTrigger = document.getElementById('sortingStartFilterTrigger');
+const sortingEndFilterTrigger = document.getElementById('sortingEndFilterTrigger');
+const sortingStartDateList = document.getElementById('sortingStartDateList');
+const sortingEndDateList = document.getElementById('sortingEndDateList');
+const sortingStartHourList = document.getElementById('sortingStartHourList');
+const sortingEndHourList = document.getElementById('sortingEndHourList');
+const sortingStartMinuteList = document.getElementById('sortingStartMinuteList');
+const sortingEndMinuteList = document.getElementById('sortingEndMinuteList');
+const sortingStartTimeText = document.getElementById('sortingStartTimeText');
+const sortingEndTimeText = document.getElementById('sortingEndTimeText');
+const sortingStartNowBtn = document.getElementById('sortingStartNowBtn');
+const sortingEndNowBtn = document.getElementById('sortingEndNowBtn');
+const sortingStartConfirmBtn = document.getElementById('sortingStartConfirmBtn');
+const sortingEndConfirmBtn = document.getElementById('sortingEndConfirmBtn');
+let sortingDateTimeScopeText = '当日 06:00 ~ 次日 06:00';
+let sortingPickerDays = [];
 
-  sortingShiftTabs.addEventListener('click', event => {
-    const tab = event.target.closest('[data-shift]');
-    if (tab) activateSortingShift(tab);
-  });
+function padSortingTime(value) {
+  return String(value).padStart(2, '0');
+}
 
-  sortingShiftTabs.addEventListener('keydown', event => {
-    const tab = event.target.closest('[data-shift]');
-    if (tab && (event.key === 'Enter' || event.key === ' ')) {
-      event.preventDefault();
-      activateSortingShift(tab);
+function formatSortingOptionDate(date) {
+  return `${date.getFullYear()}-${padSortingTime(date.getMonth() + 1)}-${padSortingTime(date.getDate())}T${padSortingTime(date.getHours())}:${padSortingTime(date.getMinutes())}`;
+}
+
+function formatSortingClock(date) {
+  return `${padSortingTime(date.getHours())}:${padSortingTime(date.getMinutes())}`;
+}
+
+function formatSortingDayKey(date) {
+  return `${date.getFullYear()}-${padSortingTime(date.getMonth() + 1)}-${padSortingTime(date.getDate())}`;
+}
+
+function isSameSortingDate(left, right) {
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
+}
+
+function getSortingDayLabel(date, operationStart) {
+  if (isSameSortingDate(date, operationStart)) return '当日';
+  const nextDay = new Date(operationStart);
+  nextDay.setDate(nextDay.getDate() + 1);
+  if (isSameSortingDate(date, nextDay)) return '次日';
+  const diff = Math.floor((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - new Date(operationStart.getFullYear(), operationStart.getMonth(), operationStart.getDate())) / 86400000);
+  return `第${diff + 1}日`;
+}
+
+function formatSortingDateTime(value) {
+  if (!value || !operationDayRange) return '';
+  const date = new Date(value);
+  const operationStart = new Date(operationDayRange.dataset.start);
+  return `${getSortingDayLabel(date, operationStart)} ${formatSortingClock(date)}`;
+}
+
+function buildSortingPickerDays(operationStart, operationEnd) {
+  const stepMinutes = 30;
+  const dayMap = new Map();
+  for (let cursor = new Date(operationStart); cursor <= operationEnd; cursor = new Date(cursor.getTime() + stepMinutes * 60000)) {
+    const dayKey = formatSortingDayKey(cursor);
+    if (!dayMap.has(dayKey)) {
+      dayMap.set(dayKey, {
+        key: dayKey,
+        label: getSortingDayLabel(cursor, operationStart),
+        subLabel: `${padSortingTime(cursor.getMonth() + 1)}-${padSortingTime(cursor.getDate())}`,
+        items: []
+      });
     }
+    dayMap.get(dayKey).items.push({
+      value: formatSortingOptionDate(cursor),
+      clock: formatSortingClock(cursor),
+      timestamp: cursor.getTime(),
+      dayKey,
+      hour: cursor.getHours(),
+      minute: cursor.getMinutes()
+    });
+  }
+  sortingPickerDays = Array.from(dayMap.values());
+}
+
+function getSortingDayEntry(dayKey) {
+  return sortingPickerDays.find(day => day.key === dayKey) || sortingPickerDays[0] || null;
+}
+
+function getSortingValueDayKey(value) {
+  return value ? value.slice(0, 10) : '';
+}
+
+function getSortingSelectedOption(value) {
+  for (const day of sortingPickerDays) {
+    const found = day.items.find(item => item.value === value);
+    if (found) return found;
+  }
+  return null;
+}
+
+function getSortingBoundaryTimestamp(type) {
+  const otherValue = type === 'start' ? sortingEndDateTime.value : sortingStartDateTime.value;
+  return otherValue ? new Date(otherValue).getTime() : NaN;
+}
+
+function isSortingPickerValueDisabled(type, value) {
+  const current = new Date(value).getTime();
+  const other = getSortingBoundaryTimestamp(type);
+  if (!Number.isFinite(other)) return false;
+  return type === 'start' ? current >= other : current <= other;
+}
+
+const sortingPickerState = {
+  start: { draftValue: '', draftDayKey: '' },
+  end: { draftValue: '', draftDayKey: '' }
+};
+
+const sortingPickerElements = {
+  start: {
+    wrap: sortingStartSelectWrap,
+    trigger: sortingStartFilterTrigger,
+    hiddenInput: sortingStartDateTime,
+    dayBadge: sortingStartDayBadge,
+    timeText: sortingStartTimeText,
+    dateList: sortingStartDateList,
+    hourList: sortingStartHourList,
+    minuteList: sortingStartMinuteList,
+    nowBtn: sortingStartNowBtn,
+    confirmBtn: sortingStartConfirmBtn
+  },
+  end: {
+    wrap: sortingEndSelectWrap,
+    trigger: sortingEndFilterTrigger,
+    hiddenInput: sortingEndDateTime,
+    dayBadge: sortingEndDayBadge,
+    timeText: sortingEndTimeText,
+    dateList: sortingEndDateList,
+    hourList: sortingEndHourList,
+    minuteList: sortingEndMinuteList,
+    nowBtn: sortingEndNowBtn,
+    confirmBtn: sortingEndConfirmBtn
+  }
+};
+
+function closeSortingDatePickers(exceptType = '') {
+  Object.entries(sortingPickerElements).forEach(([type, element]) => {
+    if (!element.wrap || type === exceptType) return;
+    element.wrap.classList.remove('open');
+    if (element.trigger) element.trigger.setAttribute('aria-expanded', 'false');
+    const panel = element.wrap.querySelector('.shift-datetime-panel');
+    if (panel) panel.setAttribute('aria-hidden', 'true');
+  });
+}
+
+function getSortingDefaultValueForDay(type, dayKey) {
+  const dayEntry = getSortingDayEntry(dayKey);
+  if (!dayEntry) return '';
+  const available = dayEntry.items.filter(item => !isSortingPickerValueDisabled(type, item.value));
+  if (!available.length) return dayEntry.items[0] ? dayEntry.items[0].value : '';
+  return type === 'start' ? available[0].value : available[available.length - 1].value;
+}
+
+function ensureSortingDraftValue(type) {
+  const state = sortingPickerState[type];
+  const dayEntry = getSortingDayEntry(state.draftDayKey || getSortingValueDayKey(state.draftValue));
+  if (!dayEntry) return;
+  state.draftDayKey = dayEntry.key;
+  const exists = dayEntry.items.some(item => item.value === state.draftValue && !isSortingPickerValueDisabled(type, item.value));
+  if (!exists) state.draftValue = getSortingDefaultValueForDay(type, dayEntry.key);
+}
+
+function renderSortingDateList(type) {
+  const state = sortingPickerState[type];
+  const element = sortingPickerElements[type];
+  if (!element.dateList) return;
+  element.dateList.innerHTML = '';
+  sortingPickerDays.forEach(day => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'shift-datetime-option day-option';
+    if (day.key === state.draftDayKey) button.classList.add('selected');
+    button.innerHTML = `<span class="day-main">${day.label}</span><span class="day-sub">${day.subLabel}</span>`;
+    button.addEventListener('click', () => {
+      state.draftDayKey = day.key;
+      ensureSortingDraftValue(type);
+      renderSortingPicker(type);
+    });
+    element.dateList.appendChild(button);
+  });
+}
+
+function renderSortingHourList(type) {
+  const state = sortingPickerState[type];
+  const element = sortingPickerElements[type];
+  const dayEntry = getSortingDayEntry(state.draftDayKey);
+  if (!element.hourList) return;
+  element.hourList.innerHTML = '';
+  if (!dayEntry) return;
+
+  const selected = getSortingSelectedOption(state.draftValue);
+  const selectedHour = selected ? selected.hour : null;
+  const hourValues = [...new Set(dayEntry.items.map(item => item.hour))];
+
+  hourValues.forEach(hour => {
+    const hourItems = dayEntry.items.filter(item => item.hour === hour);
+    const availableItems = hourItems.filter(item => !isSortingPickerValueDisabled(type, item.value));
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'shift-datetime-option';
+    button.textContent = `${padSortingTime(hour)} 时`;
+    button.disabled = !availableItems.length;
+    if (!availableItems.length) button.classList.add('disabled');
+    if (hour === selectedHour) button.classList.add('selected');
+    button.addEventListener('click', () => {
+      const preferredMinute = selected ? selected.minute : availableItems[0].minute;
+      const candidate = availableItems.find(item => item.minute === preferredMinute) || availableItems[0];
+      if (!candidate) return;
+      state.draftValue = candidate.value;
+      renderSortingHourList(type);
+      renderSortingMinuteList(type);
+    });
+    element.hourList.appendChild(button);
+  });
+}
+
+function renderSortingMinuteList(type) {
+  const state = sortingPickerState[type];
+  const element = sortingPickerElements[type];
+  const dayEntry = getSortingDayEntry(state.draftDayKey);
+  if (!element.minuteList) return;
+  element.minuteList.innerHTML = '';
+  if (!dayEntry) return;
+
+  let selected = getSortingSelectedOption(state.draftValue);
+  if (!selected || selected.dayKey !== state.draftDayKey) {
+    const firstAllowed = dayEntry.items.find(item => !isSortingPickerValueDisabled(type, item.value));
+    if (!firstAllowed) return;
+    state.draftValue = firstAllowed.value;
+    selected = firstAllowed;
+  }
+
+  const minuteValues = [...new Set(dayEntry.items.filter(item => item.hour === selected.hour).map(item => item.minute))];
+  minuteValues.forEach(minute => {
+    const candidate = dayEntry.items.find(item => item.hour === selected.hour && item.minute === minute);
+    const disabled = !candidate || isSortingPickerValueDisabled(type, candidate.value);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'shift-datetime-option';
+    button.textContent = `${padSortingTime(minute)} 分`;
+    button.disabled = disabled;
+    if (disabled) button.classList.add('disabled');
+    if (minute === selected.minute) button.classList.add('selected');
+    button.addEventListener('click', () => {
+      if (!candidate || disabled) return;
+      state.draftValue = candidate.value;
+      renderSortingMinuteList(type);
+    });
+    element.minuteList.appendChild(button);
+  });
+}
+
+function renderSortingPicker(type) {
+  ensureSortingDraftValue(type);
+  renderSortingDateList(type);
+  renderSortingHourList(type);
+  renderSortingMinuteList(type);
+}
+
+function updateSortingDayBadges() {
+  if (sortingStartDateTime.value) {
+    const start = new Date(sortingStartDateTime.value);
+    sortingStartDayBadge.textContent = getSortingDayLabel(start, new Date(operationDayRange.dataset.start));
+    sortingStartTimeText.textContent = formatSortingClock(start);
+    sortingStartFilterTrigger.title = `${sortingStartDayBadge.textContent} ${sortingStartTimeText.textContent}`;
+  }
+  if (sortingEndDateTime.value) {
+    const end = new Date(sortingEndDateTime.value);
+    sortingEndDayBadge.textContent = getSortingDayLabel(end, new Date(operationDayRange.dataset.start));
+    sortingEndTimeText.textContent = formatSortingClock(end);
+    sortingEndFilterTrigger.title = `${sortingEndDayBadge.textContent} ${sortingEndTimeText.textContent}`;
+  }
+}
+
+function getSortingNearestAllowedValue(type, targetTimestamp) {
+  const allItems = sortingPickerDays.flatMap(day => day.items).filter(item => !isSortingPickerValueDisabled(type, item.value));
+  if (!allItems.length) return '';
+  let nearest = allItems[0];
+  let diff = Math.abs(allItems[0].timestamp - targetTimestamp);
+  allItems.forEach(item => {
+    const currentDiff = Math.abs(item.timestamp - targetTimestamp);
+    if (currentDiff < diff) {
+      nearest = item;
+      diff = currentDiff;
+    }
+  });
+  return nearest.value;
+}
+
+function openSortingPicker(type) {
+  const element = sortingPickerElements[type];
+  const state = sortingPickerState[type];
+  if (!element.wrap || !element.hiddenInput) return;
+  closeSortingDatePickers(type);
+  state.draftValue = element.hiddenInput.value || (type === 'start' ? sortingPickerDays[0]?.items[0]?.value : sortingPickerDays[sortingPickerDays.length - 1]?.items.slice(-1)[0]?.value) || '';
+  state.draftDayKey = getSortingValueDayKey(state.draftValue);
+  renderSortingPicker(type);
+  element.wrap.classList.add('open');
+  element.trigger.setAttribute('aria-expanded', 'true');
+  const panel = element.wrap.querySelector('.shift-datetime-panel');
+  if (panel) panel.setAttribute('aria-hidden', 'false');
+}
+
+function confirmSortingPicker(type) {
+  const element = sortingPickerElements[type];
+  const state = sortingPickerState[type];
+  if (!element.hiddenInput || !state.draftValue) return;
+  if (isSortingPickerValueDisabled(type, state.draftValue)) {
+    showPrototypeToast(type === 'start' ? '开始时间必须早于结束时间' : '结束时间必须晚于开始时间');
+    return;
+  }
+  element.hiddenInput.value = state.draftValue;
+  sortingStartSelectWrap.classList.remove('is-invalid');
+  sortingEndSelectWrap.classList.remove('is-invalid');
+  updateSortingDayBadges();
+  closeSortingDatePickers();
+}
+
+function bindSortingPicker(type) {
+  const element = sortingPickerElements[type];
+  if (!element.wrap || !element.trigger || !element.confirmBtn || !element.nowBtn) return;
+  element.trigger.addEventListener('click', event => {
+    event.stopPropagation();
+    if (element.wrap.classList.contains('open')) closeSortingDatePickers();
+    else openSortingPicker(type);
+  });
+  element.wrap.addEventListener('click', event => event.stopPropagation());
+  element.confirmBtn.addEventListener('click', () => confirmSortingPicker(type));
+  element.nowBtn.addEventListener('click', () => {
+    const operationStart = new Date(operationDayRange.dataset.start).getTime();
+    const operationEnd = new Date(operationDayRange.dataset.end).getTime();
+    const now = Date.now();
+    const clamped = Math.min(operationEnd, Math.max(operationStart, now));
+    const nearestValue = getSortingNearestAllowedValue(type, clamped);
+    if (!nearestValue) return;
+    sortingPickerState[type].draftValue = nearestValue;
+    sortingPickerState[type].draftDayKey = getSortingValueDayKey(nearestValue);
+    renderSortingPicker(type);
+  });
+}
+
+function getSortingDateTimeScope() {
+  return sortingDateTimeScopeText;
+}
+
+function validateSortingDateTimeRange() {
+  if (!sortingStartDateTime || !sortingEndDateTime) {
+    return { valid: false, message: '未找到分拣班次时间筛选控件' };
+  }
+  sortingStartSelectWrap.classList.remove('is-invalid');
+  sortingEndSelectWrap.classList.remove('is-invalid');
+  const startValue = sortingStartDateTime.value;
+  const endValue = sortingEndDateTime.value;
+  if (!startValue || !endValue) {
+    if (!startValue) sortingStartSelectWrap.classList.add('is-invalid');
+    if (!endValue) sortingEndSelectWrap.classList.add('is-invalid');
+    return { valid: false, message: '请选择完整的分拣班次开始和结束时间' };
+  }
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+  const operationStart = new Date(operationDayRange.dataset.start);
+  const operationEnd = new Date(operationDayRange.dataset.end);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    sortingStartSelectWrap.classList.add('is-invalid');
+    sortingEndSelectWrap.classList.add('is-invalid');
+    return { valid: false, message: '分拣班次时间格式不正确' };
+  }
+  if (start < operationStart || end > operationEnd) {
+    sortingStartSelectWrap.classList.add('is-invalid');
+    sortingEndSelectWrap.classList.add('is-invalid');
+    return { valid: false, message: '分拣班次时间必须在操作日范围内' };
+  }
+  if (start >= end) {
+    sortingStartSelectWrap.classList.add('is-invalid');
+    sortingEndSelectWrap.classList.add('is-invalid');
+    return { valid: false, message: '分拣班次开始时间必须早于结束时间' };
+  }
+  return {
+    valid: true,
+    text: `${formatSortingDateTime(startValue)} ~ ${formatSortingDateTime(endValue)}`
+  };
+}
+
+if (operationDayRange && sortingStartDateTime && sortingEndDateTime) {
+  const operationStart = new Date(operationDayRange.dataset.start);
+  const operationEnd = new Date(operationDayRange.dataset.end);
+  buildSortingPickerDays(operationStart, operationEnd);
+  sortingStartDateTime.value = formatSortingOptionDate(operationStart);
+  sortingEndDateTime.value = formatSortingOptionDate(operationEnd);
+  updateSortingDayBadges();
+  bindSortingPicker('start');
+  bindSortingPicker('end');
+  document.addEventListener('click', () => closeSortingDatePickers());
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeSortingDatePickers();
   });
 }
 
@@ -4104,7 +4545,7 @@ function renderMainFlowChart(rows) {
     const row = rows.find(item=>item.name===params.seriesName);
     const count = Number(params.value || 0);
     if (!row || count <= 0) return;
-    openLightbox(mainFlowScopeText(row.name, ` · ${params.name}`), mainFlowFormat(count), '已分拣 · 当前班次');
+    openLightbox(mainFlowScopeText(row.name, ` · ${params.name}`), mainFlowFormat(count), '已分拣 · 当前筛选时间');
   });
   setTimeout(()=>chart.resize(),0);
 }
@@ -4227,16 +4668,16 @@ document.getElementById('mainFlowCard').addEventListener('keydown',event=>{
 
 document.getElementById('mainFlowSummary').addEventListener('click',event=>{
   const ticket=event.target.closest('.main-flow-summary-count');
-  if(ticket){openLightbox(mainFlowScopeText('合计'),mainFlowFormat(ticket.dataset.count),'已分拣 · 当前班次');return;}
+  if(ticket){openLightbox(mainFlowScopeText('合计'),mainFlowFormat(ticket.dataset.count),'已分拣 · 当前筛选时间');return;}
   const bag=event.target.closest('.main-flow-summary-bag');
-  if(bag)openSortedBagList(mainFlowScopeText('合计'),mainFlowFormat(bag.dataset.count),'已分拣 · 当前班次');
+  if(bag)openSortedBagList(mainFlowScopeText('合计'),mainFlowFormat(bag.dataset.count),'已分拣 · 当前筛选时间');
 });
 
 document.getElementById('mainFlowTableBody').addEventListener('click',event=>{
   const count=event.target.closest('.main-flow-count');
-  if(count){openLightbox(mainFlowScopeText(count.dataset.name,count.dataset.suffix||''),mainFlowFormat(count.dataset.count),'已分拣 · 当前班次');return;}
+  if(count){openLightbox(mainFlowScopeText(count.dataset.name,count.dataset.suffix||''),mainFlowFormat(count.dataset.count),'已分拣 · 当前筛选时间');return;}
   const bag=event.target.closest('.main-flow-bag');
-  if(bag)openSortedBagList(mainFlowScopeText(bag.dataset.name),mainFlowFormat(bag.dataset.count),'已分拣 · 当前班次');
+  if(bag)openSortedBagList(mainFlowScopeText(bag.dataset.name),mainFlowFormat(bag.dataset.count),'已分拣 · 当前筛选时间');
 });
 
 document.getElementById('mainFlowBreadcrumb').addEventListener('click',event=>{
@@ -4248,7 +4689,7 @@ document.getElementById('mainFlowExpandBtn').addEventListener('click',()=>{
   const rows=mainFlowRows();
   const total=rows.reduce((sum,row)=>sum+(row.tickets||0),0);
   if(mainFlowState.perspective==='org') {
-    openLightbox(mainFlowScopeText('合计'),mainFlowFormat(total),'已分拣 · 当前班次');
+    openLightbox(mainFlowScopeText('合计'),mainFlowFormat(total),'已分拣 · 当前筛选时间');
     return;
   }
   openDrawer('sorted',{flowType:mainFlowState.type,flowLevel:mainFlowState.level,parentStation:mainFlowState.parentStation});
@@ -4403,12 +4844,12 @@ function updateTrendStats(mode) {
   const minValue = Math.min(...trendSort);
   const maxIndex = trendSort.indexOf(maxValue);
   const minIndex = trendSort.indexOf(minValue);
-  // 原型数据按小时桶求平均；正式系统口径：当前班次累计已分拣票数 ÷ 当前班次已过时长（小时，精确到分钟），不计未来时段。
+  // 原型数据按小时桶求平均；正式系统口径：当前筛选时间累计已分拣票数 ÷ 当前筛选时间已过时长（小时，精确到分钟），不计未来时段。
   const avgValue = Math.round(trendSort.reduce((sum, value) => sum + value, 0) / trendSort.length);
   const currentIndex = Math.max(0, hours.indexOf('14:00'));
   setTrendStat(1, '峰值票数', maxValue.toLocaleString(), hours[maxIndex]);
   setTrendStat(2, '谷值票数', minValue.toLocaleString(), hours[minIndex]);
-  setTrendStat(3, '小时均值', avgValue.toLocaleString(), '当前班次');
+  setTrendStat(3, '小时均值', avgValue.toLocaleString(), '当前筛选时间');
   // 当前时速正式口径：当前小时截至当前时刻的已分拣票数 ÷ 当前小时已过分钟数 × 60；原型直接使用当前小时桶示例值。
   setTrendStat(4, '当前时速', trendSort[currentIndex].toLocaleString(), hours[currentIndex]);
 }
