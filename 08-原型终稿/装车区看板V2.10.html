@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>装车区看板 · GOFO 管理后台 V2.10</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>装车区看板 - GOFO 管理后台 V3.09（分拣区视觉统一版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -457,179 +458,421 @@ html,body{padding-top:0!important}
 .gofo-tabs-bar{top:48px!important}
 .gofo-business-shell.topbar{top:89px!important}
 .gofo-business-filterbar{top:131px!important}
+</style><style id="loading-sort-visual-unification-v309">
+/* ===== 装车区 V3.09：对齐分拣区 UI / 字体 / 视觉（仅装车区） ===== */
+:root{
+  --gofo-ui-font:Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  --gofo-primary:#fc4c02;
+  --gofo-primary-hover:#f76121;
+  --gofo-primary-light:#fff1e6;
+  --gofo-border:#f0f0f0;
+  --bg:#f0f2f5;
+  --card:#fff;
+  --line:#f0f0f0;
+  --line-2:#ebeef5;
+  --text:#303133;
+  --muted:#606266;
+  --faint:#909399;
+  --accent:#fc4c02;
+  --accent-soft:#fff1e6;
+  --accent-line:#ffd9c7;
+  --red:#e5484d;
+  --amber:#e0921a;
+  --green:#16a34a;
+  --shadow:0 1px 2px rgba(0,0,0,.04);
+  --r-card:2px;
+}
+html,body,body *,button,input,select,textarea,table,thead,tbody,tr,th,td{
+  font-family:var(--gofo-ui-font)!important;
+}
+.num{font-family:var(--gofo-ui-font)!important;font-variant-numeric:tabular-nums;letter-spacing:0!important;}
+html{scroll-behavior:auto!important;overflow-x:auto;background:#f0f2f5!important;}
+body.loading-dashboard{
+  width:100%!important;min-width:1180px!important;padding-top:48px!important;
+  overflow-x:auto!important;overflow-y:visible!important;background:#f0f2f5!important;color:#303133!important;
+}
+
+/* 与分拣区一致的固定应用骨架 */
+.gofo-header{
+  display:flex!important;position:fixed!important;inset:0 0 auto 0!important;top:0!important;
+  width:100%!important;height:48px!important;z-index:3000!important;padding:0 16px!important;
+  background:#001529!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+.gofo-sidebar{
+  display:block!important;position:fixed!important;left:0!important;top:48px!important;bottom:0!important;
+  width:55px!important;z-index:2900!important;background:#fff!important;
+}
+.gofo-tabs-bar{
+  display:flex!important;position:fixed!important;top:48px!important;left:55px!important;right:0!important;
+  z-index:2800!important;width:calc(100% - 55px)!important;height:41px!important;min-height:41px!important;
+  margin:0!important;padding:0 0 0 16px!important;background:#fff!important;
+  border-bottom:1px solid #f0f0f0!important;box-shadow:none!important;backdrop-filter:none!important;box-sizing:border-box!important;
+}
+.gofo-tabs-bar>.gofo-tabs-list{display:flex!important;align-items:flex-end!important;gap:4px!important;height:41px!important;padding:0!important;}
+.gofo-tab-card{height:40px!important;min-height:40px!important;padding:0 16px!important;border-radius:0!important;}
+.gofo-tab-more{width:32px!important;height:32px!important;margin:4px!important;padding:0!important;background:transparent!important;}
+gofo-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex:0 0 auto;}
+gofo-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.gofo-header-action,.gofo-tab-more,.gofo-tab-close{border:0;font-family:inherit;}
+.gofo-header-action{background:transparent;}
+.gofo-tab-close{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:8px;padding:0;background:transparent;color:#bfbfbf;cursor:pointer;}
+
+main.gofo-content{
+  position:relative!important;z-index:1!important;display:flex!important;flex-direction:column!important;
+  width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;
+  margin-top:41px!important;padding:14px 16px 16px!important;gap:10px!important;box-sizing:border-box!important;
+  background:#f0f2f5!important;
+}
+
+/* 分拣区同款业务导航与筛选卡 */
+.gofo-business-nav-card,.gofo-filter-card{
+  background:#fff;border:1px solid #f0f0f0;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.gofo-business-nav-card{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:0 14px;}
+.gofo-business-tabs{display:flex;align-items:flex-end;gap:4px;min-height:44px;}
+.gofo-business-tabs button{height:40px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:#595959;font-size:13px;cursor:pointer;}
+.gofo-business-tabs button:hover{color:#fc4c02;background:#fff8f4;}
+.gofo-business-tabs button.active{color:#fc4c02;border-bottom-color:#fc4c02;background:#fff1e6;font-weight:600;}
+.gofo-interface-switch{display:flex;align-items:center;gap:8px;min-height:32px;margin-left:auto;flex:0 0 auto;}
+.gofo-interface-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;padding:0 12px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#606266;text-decoration:none;font-size:12px;}
+.gofo-interface-link:hover{border-color:#fc4c02;color:#fc4c02;}
+.gofo-interface-link[aria-current="page"]{border-color:#cfd5dd;color:#1f2937;box-shadow:inset 0 -2px 0 #fc4c02;}
+.gofo-interface-link gofo-icon{width:15px;height:15px;}
+.gofo-filter-card{padding:14px 20px;}
+.gofo-filter-grid{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+.gofo-filter-field{display:flex;flex-direction:column;gap:6px;min-width:112px;}
+.gofo-filter-field.wide{min-width:245px;}.gofo-filter-field.shift-field{min-width:180px;}
+.gofo-filter-label{font-size:12px;color:#606266;}
+.gofo-filter-value,.gofo-filter-control{height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#303133;font-size:12px;box-sizing:border-box;}
+.gofo-filter-control{justify-content:space-between;min-width:92px;cursor:pointer;}.gofo-filter-control:hover{border-color:#fc4c02;}
+.gofo-filter-card .seg-group,.gofo-filter-card .filter-tabs{display:flex;height:32px;border:1px solid #dcdfe6;border-radius:2px;overflow:hidden;background:#fff;}
+.gofo-filter-card .seg-group button,.gofo-filter-card .filter-tabs button{min-width:52px;padding:0 10px;border:0;border-left:1px solid #ebeef5;background:#fff;color:#606266;font-size:12px;cursor:pointer;}
+.gofo-filter-card .seg-group button:first-child,.gofo-filter-card .filter-tabs button:first-child{border-left:0;}
+.gofo-filter-card .seg-group button.on,.gofo-filter-card .filter-tabs button.on{background:#fff1e6;color:#fc4c02;font-weight:600;}
+.gofo-filter-actions{margin-left:auto;display:flex;align-items:center;}
+.gofo-primary-btn{height:32px;padding:0 18px;border:1px solid #fc4c02;border-radius:2px;background:#fc4c02;color:#fff;font-size:13px;cursor:pointer;}
+.gofo-primary-btn:hover{background:#f76121;border-color:#f76121;}
+
+/* 装车区卡片统一为分拣区最终直角规范 */
+.panel,.chain-node,.aux-card,.alert-main,.alert-empty,.scroll,.drawer-panel,.drawer-stat,
+.loading-overview-card,.signout-source-block,.source-filter-card,.current-stock-summary,.distribution-card,.dist-row{
+  border-radius:2px!important;
+}
+.panel{
+  background:#fff!important;border:1px solid #f0f0f0!important;border-radius:2px!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;padding:16px!important;transition:none!important;
+}
+.panel:hover{box-shadow:0 1px 2px rgba(0,0,0,.04)!important;}
+.panel-head{align-items:center!important;margin-bottom:10px!important;}
+.panel-title{gap:10px!important;}
+.panel-title:before{width:5px!important;height:20px!important;margin-top:0!important;border-radius:0!important;background:#fc4c02!important;box-shadow:none!important;}
+.panel-title.alert:before{background:#e5484d!important;box-shadow:none!important;}
+.panel-title h2{font-size:16px!important;line-height:1.3!important;font-weight:600!important;color:#303133!important;letter-spacing:0!important;}
+.panel-tools{color:#606266!important;}
+
+/* 发车进度链 */
+.pipeline{grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr) 54px minmax(0,1fr)!important;}
+.chain-node{
+  min-height:104px!important;padding:14px 16px!important;border:1px solid #e5eaf0!important;
+  background:#fff!important;box-shadow:0 1px 2px rgba(16,32,64,.04)!important;transform:none!important;
+}
+.chain-node:before{width:4px!important;border-radius:0!important;background:#cbd5e1!important;}
+.chain-node.core:before{background:#e5484d!important;}.chain-node.loading:before{background:#fc4c02!important;}.chain-node.done:before{background:#16a34a!important;}
+.chain-node:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.chain-node .node-label{font-size:13px!important;font-weight:600!important;color:#303133!important;}
+.chain-node .node-label .status-dot{width:7px!important;height:7px!important;box-shadow:none!important;}
+.node-value{margin-top:12px!important;}.node-value .num{font-size:30px!important;font-weight:600!important;color:#303133!important;letter-spacing:-.5px!important;}.node-value .unit{color:#909399!important;}
+.chain-arrow{color:#909399!important;font-size:11px!important;}.chain-arrow .ar{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;background:transparent!important;color:#fc4c02!important;font-size:20px!important;}
+#aux-toggle{min-height:30px!important;border-radius:2px!important;background:#fff!important;border:1px solid #dcdfe6!important;color:#606266!important;}
+#aux-toggle:hover{border-color:#fc4c02!important;background:#fff1e6!important;color:#fc4c02!important;}
+#aux-cards{gap:10px!important;}
+
+/* 待签出、辅助指标与预警 */
+.content-split{grid-template-columns:2fr 1.1fr!important;gap:10px!important;}
+.flow-grid{gap:10px!important;}
+.aux-card{
+  min-height:82px!important;padding:14px 16px!important;background:#fff!important;border:1px solid #ebeef5!important;
+  box-shadow:none!important;transform:none!important;
+}
+.aux-card:after{color:#c0c4cc!important;}
+.aux-card:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.aux-card .al{font-size:12px!important;color:#606266!important;font-weight:500!important;}
+.aux-card .av,.stock-primary .num{font-weight:600!important;color:#303133!important;}
+.stock-home-grid .stock-home-card:first-child{background:#fff!important;border-left:4px solid #fc4c02!important;}
+.stock-home-grid .stock-home-card:first-child .stock-primary .num{color:#fc4c02!important;}
+.stock-secondary{color:#909399!important;}
+.alert-panel{background:linear-gradient(180deg,#fff7f6,#fff)!important;border-color:#f6cdc8!important;}
+.alert-main{padding:14px!important;background:#fff!important;border:1px solid #f6cdc8!important;}
+.alert-kicker{color:#c0362f!important;}.alert-kicker .clock{border-radius:2px!important;box-shadow:none!important;}
+.alert-action{height:32px!important;border-radius:2px!important;background:#e5484d!important;}.alert-action:hover{background:#cf3e43!important;box-shadow:none!important;}
+.alert-empty{background:#fff!important;border-color:#ebeef5!important;}
+
+/* 图表、Tab 与质量指标 */
+.seg{height:32px!important;padding:0!important;border:1px solid #dcdfe6!important;border-radius:2px!important;overflow:hidden!important;background:#fff!important;}
+.seg span{display:inline-flex!important;align-items:center!important;height:30px!important;padding:0 12px!important;border-radius:0!important;color:#606266!important;background:#fff!important;}
+.seg .on{background:#fff1e6!important;color:#fc4c02!important;box-shadow:none!important;font-weight:600!important;}
+.chart-link{border-radius:2px!important;background:#fff1e6!important;color:#fc4c02!important;}.chart-link:hover{background:#ffe8da!important;}
+[id^="chart-"]{border-radius:2px!important;background:#fff!important;}
+.quality-list{gap:10px!important;}.quality-list .aux-card{min-height:72px!important;}
+.quality-list .aux-card.danger{background:#fff6f5!important;border-color:#f7d6d3!important;}
+
+/* 表格、筛选、分页 */
+table{font-size:12px!important;}.scroll{border:1px solid #ebeef5!important;overflow:auto!important;}
+thead th{background:#f5f7fa!important;color:#606266!important;font-weight:600!important;}th,td{padding:9px 12px!important;}
+tbody tr:hover{background:#fafafa!important;}
+.dfilters select,.dfilters input,.dreset,.dexport,.dquery,.dpager select,.dpager input,.dpager button{border-radius:2px!important;}
+.dexport,.dquery{background:#fc4c02!important;}.dexport:hover,.dquery:hover{background:#f76121!important;transform:none!important;box-shadow:none!important;}
+.source-filter-card,.signout-source-block,.distribution-card{border-color:#ebeef5!important;box-shadow:none!important;}
+.source-filter-card:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.source-filter-card.active{border-color:#fc4c02!important;background:#fff8f4!important;box-shadow:none!important;}
+.current-stock-summary{background:#fff8f4!important;border-color:#ffd9c7!important;}
+.distribution-card-head{background:#f5f7fa!important;}.dist-row:hover{background:#fafafa!important;}.dist-row.alert{background:#fff8eb!important;}
+
+/* 页脚与弹层 */
+.legend-footer{padding:4px 2px 0!important;color:#909399!important;}
+.drawer-layer{padding:24px!important;z-index:4000!important;}
+.drawer-panel{width:980px!important;max-width:96vw!important;max-height:90vh!important;border:1px solid #ebeef5!important;border-radius:2px!important;box-shadow:0 30px 80px rgba(12,20,32,.28)!important;}
+.drawer-layer.level-2 .drawer-panel{width:900px!important;}.drawer-layer.level-3 .drawer-panel{width:820px!important;}
+.drawer-head{height:48px!important;padding:0 16px!important;background:#fff!important;border-bottom:1px solid #ebeef5!important;}
+.drawer-head h3{font-size:15.5px!important;font-weight:600!important;}.drawer-head .drawer-close{width:30px!important;height:30px!important;border-radius:2px!important;}
+.drawer-body{padding:16px!important;}.drawer-body .drawer-stat{background:#f7f9fc!important;border-color:#ebeef5!important;}
+.drawer-tabs .dt.on{color:#fc4c02!important;border-bottom-color:#fc4c02!important;}
+
+/* 清除旧版大圆角、渐变、悬浮抬升 */
+body.loading-dashboard button{border-radius:2px!important;}
+body.loading-dashboard button:not(:disabled):hover{transform:none!important;}
+body.loading-dashboard .query-btn,body.loading-dashboard .gofo-primary-btn{box-shadow:none!important;}
+@media(max-width:1366px){
+  .content-split{grid-template-columns:minmax(0,1.8fr) minmax(330px,1fr)!important;}
+  .pipeline{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) 44px minmax(0,1fr)!important;}
+  .gofo-filter-grid{gap:10px;}.gofo-filter-field.wide{min-width:220px;}
+}
+@media(max-width:1200px){
+  .gofo-tabs-bar,main.gofo-content{min-width:1125px!important;}
+  .gofo-business-nav-card{overflow-x:auto;}.gofo-business-tabs,.gofo-interface-switch{flex:0 0 auto;}
+}
 </style></head>
-<body>
+<body class="loading-dashboard">
 <header class="gofo-header">
-  <div class="gofo-header-left">
-    <div class="gofo-logo" aria-label="GOFO"><em>GO</em>FO</div>
-    <div class="gofo-search-wrap"><input class="gofo-search" type="search" placeholder="请输入菜单或功能" aria-label="全局搜索"></div>
-  </div>
-  <div class="gofo-header-right">
-    <div class="gofo-header-action gofo-notice" title="消息通知" aria-label="消息通知">♢</div>
-    <div class="gofo-header-action optional" title="语言">中文⌄</div>
-    <div class="gofo-header-action optional" title="时区">北京时间⌄</div>
-    <div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
-    <span class="gofo-version">V2.10</span>
-  </div>
-</header>
-<aside class="gofo-sidebar" aria-label="主菜单">
-  <nav class="gofo-menu">
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">⌂</span><span class="gofo-menu-text">工作台</span></div>
-    <div class="gofo-menu-item active" aria-current="page"><span class="gofo-menu-icon">▥</span><span class="gofo-menu-text">中心运营看板</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">◇</span><span class="gofo-menu-text">车辆与场地</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">⇄</span><span class="gofo-menu-text">分拣作业管理</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">!</span><span class="gofo-menu-text">异常监控</span></div>
-    <div class="gofo-menu-item"><span class="gofo-menu-icon">≡</span><span class="gofo-menu-text">报表中心</span></div>
-  </nav>
-  <div class="gofo-sidebar-footer"><span class="gofo-menu-icon">«</span><span class="gofo-menu-text">收起菜单</span></div>
-</aside>
-<div class="gofo-tabs-bar" aria-label="页面页签">
-  <div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">装车区看板 <span class="gofo-tab-close">×</span></div></div>
-  <div class="gofo-tab-more" title="更多页签">•••</div>
+<div class="gofo-header-left">
+<div aria-label="GOFO" class="gofo-logo"><em>GO</em>FO</div>
+<div class="gofo-search-wrap"><input aria-label="全局搜索" class="gofo-search" placeholder="请输入菜单或功能" type="search"/></div>
 </div>
-<nav class="gofo-business-shell topbar"><div class="tabs"><a href="#">概况</a><a href="#">卸车区</a><a href="#">分拣区</a><a href="#" class="active">装车区</a><a href="#">异常区</a></div></nav><div class="gofo-business-filterbar"><div class="center-pill">LAX H <span style="color:#9aa6b6;">▾</span></div><div class="date-tag">操作日 <b class="num">06-16 04:00 ~ 06-17 04:00</b></div><div class="seg-group"><span class="on">今日</span><span>明日</span></div><div class="date-tag">卸车截单 <b class="num">0D 20:00</b></div><div class="date-tag">散货截单 <b class="num">1D 03:00</b></div><div class="date-tag">距离截单时间 <b class="num" style="color:#fc4c02!important;">16:21:00</b></div><div class="spacer"></div><span class="area-label">装车班次</span><div class="filter-tabs"><span class="on">早班</span><span>中班</span><span>晚班</span></div><button class="query-btn">查询</button></div>
+<div class="gofo-header-right">
+<button aria-label="消息通知" class="gofo-header-action gofo-notice" title="消息通知" type="button"><gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></gofo-icon></button>
+<div class="gofo-header-action optional" title="语言">中文⌄</div>
+<div class="gofo-header-action optional" title="时区">北京时间⌄</div>
+<div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
+<span class="gofo-version">V3.09</span>
+</div>
+</header>
+<aside aria-label="主菜单" class="gofo-sidebar">
+<nav class="gofo-menu">
+<div class="gofo-menu-item" title="工作台"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h13V10M9 20v-6h6v6"></path></svg></gofo-icon><span class="gofo-menu-text">工作台</span></div>
+<div aria-current="page" class="gofo-menu-item active" title="中心运营看板"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><rect height="16" rx="1" width="18" x="3" y="4"></rect><path d="M3 9h18M9 9v11"></path></svg></gofo-icon><span class="gofo-menu-text">中心运营看板</span></div>
+<div class="gofo-menu-item" title="车辆与场地"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4m11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4"></path></svg></gofo-icon><span class="gofo-menu-text">车辆与场地</span></div>
+<div class="gofo-menu-item" title="分拣作业管理"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M4 7h14M15 4l3 3-3 3M20 17H6M9 14l-3 3 3 3"></path></svg></gofo-icon><span class="gofo-menu-text">分拣作业管理</span></div>
+<div class="gofo-menu-item" title="异常监控"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M12 3 2.8 20h18.4zM12 9v5M12 17.5v.5"></path></svg></gofo-icon><span class="gofo-menu-text">异常监控</span></div>
+<div class="gofo-menu-item" title="报表中心"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h8M8 17h5"></path></svg></gofo-icon><span class="gofo-menu-text">报表中心</span></div>
+</nav>
+<div class="gofo-sidebar-footer" title="收起菜单"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewbox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></svg></gofo-icon><span class="gofo-menu-text">收起菜单</span></div>
+</aside>
+<div aria-label="页面页签" class="gofo-tabs-bar">
+<div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">装车区看板 <button aria-label="关闭卸车区看板页签" class="gofo-tab-close" title="关闭页签" type="button"><gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"></path></svg></gofo-icon></button></div></div>
+<button aria-label="更多页签" class="gofo-tab-more" title="更多页签" type="button"><gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></gofo-icon></button>
+</div>
 
 <!-- ============ 内容区 ============ -->
-<main class="dashboard-shell gofo-content">
-  <!-- FR-2 发车进度链 -->
-  <section class="panel">
-    <div class="panel-head">
-      <div class="panel-title">
-        <div><h2>发车进度</h2></div>
-      </div>
-    </div>
-    <div class="pipeline">
-      <div class="chain-node core" data-drawer="progress-pending">
-        <div class="node-label"><span>待装车</span><span class="status-dot"></span></div>
-        <div class="node-value"><span class="num dd">0</span><span class="unit">辆</span></div>
-      </div>
-      <div class="chain-arrow"><span>装车</span><div class="ar">→</div></div>
-      <div class="chain-node loading" data-drawer="progress-loading">
-        <div class="node-label"><span>装车中</span><span class="status-dot"></span></div>
-        <div class="node-value"><span class="num dd">2</span><span class="unit">辆</span></div>
-      </div>
-      <div class="chain-arrow"><span>发车</span><div class="ar">→</div></div>
-      <div class="chain-node core" data-drawer="progress-fenced">
-        <div class="node-label"><span>已发未驶离围栏</span><span class="status-dot"></span></div>
-        <div class="node-value"><span class="num dd">0</span><span class="unit">辆</span></div>
-      </div>
-    </div>
-    <div class="aux-toggle-wrap"><span class="dd" id="aux-toggle">展开辅助卡（待靠台 / 已装未发 / 已发车）▾</span></div>
-    <div id="aux-cards" style="display:none;">
-      <div class="aux-card" data-drawer="progress-todock">
-        <div class="al">待靠台</div>
-        <div class="av"><span class="num dd">1</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
-      </div>
-      <div class="aux-card" data-drawer="progress-towait">
-        <div class="al">已装未发</div>
-        <div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
-      </div>
-      <div class="aux-card" data-drawer="progress-sent">
-        <div class="al">已发车</div>
-        <div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FR-9 待签出库存 + 发车预警 -->
-  <div class="content-split">
-    <section class="panel">
-      <div class="panel-head">
-        <div class="panel-title"><div><h2>待签出</h2></div></div>
-      </div>
-      <div class="flow-grid stock-home-grid">
-        <div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'all'})">
-          <div class="al">全部</div>
-          <div class="stock-primary"><span class="num dd">2,270</span><span class="stock-unit">袋</span></div>
-          <div class="stock-secondary"><span class="num">77,600</span><span>票</span></div>
-        </div>
-        <div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'trunk'})">
-          <div class="al">干线</div>
-          <div class="stock-primary"><span class="num dd">1,700</span><span class="stock-unit">袋</span></div>
-          <div class="stock-secondary"><span class="num">55,800</span><span>票</span></div>
-        </div>
-        <div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'branch'})">
-          <div class="al">支线</div>
-          <div class="stock-primary"><span class="num dd">570</span><span class="stock-unit">袋</span></div>
-          <div class="stock-secondary"><span class="num">21,800</span><span>票</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel alert-panel">
-      <div class="panel-head">
-        <div class="panel-title alert"><div><h2>发车预警</h2></div></div>
-      </div>
-      <div class="alert-content">
-        <div class="alert-main">
-          <div class="alert-kicker"><span class="clock">⏳</span>1小时内待发车</div>
-          <button class="alert-action" data-drawer="towait">查看待发车车辆</button>
-        </div>
-        <div class="alert-empty">暂无其他预警</div>
-      </div>
-    </section>
-  </div>
-
-  <!-- FR-3 计划发车 -->
-  <section class="panel">
-    <div class="panel-head">
-      <div class="panel-title"><div><h2>计划发车</h2></div></div>
-      <div class="panel-tools"><span>显示</span><div class="seg" id="seg-fc-mode"><span class="on" data-mode="hour">小时段</span><span data-mode="cum">累计</span></div></div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:-6px;margin-bottom:6px;"><span class="dd chart-link" data-drawer="forecast">查看车辆明细 ›</span></div>
-    <div id="chart-fc" style="width:100%;height:286px;"></div>
-  </section>
-
-  <!-- FR-4 装车效率 + FR-5 发运质量 -->
-  <div class="content-split">
-    <section class="panel" style="display:flex;flex-direction:column;">
-      <div class="panel-head">
-        <div class="panel-title"><div><h2>装车效率</h2></div></div>
-      </div>
-      <div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:4px;font-size:11.5px;color:#98a2b3;">
-        <span><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#ff9a4d;margin-right:5px;"></span>待装量（票）</span>
-        <span><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#fc4c02;margin-right:5px;"></span>装车量（票）</span>
-        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb;margin-right:5px;"></span>装车速度（票/时）</span>
-      </div>
-      <div id="chart-eff" style="width:100%;height:306px;flex:1;"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div class="panel-title"><div><h2>发运质量监控</h2></div></div>
-      </div>
-      <div class="quality-list">
-        <div class="aux-card" onclick="openDrawer('tagbind')">
-          <div class="al">已绑定 TAG</div>
-          <div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
-        </div>
-        <div class="aux-card" onclick="openDrawer('tagbind')">
-          <div class="al">未绑定 TAG</div>
-          <div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
-        </div>
-        <div class="aux-card danger" onclick="openDrawer('missing')">
-          <div class="al">晚发</div>
-          <div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#c65b66;"> 辆</span></div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <footer class="legend-footer">
-    <div class="legend-items">
-      <span><i class="legend-dot" style="background:#172033;"></i>正常</span>
-      <span><i class="legend-dot" style="background:#12a36d;"></i>达标</span>
-      <span><i class="legend-dot" style="background:#d97706;"></i>接近阈值</span>
-      <span><i class="legend-dot" style="background:#dc3545;"></i>重点关注</span>
-      <span><i class="legend-dot" style="background:#fc4c02;"></i>可点击下钻</span>
-    </div>
-    <span class="version-note">装车区独立版 · UI 优化稿</span>
-  </footer>
+<main class="dashboard-shell gofo-content"><section aria-label="业务区域与界面切换" class="gofo-business-nav-card">
+<div aria-label="中心看板业务区域" class="gofo-business-tabs" role="tablist">
+<button aria-selected="false" data-business-tab="overview" role="tab" type="button">概况</button>
+<button aria-selected="false" data-business-tab="unload" role="tab" type="button">卸车区</button>
+<button aria-selected="false" data-business-tab="sorting" role="tab" type="button">分拣区</button>
+<button aria-selected="true" class="active" data-business-tab="loading" role="tab" type="button">装车区</button>
+<button aria-selected="false" data-business-tab="exception" role="tab" type="button">异常区</button>
+</div>
+<nav aria-label="页面入口与界面切换" class="gofo-interface-switch">
+<a aria-current="page" class="gofo-interface-link" href="#center-dashboard-old">
+<gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="M15 5 8 12l7 7M8 12h11"></path></svg></gofo-icon>
+<span>中心看板（旧）</span>
+</a>
+<a class="gofo-interface-link" href="#operations-cockpit">
+<span>运营驾驶舱</span>
+<gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></gofo-icon>
+</a>
+<a class="gofo-interface-link" href="#mobile-view">
+<span>移动端（观辰）</span>
+<gofo-icon aria-hidden="true"><svg viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></gofo-icon>
+</a>
+</nav>
+</section><section aria-label="装车区筛选条件" class="gofo-filter-card">
+<div class="gofo-filter-grid">
+<div class="gofo-filter-field compact">
+<span class="gofo-filter-label">中心</span>
+<button aria-label="选择中心" class="gofo-filter-control center-control" type="button">LAX H <span aria-hidden="true">⌄</span></button>
+</div>
+<div class="gofo-filter-field wide">
+<span class="gofo-filter-label">操作日</span>
+<div class="gofo-filter-value num">06-16 04:00 ~ 06-17 04:00</div>
+</div>
+<div class="gofo-filter-field compact">
+<span class="gofo-filter-label">日期范围</span>
+<div aria-label="日期范围" class="seg-group" role="group"><button class="on" type="button">今日</button><button type="button">明日</button></div>
+</div>
+<div class="gofo-filter-field">
+<span class="gofo-filter-label">卸车截单</span>
+<div class="gofo-filter-value num">0D 20:00</div>
+</div>
+<div class="gofo-filter-field">
+<span class="gofo-filter-label">散货截单</span>
+<div class="gofo-filter-value num">1D 03:00</div>
+</div>
+<div class="gofo-filter-field">
+<span class="gofo-filter-label">距离截单时间</span>
+<div class="gofo-filter-value cutoff-countdown-tag"><b class="num">16:21:00</b></div>
+</div>
+<div class="gofo-filter-field shift-field">
+<span class="gofo-filter-label">装车班次</span>
+<div aria-label="装车班次" class="filter-tabs" role="tablist">
+<button aria-selected="true" class="on" role="tab" type="button">早班</button>
+<button aria-selected="false" role="tab" type="button">中班</button>
+<button aria-selected="false" role="tab" type="button">晚班</button>
+</div>
+</div>
+<div class="gofo-filter-actions"><button class="gofo-primary-btn" type="button">查询</button></div>
+</div>
+</section>
+<!-- FR-2 发车进度链 -->
+<section class="panel">
+<div class="panel-head">
+<div class="panel-title">
+<div><h2>发车进度</h2></div>
+</div>
+</div>
+<div class="pipeline">
+<div class="chain-node core" data-drawer="progress-pending">
+<div class="node-label"><span>待装车</span><span class="status-dot"></span></div>
+<div class="node-value"><span class="num dd">0</span><span class="unit">辆</span></div>
+</div>
+<div class="chain-arrow"><span>装车</span><div class="ar">→</div></div>
+<div class="chain-node loading" data-drawer="progress-loading">
+<div class="node-label"><span>装车中</span><span class="status-dot"></span></div>
+<div class="node-value"><span class="num dd">2</span><span class="unit">辆</span></div>
+</div>
+<div class="chain-arrow"><span>发车</span><div class="ar">→</div></div>
+<div class="chain-node core" data-drawer="progress-fenced">
+<div class="node-label"><span>已发未驶离围栏</span><span class="status-dot"></span></div>
+<div class="node-value"><span class="num dd">0</span><span class="unit">辆</span></div>
+</div>
+</div>
+<div class="aux-toggle-wrap"><span class="dd" id="aux-toggle">展开辅助卡（待靠台 / 已装未发 / 已发车）▾</span></div>
+<div id="aux-cards" style="display:none;">
+<div class="aux-card" data-drawer="progress-todock">
+<div class="al">待靠台</div>
+<div class="av"><span class="num dd">1</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+</div>
+<div class="aux-card" data-drawer="progress-towait">
+<div class="al">已装未发</div>
+<div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+</div>
+<div class="aux-card" data-drawer="progress-sent">
+<div class="al">已发车</div>
+<div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+</div>
+</div>
+</section>
+<!-- FR-9 待签出库存 + 发车预警 -->
+<div class="content-split">
+<section class="panel">
+<div class="panel-head">
+<div class="panel-title"><div><h2>待签出</h2></div></div>
+</div>
+<div class="flow-grid stock-home-grid">
+<div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'all'})">
+<div class="al">全部</div>
+<div class="stock-primary"><span class="num dd">2,270</span><span class="stock-unit">袋</span></div>
+<div class="stock-secondary"><span class="num">77,600</span><span>票</span></div>
+</div>
+<div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'trunk'})">
+<div class="al">干线</div>
+<div class="stock-primary"><span class="num dd">1,700</span><span class="stock-unit">袋</span></div>
+<div class="stock-secondary"><span class="num">55,800</span><span>票</span></div>
+</div>
+<div class="aux-card stock-home-card" onclick="openDrawer('tosignout',{flow:'branch'})">
+<div class="al">支线</div>
+<div class="stock-primary"><span class="num dd">570</span><span class="stock-unit">袋</span></div>
+<div class="stock-secondary"><span class="num">21,800</span><span>票</span></div>
+</div>
+</div>
+</section>
+<section class="panel alert-panel">
+<div class="panel-head">
+<div class="panel-title alert"><div><h2>发车预警</h2></div></div>
+</div>
+<div class="alert-content">
+<div class="alert-main">
+<div class="alert-kicker"><span class="clock">⏳</span>1小时内待发车</div>
+<button class="alert-action" data-drawer="towait">查看待发车车辆</button>
+</div>
+<div class="alert-empty">暂无其他预警</div>
+</div>
+</section>
+</div>
+<!-- FR-3 计划发车 -->
+<section class="panel">
+<div class="panel-head">
+<div class="panel-title"><div><h2>计划发车</h2></div></div>
+<div class="panel-tools"><span>显示</span><div class="seg" id="seg-fc-mode"><span class="on" data-mode="hour">小时段</span><span data-mode="cum">累计</span></div></div>
+</div>
+<div style="display:flex;justify-content:flex-end;margin-top:-6px;margin-bottom:6px;"><span class="dd chart-link" data-drawer="forecast">查看车辆明细 ›</span></div>
+<div id="chart-fc" style="width:100%;height:286px;"></div>
+</section>
+<!-- FR-4 装车效率 + FR-5 发运质量 -->
+<div class="content-split">
+<section class="panel" style="display:flex;flex-direction:column;">
+<div class="panel-head">
+<div class="panel-title"><div><h2>装车效率</h2></div></div>
+</div>
+<div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:4px;font-size:11.5px;color:#98a2b3;">
+<span><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#ff9a4d;margin-right:5px;"></span>待装量（票）</span>
+<span><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#fc4c02;margin-right:5px;"></span>装车量（票）</span>
+<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb;margin-right:5px;"></span>装车速度（票/时）</span>
+</div>
+<div id="chart-eff" style="width:100%;height:306px;flex:1;"></div>
+</section>
+<section class="panel">
+<div class="panel-head">
+<div class="panel-title"><div><h2>发运质量监控</h2></div></div>
+</div>
+<div class="quality-list">
+<div class="aux-card" onclick="openDrawer('tagbind')">
+<div class="al">已绑定 TAG</div>
+<div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+</div>
+<div class="aux-card" onclick="openDrawer('tagbind')">
+<div class="al">未绑定 TAG</div>
+<div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#98a2b3;"> 辆</span></div>
+</div>
+<div class="aux-card danger" onclick="openDrawer('missing')">
+<div class="al">晚发</div>
+<div class="av"><span class="num dd">10</span><span style="font-size:11px;color:#c65b66;"> 辆</span></div>
+</div>
+</div>
+</section>
+</div>
+<footer class="legend-footer">
+<div class="legend-items">
+<span><i class="legend-dot" style="background:#172033;"></i>正常</span>
+<span><i class="legend-dot" style="background:#12a36d;"></i>达标</span>
+<span><i class="legend-dot" style="background:#d97706;"></i>接近阈值</span>
+<span><i class="legend-dot" style="background:#dc3545;"></i>重点关注</span>
+<span><i class="legend-dot" style="background:#fc4c02;"></i>可点击下钻</span>
+</div>
+<span class="version-note">装车区独立版 · UI 优化稿</span>
+</footer>
 </main>
-
 <!-- 多级抽屉叠层容器 -->
 <div class="drawer-stack" id="drawer-stack"></div>
-
 <script>
 // 计划发车柱状图
 (function(){
@@ -1264,6 +1507,21 @@ html,body{padding-top:0!important}
   });
 })();
 </script>
-
-</body>
+<script id="loading-shell-interactions-v309">
+(function(){
+  document.querySelectorAll('.gofo-filter-card .seg-group, .gofo-filter-card .filter-tabs').forEach(function(group){
+    group.addEventListener('click', function(e){
+      var btn=e.target.closest('button'); if(!btn) return;
+      group.querySelectorAll('button').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-selected','false');});
+      btn.classList.add('on'); btn.setAttribute('aria-selected','true');
+    });
+  });
+  document.querySelectorAll('.gofo-business-tabs button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.gofo-business-tabs button').forEach(function(x){x.classList.remove('active');x.setAttribute('aria-selected','false');});
+      btn.classList.add('active');btn.setAttribute('aria-selected','true');
+    });
+  });
+})();
+</script></body>
 </html>
