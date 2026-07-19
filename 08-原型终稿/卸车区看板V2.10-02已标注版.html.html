@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>卸车区看板 - GOFO 管理后台 V3.10（分拣区视觉与滚动统一版）（可标注版 · 页面与 Tab 隔离 · 删除持久化修复）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{--gofo-primary:#fc4c02;--gofo-primary-hover:#f76121;--gofo-primary-active:#e84702;--gofo-primary-light:#fff1e6;--gofo-header-bg:#001529;--gofo-page-bg:#f0f2f5;--gofo-accent:#fc4c02;--gofo-accent-soft:#fff1e6;}
+  body{font-family:"Roboto","PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#16202e;}
+  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-0.4px;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes pnIn{from{opacity:0;transform:scale(.97) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  @keyframes feedup{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+  .feedwrap:hover .feedrun{animation-play-state:paused;}
+  .tabh{transition:color .15s;}
+  .tabh:hover{color:#fc4c02!important;}
+  .kpi{transition:box-shadow .15s,transform .15s;}
+  .kpi:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .rowhover:hover{background:#fafafa!important;}
+  .abn:hover{background:#fff!important;border-color:#f3c0bc!important;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(120,140,170,.3);border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  /* 预警条 */
+  .alert-bar{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff5f4,#fff);border:1px solid #f6cdc8;border-left:4px solid #e5484d;border-radius:8px;padding:14px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .alert-bar .ico{font-size:20px;}
+  .alert-bar .tx{flex:1;font-size:14px;color:#5b1a16;}
+  .alert-bar .tx b{color:#cf1322;}
+  .alert-bar .act{background:#e5484d;color:#fff;border:none;border-radius:2px;padding:8px 16px;cursor:pointer;font-size:13px;white-space:nowrap;font-weight:600;font-family:inherit;}
+  /* 链节点 */
+  .chain-node{flex:1;border-radius:8px;padding:14px 17px;border:1px solid #f0f0f0;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .chain-node:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .chain-node.core{border-color:#f3d2cf;background:#fff;}
+  .chain-node.done{border-color:#d6efe3;background:linear-gradient(135deg,#f4fbf8,#fff);}
+  .chain-arrow{flex:0 0 60px;text-align:center;color:#c2cbd6;font-size:12px;}
+  .chain-arrow .ar{font-size:20px;line-height:1;margin-top:2px;}
+  /* 辅助卡 */
+  .aux-card{border-radius:8px;padding:14px 17px;background:#fff;border:1px solid #f0f0f0;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .aux-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+  .aux-card .al{font-size:12px;color:#64718a;font-weight:600;}
+  .aux-card .av{font-size:24px;font-weight:700;margin-top:6px;}
+  .aux-card .as{font-size:11px;color:#9aa6b6;margin-top:5px;line-height:1.4;}
+  /* seg */
+  .seg{display:inline-flex;height:32px;border:1px solid #d6dde6;border-radius:6px;overflow:hidden;font-size:12.5px;background:#fff;}
+  .seg span{padding:0 12px;cursor:pointer;color:#64718a;display:inline-flex;align-items:center;}
+  .seg .on{background:var(--gofo-accent-soft,#fff1e6);color:var(--gofo-accent,#fc4c02);font-weight:500;}
+  .seg .disabled{color:#c0c4cc;cursor:not-allowed;pointer-events:none;}
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+  th,td{padding:9px 12px;text-align:right;border-bottom:1px solid #f0f0f0;white-space:nowrap;}
+  th:first-child,td:first-child{text-align:left;}
+  thead th{color:#64718a;font-weight:600;border-bottom:2px solid #f0f0f0;background:#fafbfd;font-family:'Roboto',sans-serif;}
+  .tot{font-weight:700;}
+  .key-col{font-weight:700;color:#16202e;}
+  .scroll{overflow-x:auto;}
+  .numlink{color:#e5484d;cursor:pointer;}
+  .numlink:hover{text-decoration:underline;}
+  .mtlink{color:var(--gofo-accent,#fc4c02);cursor:pointer;}
+  .dd{color:var(--gofo-accent,#fc4c02);cursor:pointer;}
+  /* 徽标 */
+  .lbadge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:8px;font-weight:600;}
+  .lb-trunk{background:#fff1e6;color:#fc4c02;}
+  .lb-branch{background:#eef7f0;color:#3a9d5d;}
+  .stsplit{font-size:11px;color:#9aa6b6;margin-top:3px;}
+  /* 下钻 */
+  .dbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+  .dexport{background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dquery{background:#fc4c02;color:#fff;border:none;border-radius:2px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dreset{background:#fff;color:#64718a;border:1px solid #d6dde6;border-radius:2px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .dreset:hover{background:#f5f6f8;}
+  .dfilters{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
+  .dfilters .fld{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#64718a;}
+  .dfilters select,.dfilters input{border:1px solid #d6dde6;border-radius:2px;padding:6px 10px;font-size:12px;min-width:170px;background:#fff;color:#64718a;font-family:inherit;}
+  .dpager{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;font-size:12px;color:#64718a;}
+  .dpager select,.dpager input{border:1px solid #d6dde6;border-radius:6px;padding:4px 6px;font-size:12px;color:#64718a;font-family:inherit;background:#fff;}
+  .dpager input{width:46px;text-align:center;}
+  .dpager button{border:1px solid #d6dde6;background:#fff;color:#64718a;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;font-size:12px;}
+  .dpager button:disabled{opacity:.45;cursor:default;}
+  .dpager .pg-no.on{background:#fc4c02;color:#fff;border-color:#fc4c02;}
+  .dpager .pg-step{border:none;background:transparent;color:#9aa6b6;font-size:16px;padding:0 4px;}
+  .dpager .pg-step:disabled{color:#d6dde6;}
+  /* 抽屉层级 */
+  .drawer-stack{position:fixed;inset:0;pointer-events:none;z-index:1000;}
+  .drawer-layer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:30px;pointer-events:auto;}
+  .drawer-layer.on{display:flex;}
+  .drawer-layer .drawer-backdrop{position:absolute;inset:0;background:rgba(12,20,32,.4);backdrop-filter:blur(3px);}
+  .drawer-layer.level-2 .drawer-backdrop{background:rgba(12,20,32,.28);backdrop-filter:blur(2px);}
+  .drawer-layer.level-3 .drawer-backdrop{background:rgba(12,20,32,.16);backdrop-filter:blur(1px);}
+  .drawer-panel{position:relative;width:880px;max-width:94vw;max-height:86vh;background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 30px 80px rgba(12,20,32,.28);overflow:hidden;animation:pnIn .22s ease;display:flex;flex-direction:column;}
+  .drawer-layer.level-2 .drawer-panel{width:820px;max-width:90vw;max-height:82vh;box-shadow:0 20px 60px rgba(12,20,32,.22);}
+  .drawer-layer.level-3 .drawer-panel{width:760px;max-width:86vw;max-height:78vh;box-shadow:0 14px 40px rgba(12,20,32,.16);}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #f0f0f0;flex:0 0 auto;}
+  .drawer-head h3{font-size:15.5px;margin:0;font-weight:600;}
+  .drawer-head .drawer-close{width:30px;height:30px;border-radius:2px;border:1px solid #e3e8ee;background:#f7f9fc;cursor:pointer;font-size:15px;color:#64718a;}
+  .drawer-head .drawer-close:hover{background:#f0f0f0;color:#16202e;}
+  .drawer-body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .drawer-body .drawer-stats{display:flex;gap:16px;margin-bottom:16px;}
+  .drawer-body .drawer-stat{flex:1;background:#fafbfd;border:1px solid #f0f0f0;border-radius:8px;padding:12px 16px;text-align:center;}
+  .drawer-body .drawer-stat .l{font-size:12px;color:#9aa6b6;margin-bottom:4px;}
+  .drawer-body .drawer-stat .v{font-size:20px;font-weight:800;color:#16202e;}
+  .drawer-body .drawer-stat .v .u{font-size:12px;color:#9aa6b6;font-weight:normal;}
+  .drawer-body .drawer-section{margin-bottom:20px;}
+  .drawer-body .drawer-section h4{font-size:13px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;}
+  .drawer-body .drawer-sub{font-size:12px;color:#9aa6b6;margin-bottom:6px;}
+  /* lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:none;align-items:center;justify-content:center;}
+  .lightbox.on{display:flex;}
+  .lightbox .lbinner{background:#fff;border-radius:8px;padding:14px;text-align:center;}
+  .lightbox .lbimg{width:440px;max-width:80vw;height:300px;border-radius:2px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#9aa6b6;font-size:14px;border:1px solid #f0f0f0;}
+  .lightbox .lbcap{margin-top:10px;font-size:13px;color:#16202e;}
+  .lightbox .lbclose{margin-top:10px;border:1px solid #d6dde6;background:#fff;border-radius:2px;padding:6px 16px;cursor:pointer;font-size:12px;color:#64718a;font-family:inherit;}
+</style>
+<style>/* 2026 visual refresh · component layer only (shell follows sorting dashboard) */
+:root{--ui-primary:#ff5a1f;--ui-primary-dark:#e9470d;--ui-ink:#182230;--ui-line:#e7ebf1;--ui-shadow:0 8px 28px rgba(31,45,61,.07)}
+html{background:#eef2f7;scroll-behavior:auto}
+body{min-width:1180px;color:var(--ui-ink);background:radial-gradient(circle at 8% -5%,rgba(255,90,31,.10),transparent 23rem),linear-gradient(180deg,#f7f9fc 0,#eef2f7 100%)}
+.chain-node,.aux-card{border-radius:13px!important;border-color:#e7ebf1!important;box-shadow:none!important}.chain-node{position:relative;overflow:hidden;padding:18px 20px!important}.chain-node:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#cbd5e1}.chain-node.core:before{background:#ef4444}.chain-node.done:before{background:#22c55e}.chain-node:hover,.aux-card:hover{transform:translateY(-3px)!important;box-shadow:0 12px 24px rgba(30,41,59,.10)!important}.chain-arrow .ar{color:#ff7a45;font-size:25px!important}.aux-card{background:linear-gradient(145deg,#fff,#fafbfd)!important;padding:16px 18px!important}
+body button,.dexport,.dquery{border-radius:9px!important;transition:transform .15s ease,box-shadow .15s ease}body button:not(:disabled):hover,.dexport:hover,.dquery:hover{transform:translateY(-1px);box-shadow:0 7px 16px rgba(252,76,2,.22)}.seg{height:34px!important;border-radius:9px!important;padding:3px;border-color:#e4e9f0!important;background:#f5f7fa!important}.seg span{border-radius:6px;padding:0 13px!important}.seg .on{background:#fff!important;box-shadow:0 2px 7px rgba(31,41,55,.10);color:var(--ui-primary)!important}.dd,.mtlink{color:var(--ui-primary-dark)!important;font-weight:600}.dfilters select,.dfilters input{height:34px;border-radius:8px!important;border-color:#dfe5ec!important;outline:none}.dfilters select:focus,.dfilters input:focus{border-color:#ff8a5c!important;box-shadow:0 0 0 3px rgba(255,90,31,.10)}
+[id^='chart-']{border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#fff)}.scroll{border:1px solid #edf0f4;border-radius:12px}thead th{background:#f6f8fb!important;color:#536174!important}th,td{padding:11px 13px!important}tbody tr{transition:background .15s ease}tbody tr:hover{background:#fff7f2!important}.lbadge{padding:3px 9px!important;border-radius:999px!important}.drawer-panel{border-radius:18px!important;border:0!important;box-shadow:0 28px 80px rgba(15,23,42,.25)!important}.drawer-head{padding:18px 24px!important;background:linear-gradient(180deg,#fff,#fafbfd)}.drawer-head .drawer-close{border-radius:8px!important}.drawer-body .drawer-stat{border-radius:12px!important;background:#f8fafc!important}.lightbox .lbinner{border-radius:16px!important;box-shadow:0 24px 70px rgba(0,0,0,.24)}
+@media(max-width:1280px){body{min-width:1024px}body>div:nth-of-type(2){padding-left:20px!important;padding-right:20px!important}body>div:first-of-type>div:first-child:before{content:'GOFO'}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<style>
+/* ===== 卸车区专业优化：作业驾驶舱 ===== */
+.ops-section{background:#fff;border:1px solid var(--ui-line);border-radius:16px;box-shadow:var(--ui-shadow);padding:18px 22px;}
+.ops-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:16px;}
+.ops-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;color:#172033;}
+.ops-title:before{content:'';width:4px;height:20px;border-radius:3px;background:linear-gradient(180deg,#ff5a1f,#ff8a5c);}
+.ops-sub{font-size:12px;color:#8a96a8;margin-top:5px;margin-left:14px;}
+.ops-status{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:999px;background:#fff3f0;border:1px solid #ffd4c7;color:#d94712;font-size:12px;font-weight:700;white-space:nowrap;}
+.ops-status:before{content:'';width:7px;height:7px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.11);}
+.flow-chain{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr) 64px minmax(0,1fr);align-items:stretch;}
+.flow-chain .chain-node{min-height:128px;display:flex;flex-direction:column;justify-content:space-between;}
+.node-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.node-tag{font-size:11px;color:#8a96a8;background:#f5f7fa;border-radius:999px;padding:4px 8px;white-space:nowrap;}
+.node-number{display:flex;align-items:flex-end;gap:6px;margin-top:10px;}
+.node-number .big{font-size:32px;line-height:1;font-weight:800;}
+.node-number .unit{font-size:12px;color:#8a96a8;padding-bottom:4px;}
+.node-detail{font-size:11px;color:#748196;margin-top:8px;}
+.node-meter{height:5px;background:#eef1f5;border-radius:999px;overflow:hidden;margin-top:12px;}
+.node-meter span{display:block;height:100%;border-radius:999px;background:#ff7547;}
+.node-meter.red span{background:#ef4444}.node-meter.green span{background:#22c55e}
+.aux-line{display:flex;align-items:center;justify-content:space-between;margin-top:15px;padding-top:13px;border-top:1px dashed #e7ebf1;}
+.aux-line .hint{font-size:11px;color:#9aa6b6;}
+.arrival-layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:stretch;}
+.chart-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px;}
+.chart-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;}
+.chart-kpi{border:1px solid #edf0f4;border-radius:11px;background:#fafbfd;padding:10px 12px;}
+.chart-kpi .ckl{font-size:11px;color:#8a96a8}.chart-kpi .ckv{font-size:17px;font-weight:800;color:#172033;margin-top:4px}.chart-kpi .ckv small{font-size:11px;color:#8a96a8;font-weight:500}
+.risk-panel{background:linear-gradient(180deg,#fff,#fffafa);border-color:#f5d6cf!important;display:flex;flex-direction:column;}
+.risk-score{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;background:#fff3f0;border:1px solid #ffd8ce;margin-bottom:12px;}
+.risk-score .rs-label{font-size:12px;color:#7d3d2d}.risk-score .rs-value{font-size:22px;font-weight:800;color:#d83b16}.risk-score .rs-value small{font-size:11px;font-weight:500;color:#a26a5b}
+.risk-list{display:flex;flex-direction:column;gap:9px;}
+.risk-item{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 12px;border:1px solid #eeeef1;border-radius:12px;background:#fff;cursor:pointer;transition:.16s ease;}
+.risk-item:hover{transform:translateX(-2px);border-color:#f1b8aa;box-shadow:0 8px 18px rgba(96,38,24,.08)}
+.risk-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;background:#fff1ee;color:#df3e1a;}
+.risk-icon.orange{background:#fff7e8;color:#d97706}.risk-icon.gray{background:#f3f5f8;color:#64748b}
+.risk-name{font-size:12px;font-weight:700;color:#263246}.risk-desc{font-size:11px;color:#8c98a9;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.risk-value{font-size:16px;font-weight:800;color:#e5484d;white-space:nowrap}.risk-value.orange{color:#d97706}
+.risk-advice{margin-top:auto;padding:12px 14px;border-radius:12px;background:#172033;color:#fff;font-size:11px;line-height:1.65;}.risk-advice b{color:#ff9b75}
+.progress-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+.progress-metric{border:1px solid #e9edf2;border-radius:12px;background:#fafbfd;padding:12px 14px;}.progress-metric .pl{font-size:11px;color:#8995a6}.progress-metric .pv{font-size:21px;font-weight:800;color:#172033;margin-top:5px}.progress-metric .pv small{font-size:11px;font-weight:500;color:#8e99a8}.progress-metric.bad .pv{color:#e5484d}.progress-metric.good .pv{color:#16a34a}.progress-metric.hot .pv{color:#ea580c}
+.progress-panels{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:16px;}
+.chart-panel{border:1px solid #edf0f4;border-radius:13px;background:#fff;padding:14px 16px;}
+.chart-panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px;font-weight:700;color:#536174;}
+.ops-recommend{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid #ffddcf;background:#fff8f4;border-radius:12px;}
+.ops-recommend .or-main{font-size:12px;color:#6b3929;line-height:1.6}.ops-recommend .or-main b{color:#d94712}.ops-recommend .or-btn{border:0;background:#fc4c02;color:#fff;padding:8px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+@media(max-width:1360px){.arrival-layout{grid-template-columns:minmax(0,1fr) 340px}.progress-summary{gap:9px}.chart-toolbar{flex-direction:column}.flow-chain{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr) 48px minmax(0,1fr)}}
+</style>
+<style>
+
+/* ===== GOFO Web Design v2 · immutable shell / V2.08 ===== */
+/* V2.08 shell hotfix 2026-07-13: style block restored after initial injection failure */
+:root{--gofo-primary:#fc4c02;--gofo-primary-hover:#f76121;--gofo-primary-active:#e84702;--gofo-primary-light:#fff1e6;--gofo-header-bg:#001529;--gofo-header-height:48px;--gofo-sidebar-width:55px;--gofo-sidebar-expand:270px;--gofo-tabs-height:41px;--gofo-border:#f0f0f0;--gofo-page-bg:#f0f2f5;--gofo-card-radius:2px;--gofo-control-radius:2px}
+html,body{font-family:Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--gofo-page-bg)}
+.gofo-header{position:fixed;inset:0 0 auto 0;height:48px;background:#001529;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:#fff}.gofo-header-left,.gofo-header-right{display:flex;align-items:center}.gofo-header-left{gap:21px}.gofo-header-right{gap:16px}.gofo-logo{width:113px;font-size:20px;font-weight:800;letter-spacing:1.6px}.gofo-logo em{color:#fc4c02;font-style:normal}.gofo-search{width:224px;height:30px;border:1px solid transparent;border-radius:2px;background:#293c52;color:#fff;padding:0 34px 0 11px;outline:0}.gofo-search::placeholder{color:rgba(255,255,255,.55)}.gofo-search:focus{border-color:#fc4c02;box-shadow:0 0 0 2px rgba(252,76,2,.18)}.gofo-search-wrap{position:relative}.gofo-search-wrap:after{content:'⌕';position:absolute;right:10px;top:4px;color:rgba(255,255,255,.7);font-size:18px}.gofo-header-action{height:30px;display:flex;align-items:center;gap:6px;padding:0 7px;border-radius:2px;color:rgba(255,255,255,.82);font-size:12px;cursor:pointer}.gofo-header-action:hover{background:rgba(255,255,255,.10);color:#fff}.gofo-notice{position:relative;font-size:17px}.gofo-notice:after{content:'3';position:absolute;right:-3px;top:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:8px;background:#e5484d;color:#fff;font-size:9px;line-height:14px;text-align:center}.gofo-avatar{width:24px;height:24px;border-radius:50%;background:#fc4c02;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+.gofo-sidebar{position:fixed;left:0;top:48px;bottom:0;width:55px;background:#fff;border-right:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:900;overflow:hidden;transition:width .2s ease}.gofo-sidebar:hover{width:270px}.gofo-menu{padding-top:8px}.gofo-menu-item{height:40px;padding:0 16px;display:flex;align-items:center;gap:16px;color:#596579;white-space:nowrap;cursor:pointer;position:relative}.gofo-menu-item:hover{background:#fafafa;color:#fc4c02}.gofo-menu-item.active{background:#fff1e6;color:#fc4c02;box-shadow:inset -3px 0 0 #fc4c02}.gofo-menu-icon{flex:0 0 22px;width:22px;text-align:center;font-size:16px}.gofo-menu-text{opacity:0;max-width:0;overflow:hidden;transition:opacity .15s,max-width .2s}.gofo-sidebar:hover .gofo-menu-text{opacity:1;max-width:190px}.gofo-sidebar-footer{position:absolute;bottom:0;left:0;width:270px;height:48px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:16px;padding:0 16px;color:#8c8c8c;font-size:13px}
+.gofo-tabs-bar{position:sticky;top:48px;z-index:100;display:flex;height:41px;margin-left:55px;padding-left:16px;background:#fff;border-bottom:1px solid #f0f0f0}.gofo-tabs-list{display:flex;align-items:flex-end;gap:4px}.gofo-tab-card{height:40px;min-width:96px;padding:0 16px;display:flex;align-items:center;justify-content:center;background:#fafafa;border:1px solid #f0f0f0;border-bottom-color:#fff;color:#595959;font-size:13px;cursor:pointer}.gofo-tab-card.active{background:#fff1e6;border-color:#ffd9c7;border-bottom-color:#fff1e6;color:#fc4c02;font-weight:600}.gofo-tab-close{margin-left:10px;color:#bfbfbf}.gofo-tab-more{width:32px;height:32px;margin:4px;display:flex;align-items:center;justify-content:center;color:#8c8c8c}
+body>.topbar{top:89px;height:46px;margin-left:55px;padding:0 16px;background:#fff;border-bottom:1px solid #f0f0f0;box-shadow:none;z-index:80}.topbar .brand{display:none}.topbar .tabs a{border-radius:2px;padding:6px 16px}.topbar .tabs a.active{background:#fff1e6;color:#fc4c02;box-shadow:inset 0 -2px 0 #fc4c02}.subbar{display:flex!important;margin-left:55px;padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa}.center-pill,.date-tag,.seg-group,.filter-tabs,.query-btn{border-radius:2px}.query-btn{background:#fc4c02}.query-btn:hover{background:#f76121}
+main.gofo-content{margin-left:55px;padding:16px;gap:16px;background:#f0f2f5}.card,.kpi,.abn-panel{border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04);border-color:#f0f0f0}.card{padding:16px}.kpi{padding:14px 16px}.kpi:hover{transform:none;border-color:#ffd0bc;box-shadow:0 3px 10px rgba(0,0,0,.08)}.card-title .h1{font-size:16px}.bar{border-radius:0;background:#fc4c02}.seg-group span,.filter-tabs span{border-radius:0}.drawer{border-radius:2px}.drawer-x{border-radius:2px}.drawer-hd{height:48px;padding:0 16px}.drawer-bd{padding:16px}.drawer-mask{z-index:1200}.gofo-version{color:rgba(255,255,255,.45);font-size:11px}.gofo-menu-item[aria-current='page']{font-weight:600}
+@media(max-width:1200px){.gofo-header-action.optional{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}@media(prefers-reduced-motion:reduce){.gofo-sidebar,.gofo-menu-text{transition:none!important}}
+</style>
+<style id="gofo-v256-layout-fix">
+/* V2.08 layout fix: visible filter bar + full-width workspace */
+body{width:100%;min-width:1180px;overflow-x:auto}
+.gofo-tabs-bar{width:calc(100% - 55px);max-width:none;margin-right:0;box-sizing:border-box}
+body>.topbar{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
+body>.subbar{display:flex!important;visibility:visible!important;opacity:1!important;position:sticky!important;top:135px!important;z-index:79!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box;min-height:54px!important}
+main.gofo-content{display:flex!important;width:calc(100% - 55px)!important;max-width:none!important;margin-right:0!important;box-sizing:border-box}
+@media(max-width:1200px){body>.subbar{min-width:1125px!important}body>.topbar,.gofo-tabs-bar,main.gofo-content{min-width:1125px}}
+</style>
+<style id="gofo-v256-header-offset-fix">
+/* Reserve space for the fixed 48px GOFO header so KPI labels are not covered. */
+body{padding-top:48px!important}
+.gofo-tabs-bar{top:48px!important}
+body>.topbar{top:89px!important}
+body>.subbar{top:135px!important}
+main.gofo-content{position:relative!important;z-index:1!important}
+</style>
+<style id="gofo-business-nav-consistency-fix">
+.gofo-business-shell.topbar{display:flex!important;align-items:center!important;gap:28px!important;height:46px!important;min-height:46px!important;position:sticky!important;top:89px!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:0 26px!important;background:#fff!important;border-bottom:1px solid #e8edf3!important;box-shadow:none!important;box-sizing:border-box!important;z-index:2700!important}.gofo-business-shell.topbar .brand{display:flex!important;align-items:center!important;gap:8px!important;color:#16202e!important;font-size:13px!important;font-weight:700!important}.gofo-business-shell.topbar .brand .dot{width:22px!important;height:22px!important;border-radius:6px!important;background:linear-gradient(135deg,#fc4c02,#f76121)!important;color:#fff!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:12px!important}.gofo-business-shell.topbar .tabs{display:flex!important;gap:4px!important}.gofo-business-shell.topbar .tabs a{padding:6px 14px!important;border-radius:7px!important;color:#64718a!important;background:transparent!important;border:0!important;box-shadow:none!important;text-decoration:none!important;font-size:13.5px!important;font-weight:500!important}.gofo-business-shell.topbar .tabs a.active{background:#fc4c02!important;color:#fff!important;font-weight:600!important}.gofo-business-shell.topbar .tabs a:hover{background:#fff1e6!important;color:#fc4c02!important}
+.gofo-business-filterbar{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:12px!important;flex-wrap:nowrap!important;position:sticky!important;top:135px!important;z-index:2690!important;width:calc(100% - 55px)!important;min-height:54px!important;margin-left:55px!important;padding:10px 26px!important;box-sizing:border-box!important;background:#fafbfd!important;border-bottom:1px solid #e8edf3!important}.gofo-business-filterbar .center-pill,.gofo-business-filterbar .date-tag{display:flex!important;align-items:center!important;gap:7px!important;height:32px!important;padding:0 12px!important;border:1px solid #d6dde6!important;border-radius:9px!important;background:#fff!important;color:#64718a!important;white-space:nowrap!important;font-size:12.5px!important;box-sizing:border-box!important}.gofo-business-filterbar .center-pill{color:#16202e!important;font-size:13px!important}.gofo-business-filterbar .date-tag b{color:#16202e!important;font-weight:500!important}.gofo-business-filterbar .seg-group,.gofo-business-filterbar .filter-tabs{display:inline-flex!important;height:32px!important;border:1px solid #d6dde6!important;border-radius:9px!important;overflow:hidden!important;background:#fff!important;white-space:nowrap!important}.gofo-business-filterbar .seg-group span,.gofo-business-filterbar .filter-tabs span{display:inline-flex!important;align-items:center!important;padding:0 13px!important;border:0!important;color:#64718a!important;background:#fff!important;font-size:12.5px!important}.gofo-business-filterbar .seg-group span.on,.gofo-business-filterbar .filter-tabs span.on{background:#fff1e6!important;color:#fc4c02!important;font-weight:600!important}.gofo-business-filterbar .spacer{flex:1!important}.gofo-business-filterbar .area-label{color:#9aa6b6!important;font-size:12px!important;white-space:nowrap!important}.gofo-business-filterbar .query-btn{height:32px!important;padding:0 18px!important;border:0!important;border-radius:9px!important;background:#fc4c02!important;color:#fff!important;font-size:13px!important;font-weight:600!important}.gofo-content{position:relative!important;z-index:1!important;width:calc(100% - 55px)!important;max-width:none!important;margin-left:55px!important;margin-right:0!important;padding:16px!important;box-sizing:border-box!important}@media(max-width:1200px){.gofo-business-shell.topbar,.gofo-business-filterbar,.gofo-content{min-width:1125px!important}}
+</style><style id="remove-unload-gofo-label">body>div:first-of-type>div:first-child::before,body>div:first-of-type>div:first-child:before,.gofo-business-shell::before,.gofo-business-shell:before{content:none!important;display:none!important}</style><style id="unload-sort-visual-unification-v309">
+
+/* ===== V2.72 字体统一：数字与文本共用同一字体 ===== */
+:root{
+  --gofo-ui-font: Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+html,body,
+body *,
+button,input,select,textarea,table,thead,tbody,tr,th,td{
+  font-family:var(--gofo-ui-font)!important;
+}
+.num,
+.tbl,
+.count-link,
+.bag-count-link,
+.main-flow-number-btn,
+.history-total-value,
+.history-flat-total,
+.history-flat-metric .v,
+.history-time-card .v,
+.backlog-time-card-value,
+.backlog-dimension-card .value,
+.history-age-count{
+  font-family:var(--gofo-ui-font)!important;
+  font-variant-numeric:tabular-nums;
+}
+
+
+/* ===== V2.75 GOFO 固定骨架 + dashboard-monitoring / query-table 规范化 ===== */
+gofo-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex:0 0 auto}
+gofo-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gofo-header-action,.gofo-tab-more,.gofo-tab-close{border:0;font-family:inherit}.gofo-header-action{background:transparent}.gofo-tab-close{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:8px;padding:0;background:transparent;color:#bfbfbf;cursor:pointer}.gofo-tab-close gofo-icon{width:14px;height:14px}.gofo-tab-more{padding:0;background:transparent;cursor:pointer}.gofo-menu-icon{font-size:inherit}
+main.gofo-content{position:relative!important;display:flex!important;flex-direction:column!important;gap:16px!important;padding:16px!important;margin-left:55px!important;width:calc(100% - 55px)!important;box-sizing:border-box}
+.gofo-business-nav-card,.gofo-filter-card{background:#fff;border:1px solid var(--gofo-border);border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.gofo-business-nav-card{padding:0 16px}
+.gofo-business-tabs{display:flex;align-items:flex-end;gap:4px;min-height:44px}
+.gofo-business-tabs button{height:40px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:#595959;font-family:inherit;font-size:13px;cursor:pointer}
+.gofo-business-tabs button:hover{color:var(--gofo-primary);background:#fff8f4}
+.gofo-business-tabs button.active{color:var(--gofo-primary);border-bottom-color:var(--gofo-primary);background:var(--gofo-primary-light);font-weight:600}
+.gofo-filter-card{padding:16px 24px}
+.gofo-filter-grid{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.gofo-filter-field{display:flex;flex-direction:column;gap:6px;min-width:112px}.gofo-filter-field.wide{min-width:245px}.gofo-filter-field.shift-field{min-width:232px}.gofo-filter-label{font-size:12px;color:#606266}.gofo-filter-value,.gofo-filter-control{height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#303133;font-family:inherit;font-size:12px;box-sizing:border-box}.gofo-filter-control{justify-content:space-between;min-width:92px;cursor:pointer}.gofo-filter-control:hover{border-color:var(--gofo-primary)}
+.gofo-filter-card .seg-group,.gofo-filter-card .filter-tabs{display:flex;height:32px;border:1px solid #dcdfe6;border-radius:2px;overflow:hidden;background:#fff}.gofo-filter-card .seg-group button,.gofo-filter-card .filter-tabs button{min-width:52px;padding:0 10px;border:0;border-left:1px solid #ebeef5;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}.gofo-filter-card .seg-group button:first-child,.gofo-filter-card .filter-tabs button:first-child{border-left:0}.gofo-filter-card .seg-group button.on,.gofo-filter-card .filter-tabs button.on{background:var(--gofo-primary-light);color:var(--gofo-primary);font-weight:600}.gofo-filter-actions{margin-left:auto;display:flex;align-items:center}.gofo-primary-btn{height:32px;padding:0 18px;border:1px solid var(--gofo-primary);border-radius:2px;background:var(--gofo-primary);color:#fff;font-family:inherit;font-size:13px;cursor:pointer}.gofo-primary-btn:hover{background:var(--gofo-primary-hover);border-color:var(--gofo-primary-hover)}.gofo-primary-btn:disabled{opacity:.65;cursor:wait}
+.dashboard-loading:after{content:'看板数据加载中…';position:fixed;left:50%;top:108px;transform:translateX(-50%);z-index:1450;padding:8px 14px;border:1px solid #ffd2bf;border-radius:2px;background:#fff;color:var(--gofo-primary);box-shadow:0 6px 18px rgba(31,45,61,.12);font-size:12px}
+
+/* 复杂运单/袋号列表使用右侧宽 Drawer */
+#lightbox{align-items:stretch!important;justify-content:flex-end!important;padding:0!important;background:rgba(12,20,32,.42)!important;backdrop-filter:blur(2px)!important}
+#lightbox .lightbox-box{width:min(1200px,calc(100vw - 55px))!important;max-width:none!important;height:100vh!important;max-height:none!important;margin:0!important;border-radius:2px 0 0 2px!important;border:0!important;box-shadow:-12px 0 34px rgba(15,23,42,.22)!important;animation:none!important;transform:translateX(100%);transition:transform .22s ease}
+#lightbox.on .lightbox-box{transform:translateX(0)}
+#lightbox .drawer-hd{flex:0 0 48px;height:48px;padding:0 16px!important}
+#lightbox .drawer-bd{min-height:0;padding:16px!important;overflow:auto}
+.drawer-x{display:inline-flex;align-items:center;justify-content:center;border-radius:2px!important}.drawer-x gofo-icon{width:16px;height:16px}
+
+/* query-table 配方 */
+.query-management-view{display:flex;flex-direction:column;gap:12px;min-height:100%;height:100%}
+.query-filter-card{flex:0 0 auto;padding:24px;border:1px solid #ebeef5;border-radius:2px;background:#fff}
+.query-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 18px;align-items:end}
+.query-filter-grid.compact-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.query-filter-grid.compact-grid .query-item:nth-child(1){grid-column:span 2}.query-filter-grid.compact-grid .query-item:nth-child(2){grid-column:span 2}
+.query-filter-card .query-item{display:flex;flex-direction:column;gap:7px;min-width:0}.query-filter-card .query-item label{font-size:12px;color:#606266}.query-input,.query-select{width:100%;height:32px;border:1px solid #dcdfe6;border-radius:2px!important;background:#fff;padding:0 10px;color:#303133;font-family:inherit;outline:0}.query-input:focus,.query-select:focus{border-color:var(--gofo-primary);box-shadow:0 0 0 2px rgba(252,76,2,.12)}
+.query-extra{display:none!important}.query-filter-card.is-expanded .query-extra{display:flex!important}
+.query-filter-actions{grid-column:1/-1;display:flex;justify-content:flex-end;align-items:center;gap:8px;padding-top:2px}.action-btn{height:32px;padding:0 14px;border-radius:2px!important;font-family:inherit;font-size:12px;cursor:pointer}.action-btn.primary{border:1px solid var(--gofo-primary);background:var(--gofo-primary);color:#fff}.action-btn.primary:hover{background:var(--gofo-primary-hover)}.action-btn.secondary{border:1px solid #dcdfe6;background:#fff;color:#606266}.action-btn.secondary:hover{border-color:var(--gofo-primary);color:var(--gofo-primary)}.action-btn.link{border:0;background:transparent;color:var(--gofo-primary);padding:0 4px}.action-btn:disabled{opacity:.65;cursor:wait}
+.query-table-card{position:relative;display:flex;flex:1 1 auto;min-height:0;flex-direction:column;border:1px solid #ebeef5;border-radius:2px;background:#fff;overflow:hidden}
+.query-table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 16px;border-bottom:1px solid #ebeef5}.query-toolbar-left,.query-toolbar-right{display:flex;align-items:center;gap:8px}.query-toolbar-icon{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dcdfe6;border-radius:2px;background:#fff;color:#606266;cursor:pointer}.query-toolbar-icon:hover{border-color:var(--gofo-primary);color:var(--gofo-primary)}.query-toolbar-icon gofo-icon{width:16px;height:16px}
+.query-table-card .lightbox-summary{margin:0;padding:10px 16px;border-bottom:1px solid #ebeef5}.query-table-card .table-scroll{flex:1 1 auto;min-height:220px;max-height:calc(100vh - 340px);overflow:auto}.query-table-card .tbl{min-width:1500px;margin:0}.query-table-card .bag-list-table{min-width:880px}.query-table-card .tbl thead th{position:sticky;top:0;z-index:2;background:#f5f7fa}.query-table-card .detail-pagination{flex:0 0 auto;margin:0;border-width:1px 0 0;border-radius:0;padding:8px 16px}
+.query-table-card.is-loading:after{content:'加载中…';position:absolute;inset:56px 0 0;z-index:8;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);color:var(--gofo-primary);font-size:13px;backdrop-filter:blur(1px)}
+.query-table-card.is-fullscreen{position:fixed;inset:16px;z-index:1600;box-shadow:0 18px 60px rgba(15,23,42,.28)}.query-table-card.is-fullscreen .table-scroll{max-height:none}
+.count-link,.bag-count-link,.waybill-link,.bag-link{display:inline-flex;align-items:center;border:0;background:transparent;padding:0;color:var(--gofo-primary);font:inherit;font-weight:inherit;cursor:pointer;text-align:inherit}.count-link:hover,.bag-count-link:hover,.waybill-link:hover,.bag-link:hover{text-decoration:underline}.count-link:focus-visible,.bag-count-link:focus-visible,.waybill-link:focus-visible,.bag-link:focus-visible,.kpi:focus-visible,.abn-item:focus-visible{outline:2px solid var(--gofo-primary);outline-offset:2px}
+@media(max-width:1366px){#lightbox .lightbox-box{width:calc(100vw - 55px)!important}.query-filter-grid{grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}.gofo-filter-grid{gap:10px}.gofo-filter-field.wide{min-width:220px}}
+
+
+/* ===== V2.80 区块级间距再收紧 ===== */
+main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
+.gofo-business-nav-card{padding:0 14px !important;}
+.gofo-filter-card{padding:14px 20px !important;}
+.card-hd{margin-bottom:10px !important;}
+
+
+/* ===== V2.86 页面超链接 / 界面切换入口 ===== */
+.gofo-interface-switch{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:32px;
+}
+.gofo-interface-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  height:32px;
+  padding:0 12px;
+  border:1px solid #dcdfe6;
+  border-radius:2px;
+  background:#fff;
+  color:#303133;
+  font-size:13px;
+  font-weight:500;
+  line-height:1;
+  text-decoration:none;
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+  transition:border-color .16s ease,color .16s ease,background .16s ease;
+}
+.gofo-interface-link:hover,
+.gofo-interface-link:focus-visible{
+  border-color:var(--gofo-primary);
+  color:var(--gofo-primary);
+  background:#fffaf7;
+  outline:0;
+}
+.gofo-interface-link[aria-current="page"]{
+  border-color:#cfd5dd;
+  background:#fff;
+  color:#1f2937;
+  box-shadow:inset 0 -2px 0 var(--gofo-primary);
+}
+.gofo-interface-link gofo-icon{
+  width:15px;
+  height:15px;
+  flex:0 0 15px;
+}
+@media(max-width:1100px){
+  .gofo-interface-switch{overflow-x:auto;padding-bottom:1px;}
+  .gofo-interface-link{white-space:nowrap;}
+}
+
+
+/* ===== V2.89 业务导航与界面入口同排 ===== */
+.gofo-business-nav-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:44px;
+}
+.gofo-interface-switch{margin-left:auto;flex:0 0 auto;}
+@media(max-width:1180px){
+  .gofo-business-nav-card{overflow-x:auto;}
+  .gofo-business-tabs,.gofo-interface-switch{flex:0 0 auto;}
+}
+
+
+/* ===== 卸车区 V3.09：对齐分拣区 UI / 字体 / 视觉（仅卸车区） ===== */
+:root{
+  --bg:#f0f2f5;
+  --card:#fff;
+  --line:#f0f0f0;
+  --line-2:#ebeef5;
+  --text:#303133;
+  --muted:#606266;
+  --faint:#909399;
+  --accent:#fc4c02;
+  --accent-soft:#fff1e6;
+  --accent-line:#ffd9c7;
+  --red:#e5484d;
+  --amber:#e0921a;
+  --green:#16a34a;
+  --shadow:0 1px 2px rgba(0,0,0,.04);
+  --r-card:2px;
+}
+html,body{background:#f0f2f5!important;color:#303133!important;}
+body.unload-dashboard{min-width:1180px!important;}
+main.gofo-content{gap:10px!important;padding:14px 16px 16px!important;}
+
+/* 页面卡片：与分拣区最终直角规范一致 */
+.ops-section,.chart-panel,.chain-node,.aux-card,.risk-item,.ops-legend,
+.drawer-panel,.drawer-stat,.lightbox .lbinner,.scroll{
+  border-radius:2px!important;
+}
+.ops-section{
+  padding:16px!important;
+  background:#fff!important;
+  border:1px solid #f0f0f0!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;
+  transition:none!important;
+}
+.ops-section:hover{box-shadow:0 1px 2px rgba(0,0,0,.04)!important;}
+.ops-head,.chart-toolbar{margin-bottom:10px!important;}
+.ops-title{
+  gap:10px!important;
+  color:#303133!important;
+  font-size:16px!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+}
+.ops-title:before{
+  width:5px!important;
+  height:20px!important;
+  border-radius:0!important;
+  background:#fc4c02!important;
+}
+.ops-sub{color:#909399!important;}
+
+/* 到车链路：保留卸车业务表达，外观采用分拣区 KPI 语言 */
+.flow-chain{grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr) 54px minmax(0,1fr)!important;}
+.flow-chain .chain-node{
+  min-height:112px!important;
+  padding:14px 16px!important;
+  border:1px solid #e5eaf0!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(16,32,64,.04)!important;
+  transform:none!important;
+}
+.flow-chain .chain-node:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.chain-node:before{width:4px!important;border-radius:0!important;background:#cbd5e1!important;}
+.chain-node.core:before{background:#e5484d!important;}
+.chain-node.done:before{background:#16a34a!important;}
+.chain-node.done{background:#fff!important;border-color:#e5eaf0!important;}
+.node-tag{padding:3px 8px!important;border-radius:999px!important;background:#f5f7fa!important;color:#909399!important;}
+.node-number{margin-top:8px!important;}
+.node-number .big{font-size:30px!important;font-weight:600!important;letter-spacing:-.6px!important;}
+.node-number .unit{color:#909399!important;}
+.node-detail{color:#909399!important;}
+.chain-arrow{color:#909399!important;}
+.chain-arrow .ar{font-size:20px!important;color:#fc4c02!important;}
+.aux-line{margin-top:12px!important;padding-top:10px!important;border-color:#ebeef5!important;}
+
+/* 预计到车 / 重点关注布局 */
+.arrival-layout{grid-template-columns:2fr 1.1fr!important;gap:10px!important;}
+.risk-panel{
+  background:linear-gradient(180deg,#fff7f6,#fff)!important;
+  border-color:#f6cdc8!important;
+}
+.risk-list{gap:6px!important;}
+.risk-item{
+  min-height:58px!important;
+  grid-template-columns:28px minmax(0,1fr) auto!important;
+  gap:10px!important;
+  padding:10px 12px!important;
+  border:1px solid #f0f0f0!important;
+  border-left:3px solid #e5484d!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;
+  transform:none!important;
+}
+.risk-item:nth-child(2){border-left-color:#e0921a!important;}
+.risk-item:hover{background:#fafafa!important;border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.risk-icon{width:26px!important;height:26px!important;border-radius:2px!important;background:#fff1ee!important;color:#e5484d!important;font-size:13px!important;}
+.risk-icon.orange{background:#fff8eb!important;color:#e0921a!important;}
+.risk-name{font-size:13px!important;font-weight:600!important;color:#303133!important;}
+.risk-desc{font-size:11px!important;color:#909399!important;}
+.risk-value{font-size:15px!important;font-weight:600!important;}
+
+/* 图表卡、Tab、链接 */
+.progress-panels{gap:10px!important;}
+.chart-panel{padding:14px 16px!important;border:1px solid #ebeef5!important;background:#fff!important;}
+.chart-panel-title{font-size:13px!important;color:#606266!important;}
+.seg{
+  height:32px!important;
+  padding:0!important;
+  border:1px solid #dcdfe6!important;
+  border-radius:2px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.seg span{height:30px!important;padding:0 12px!important;border-radius:0!important;color:#606266!important;background:#fff!important;}
+.seg .on{background:#fff1e6!important;color:#fc4c02!important;box-shadow:none!important;font-weight:600!important;}
+.dd,.mtlink{color:#fc4c02!important;font-weight:600!important;}
+.dd:hover,.mtlink:hover{text-decoration:underline;}
+.aux-card{
+  border:1px solid #ebeef5!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.aux-card:hover{border-color:#ffd0bc!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important;transform:none!important;}
+.aux-card .al{color:#606266!important;font-weight:500!important;}
+.aux-card .av{font-weight:600!important;}
+
+/* 表格、筛选和分页 */
+table{font-family:var(--gofo-ui-font)!important;}
+thead th{background:#f5f7fa!important;color:#606266!important;}
+th,td{padding:9px 12px!important;}
+tbody tr:hover{background:#fafafa!important;}
+.scroll{border:1px solid #ebeef5!important;overflow:auto!important;}
+.dfilters select,.dfilters input,.dreset,.dexport,.dquery,.dpager select,.dpager input,.dpager button{
+  border-radius:2px!important;
+  font-family:var(--gofo-ui-font)!important;
+}
+.dexport,.dquery{background:#fc4c02!important;}
+.dexport:hover,.dquery:hover{background:#f76121!important;transform:none!important;box-shadow:none!important;}
+
+/* 图例和弹层 */
+.ops-legend{padding:10px 16px!important;border-color:#f0f0f0!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;}
+.drawer-panel{border:1px solid #ebeef5!important;box-shadow:0 30px 80px rgba(12,20,32,.28)!important;}
+.drawer-head{height:48px!important;padding:0 16px!important;background:#fff!important;}
+.drawer-head .drawer-close{border-radius:2px!important;}
+.drawer-body{padding:16px!important;}
+.drawer-body .drawer-stat{background:#f7f9fc!important;border-color:#ebeef5!important;}
+.lightbox .lbinner{box-shadow:0 30px 80px rgba(12,20,32,.28)!important;}
+
+/* 禁止旧版大圆角、浮动抬升和渐变造成视觉偏差 */
+body.unload-dashboard button{border-radius:2px!important;}
+body.unload-dashboard button:not(:disabled):hover{transform:none!important;}
+@media(max-width:1366px){
+  .arrival-layout{grid-template-columns:minmax(0,1.8fr) minmax(330px,1fr)!important;}
+  .flow-chain{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) 44px minmax(0,1fr)!important;}
+}
+
+</style>
+<style id="unload-shell-sync-v310">
+/* ===== V3.10 卸车区：顶部菜单与页面滚动完全同步分拣区 ===== */
+html{scroll-behavior:auto!important;overflow-x:auto;}
+body.unload-dashboard{
+  width:100%!important;
+  min-width:1180px!important;
+  padding-top:48px!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+}
+.gofo-header{
+  display:flex!important;
+  position:fixed!important;
+  inset:0 0 auto 0!important;
+  top:0!important;
+  width:100%!important;
+  height:48px!important;
+  z-index:1000!important;
+  padding:0 16px!important;
+  background:#001529!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.gofo-sidebar{
+  display:block!important;
+  position:fixed!important;
+  left:0!important;
+  top:48px!important;
+  bottom:0!important;
+  width:55px!important;
+  z-index:900!important;
+}
+.gofo-tabs-bar{
+  display:flex!important;
+  position:fixed!important;
+  top:48px!important;
+  left:55px!important;
+  right:0!important;
+  z-index:100!important;
+  width:calc(100% - 55px)!important;
+  height:41px!important;
+  min-height:41px!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding:0 0 0 16px!important;
+  background:#fff!important;
+  border-bottom:1px solid #f0f0f0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  box-sizing:border-box!important;
+}
+.gofo-tabs-bar>.gofo-tabs-list{
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:4px!important;
+  min-height:0!important;
+  height:41px!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.gofo-tabs-bar>.gofo-tabs-list:before{content:none!important;display:none!important;}
+.gofo-tabs-bar>.gofo-tab-more{
+  width:32px!important;
+  height:32px!important;
+  margin:4px!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.gofo-tab-card{
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 16px!important;
+  border-radius:0!important;
+}
+main.gofo-content{
+  position:relative!important;
+  z-index:1!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:calc(100% - 55px)!important;
+  max-width:none!important;
+  margin-left:55px!important;
+  margin-right:0!important;
+  margin-top:41px!important;
+  padding:14px 16px 16px!important;
+  gap:10px!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:1200px){
+  .gofo-tabs-bar,main.gofo-content{min-width:1125px!important;}
+}
+</style></head>
+<body class="unload-dashboard">
+<header class="gofo-header">
+<div class="gofo-header-left">
+<div aria-label="GOFO" class="gofo-logo"><em>GO</em>FO</div>
+<div class="gofo-search-wrap"><input aria-label="全局搜索" class="gofo-search" placeholder="请输入菜单或功能" type="search"></div>
+</div>
+<div class="gofo-header-right">
+<button aria-label="消息通知" class="gofo-header-action gofo-notice" title="消息通知" type="button"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></gofo-icon></button>
+<div class="gofo-header-action optional" title="语言">中文⌄</div>
+<div class="gofo-header-action optional" title="时区">北京时间⌄</div>
+<div class="gofo-header-action" title="账户"><span class="gofo-avatar">站</span><span>站点运营</span></div>
+<span class="gofo-version">V3.10</span>
+</div>
+</header>
+<aside aria-label="主菜单" class="gofo-sidebar">
+<nav class="gofo-menu">
+<div class="gofo-menu-item" title="工作台"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h13V10M9 20v-6h6v6"></path></svg></gofo-icon><span class="gofo-menu-text">工作台</span></div>
+<div aria-current="page" class="gofo-menu-item active" title="中心运营看板"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><rect height="16" rx="1" width="18" x="3" y="4"></rect><path d="M3 9h18M9 9v11"></path></svg></gofo-icon><span class="gofo-menu-text">中心运营看板</span></div>
+<div class="gofo-menu-item" title="车辆与场地"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4m11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4"></path></svg></gofo-icon><span class="gofo-menu-text">车辆与场地</span></div>
+<div class="gofo-menu-item" title="分拣作业管理"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><path d="M4 7h14M15 4l3 3-3 3M20 17H6M9 14l-3 3 3 3"></path></svg></gofo-icon><span class="gofo-menu-text">分拣作业管理</span></div>
+<div class="gofo-menu-item" title="异常监控"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4zM12 9v5M12 17.5v.5"></path></svg></gofo-icon><span class="gofo-menu-text">异常监控</span></div>
+<div class="gofo-menu-item" title="报表中心"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h8M8 17h5"></path></svg></gofo-icon><span class="gofo-menu-text">报表中心</span></div>
+</nav>
+<div class="gofo-sidebar-footer" title="收起菜单"><gofo-icon aria-hidden="true" class="gofo-menu-icon"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></svg></gofo-icon><span class="gofo-menu-text">收起菜单</span></div>
+</aside>
+<div aria-label="页面页签" class="gofo-tabs-bar">
+<div class="gofo-tabs-list"><div class="gofo-tab-card">工作台</div><div class="gofo-tab-card active">卸车区看板 <button aria-label="关闭卸车区看板页签" class="gofo-tab-close" title="关闭页签" type="button"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"></path></svg></gofo-icon></button></div></div>
+<button aria-label="更多页签" class="gofo-tab-more" title="更多页签" type="button"><gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></gofo-icon></button>
+</div>
+<!-- ============ 内容区 ============ -->
+<main class="gofo-content">
+<section aria-label="业务区域与界面切换" class="gofo-business-nav-card">
+<div aria-label="中心看板业务区域" class="gofo-business-tabs" role="tablist">
+<button aria-selected="false" data-business-tab="overview" role="tab" type="button">概况</button>
+<button aria-selected="true" class="active" data-business-tab="unload" role="tab" type="button">卸车区</button>
+<button aria-selected="false" data-business-tab="sorting" role="tab" type="button">分拣区</button>
+<button aria-selected="false" data-business-tab="loading" role="tab" type="button">装车区</button>
+<button aria-selected="false" data-business-tab="exception" role="tab" type="button">异常区</button>
+</div>
+<nav aria-label="页面入口与界面切换" class="gofo-interface-switch">
+<a aria-current="page" class="gofo-interface-link" href="#center-dashboard-old">
+<gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7M8 12h11"></path></svg></gofo-icon>
+<span>中心看板（旧）</span>
+</a>
+<a class="gofo-interface-link" href="#operations-cockpit">
+<span>运营驾驶舱</span>
+<gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></gofo-icon>
+</a>
+<a class="gofo-interface-link" href="#mobile-view">
+<span>移动端（观辰）</span>
+<gofo-icon aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></gofo-icon>
+</a>
+</nav>
+</section>
+<section aria-label="卸车区筛选条件" class="gofo-filter-card">
+<div class="gofo-filter-grid">
+<div class="gofo-filter-field compact"><span class="gofo-filter-label">中心</span><button aria-label="选择中心" class="gofo-filter-control center-control" type="button">ATL H <span aria-hidden="true">⌄</span></button></div>
+<div class="gofo-filter-field wide"><span class="gofo-filter-label">操作日</span><div class="gofo-filter-value num">06-16 06:00 ~ 06-17 06:00</div></div>
+<div class="gofo-filter-field compact"><span class="gofo-filter-label">日期范围</span><div aria-label="日期范围" class="seg-group" role="group"><button class="on" type="button">今日</button><button type="button">明日</button></div></div>
+<div class="gofo-filter-field"><span class="gofo-filter-label">卸车截单</span><div class="gofo-filter-value num">0D 20:00</div></div>
+<div class="gofo-filter-field"><span class="gofo-filter-label">散货截单</span><div class="gofo-filter-value num">1D 03:00</div></div>
+<div class="gofo-filter-field"><span class="gofo-filter-label">距离截单时间</span><div class="gofo-filter-value cutoff-countdown-tag"><b class="num">16:21:00</b></div></div>
+<div class="gofo-filter-actions"><button class="gofo-primary-btn" type="button">查询</button></div>
+</div>
+</section>
+<!-- FR-2 到车—卸车进度（链式） -->
+<div class="ops-section">
+<div class="ops-head">
+<div>
+<div class="ops-title">卸车作业总览</div>
+</div>
+</div>
+<div class="flow-chain">
+<div class="chain-node" data-drawer="eta">
+<div>
+<div class="node-top"><b style="font-size:13px;">预计到车</b><span class="node-tag">未来 24H</span></div>
+<div class="node-number"><span class="num dd big">8</span><span class="unit">辆</span></div>
+<div class="node-detail">155 袋 · 56,592 票</div>
+</div>
+</div>
+<div class="chain-arrow">到车<div class="ar">→</div></div>
+<div class="chain-node core" data-drawer="unload">
+<div>
+<div class="node-top"><b style="font-size:13px;color:#c0362f;">已到未卸</b><span class="node-tag" style="background:#fff0ed;color:#d94712;">重点关注</span></div>
+<div class="node-number"><span class="num dd big" style="color:#e5484d;">17</span><span class="unit">辆</span></div>
+<div class="node-detail">1,829 袋 · 59,753 票</div>
+</div>
+</div>
+<div class="chain-arrow">卸车<div class="ar">→</div></div>
+<div class="chain-node done" data-drawer="unloaded">
+<div>
+<div class="node-top"><b style="font-size:13px;">已卸</b><span class="node-tag" style="background:#eef9f2;color:#268b50;">当班累计</span></div>
+<div class="node-number"><span class="num dd big" style="color:#16a34a;">10</span><span class="unit">辆</span></div>
+<div class="node-detail">184 袋 · 59,585 票</div>
+</div>
+</div>
+</div>
+<div class="aux-line">
+<span class="dd" id="aux-toggle" style="font-size:12px;font-weight:700;">收起上游状态 ▴</span>
+<span class="hint">辅助判断未来到车压力与异常到达风险</span>
+</div>
+<div id="aux-cards" style="margin-top: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+<div class="aux-card" data-drawer="upstream"><div class="al">上游未发车</div><div class="av"><span class="num dd">0</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
+<div class="aux-card" data-drawer="transit"><div class="al">在途</div><div class="av"><span class="num dd">7</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div><div class="as">276 袋 · 48,877 票</div></div>
+<div class="aux-card" data-drawer="abnormal"><div class="al">异常未到</div><div class="av" style="color:#e5484d;"><span class="num dd">2</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div><div class="as">166 袋 · 4,064 票</div></div>
+<div class="aux-card" data-drawer="latest"><div class="al">截单后到</div><div class="av"><span class="num dd">3</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div><div class="as">49 袋 · 17,403 票</div></div>
+</div>
+</div>
+<!-- FR-3 预计到车 + 风险处置区 -->
+<div class="arrival-layout">
+<div class="ops-section">
+<div class="chart-toolbar">
+<div>
+<div class="ops-title">预计到车</div>
+</div>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+<div class="seg" id="seg-eta-line"><span class="" data-line="all">全部</span><span data-line="trunk" class="on">干线</span><span data-line="branch" class="">支线</span></div>
+<div class="seg" id="seg-eta-mode"><span class="on" data-mode="hour">单小时</span><span data-mode="cum">累计</span></div>
+<div class="seg" id="seg-eta-metric"><span class="on" data-metric="bag">袋数</span><span data-metric="bill">票数</span></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0 4px;">
+<span class="dd" data-drawer="flow" style="font-size:12px;font-weight:700;">查询目的流向明细 ›</span>
+<span class="dd" data-drawer="etaveh" style="font-size:12px;">查看车辆明细 ›</span>
+</div>
+<div id="chart-eta" style="width: 100%; height: 286px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;" _echarts_instance_="ec_1784502343367"><div style="position: relative; width: 1137px; height: 286px; padding: 0px; margin: 0px; border-width: 0px; cursor: pointer;"><canvas data-zr-dom-id="zr_0" width="1137" height="286" style="position: absolute; left: 0px; top: 0px; width: 1137px; height: 286px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas></div><div class="" style="position: absolute; display: block; border-style: solid; white-space: nowrap; z-index: 9999999; box-shadow: rgba(0, 0, 0, 0.2) 1px 2px 10px; transition: opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.2s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); background-color: rgb(255, 255, 255); border-width: 1px; border-radius: 4px; color: rgb(102, 102, 102); font: 14px / 21px &quot;Microsoft YaHei&quot;; padding: 10px; top: 0px; left: 0px; transform: translate3d(928px, 155px, 0px); border-color: rgb(255, 255, 255); pointer-events: none; visibility: hidden; opacity: 0;"><div style="margin: 0px 0 0;line-height:1;"><div style="margin: 0px 0 0;line-height:1;"><div style="font-size:14px;color:#666;font-weight:400;line-height:1;">13:00</div><div style="margin: 10px 0 0;line-height:1;"><div style="margin: 0px 0 0;line-height:1;"><div style="margin: 0px 0 0;line-height:1;"><span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:#fc4c02;"></span><span style="font-size:14px;color:#666;font-weight:400;margin-left:2px">干线（袋）</span><span style="float:right;margin-left:20px;font-size:14px;color:#666;font-weight:900">0</span><div style="clear:both"></div></div><div style="clear:both"></div></div><div style="margin: 10px 0 0;line-height:1;"><div style="margin: 0px 0 0;line-height:1;"><span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:#fc4c02;"></span><span style="font-size:14px;color:#666;font-weight:400;margin-left:2px">车辆数</span><span style="float:right;margin-left:20px;font-size:14px;color:#666;font-weight:900">0</span><div style="clear:both"></div></div><div style="clear:both"></div></div><div style="clear:both"></div></div><div style="clear:both"></div></div><div style="clear:both"></div></div></div></div>
+</div>
+<div class="ops-section risk-panel">
+<div class="ops-head" style="margin-bottom:12px;">
+<div><div class="ops-title">重点关注</div></div>
+</div>
+<div class="risk-list">
+<div class="risk-item" data-drawer="overtime"><div class="risk-icon">!</div><div><div class="risk-name">超时未卸</div><div class="risk-desc">到达后超过 1H 仍未卸完</div></div><div class="risk-value num">16 辆</div></div>
+<div class="risk-item" data-drawer="wait"><div class="risk-icon orange">⌛</div><div><div class="risk-name">超长等待</div><div class="risk-desc">等待时间超过 12H，需优先排台</div></div><div class="risk-value orange num">6 辆</div></div>
+</div>
+</div>
+</div>
+<!-- 卸车进度 -->
+<div class="ops-section">
+<div class="ops-head">
+<div class="ops-title">卸车进度与时效</div>
+<span style="font-size:11px;color:#8c98a9;">数据刷新：17:36</span>
+</div>
+<div class="progress-panels">
+<div class="chart-panel">
+<div class="chart-panel-title"><span>等待卸车 · 时长分布</span><span class="dd" data-drawer="wait" style="font-size:11px;font-weight:600;">查看明细 ›</span></div>
+<div id="chart-wait" style="width: 100%; height: 248px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;" _echarts_instance_="ec_1784502343368"><div style="position: relative; width: 990px; height: 248px; padding: 0px; margin: 0px; border-width: 0px; cursor: pointer;"><canvas data-zr-dom-id="zr_0" width="990" height="248" style="position: absolute; left: 0px; top: 0px; width: 990px; height: 248px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas></div><div class="" style="position: absolute; display: block; border-style: solid; white-space: nowrap; z-index: 9999999; box-shadow: rgba(0, 0, 0, 0.2) 1px 2px 10px; transition: opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.2s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); background-color: rgb(255, 255, 255); border-width: 1px; border-radius: 4px; color: rgb(102, 102, 102); font: 14px / 21px &quot;Microsoft YaHei&quot;; padding: 10px; top: 0px; left: 0px; transform: translate3d(716px, 136px, 0px); border-color: rgb(255, 255, 255); pointer-events: none; visibility: hidden; opacity: 0;">&gt;12H：[object Object] 辆</div></div>
+</div>
+<div class="chart-panel">
+<div class="chart-panel-title"><span>卸车及时率</span><span class="dd" data-drawer="timely" style="font-size:11px;font-weight:600;">查看明细 ›</span></div>
+<div id="chart-timely" style="width: 100%; height: 154px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;" _echarts_instance_="ec_1784502343369"><div style="position: relative; width: 723px; height: 154px; padding: 0px; margin: 0px; border-width: 0px; cursor: default;"><canvas data-zr-dom-id="zr_0" width="723" height="154" style="position: absolute; left: 0px; top: 0px; width: 723px; height: 154px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas></div><div class="" style="position: absolute; display: block; border-style: solid; white-space: nowrap; z-index: 9999999; box-shadow: rgba(0, 0, 0, 0.2) 1px 2px 10px; transition: opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.2s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); background-color: rgb(255, 255, 255); border-width: 1px; border-radius: 4px; color: rgb(102, 102, 102); font: 14px / 21px &quot;Microsoft YaHei&quot;; padding: 10px; top: 0px; left: 0px; transform: translate3d(322px, 89px, 0px); border-color: rgb(229, 72, 77); pointer-events: none; visibility: hidden; opacity: 0;">不及时：16 辆 (94.12%)</div></div>
+<div style="display:flex;gap:10px;margin-top:8px;">
+<div class="aux-card" data-drawer="timelyveh" style="flex:1;text-align:center;padding:11px 12px!important;"><div class="al" style="color:#16a34a;">及时（≤1H）</div><div class="av" style="color:#16a34a;font-size:21px;"><span class="num">1</span><span style="font-size:11px;color:#9aa6b6;"> 辆</span></div></div>
+<div class="aux-card" data-drawer="lateveh" style="flex:1;text-align:center;padding:11px 12px!important;"><div class="al" style="color:#e5484d;">不及时（&gt;1H）</div><div class="av" style="color:#e5484d;font-size:21px;"><span class="num">16</span><span style="font-size:11px;color:#bd7d7d;"> 辆</span></div></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 颜色规范图例 -->
+<div class="ops-legend" style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;">
+<div style="font-size:12px;color:#9aa6b6;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16202e;margin-right:4px;"></span>正常</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#16a34a;margin-right:4px;"></span>达标</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e0921a;margin-right:4px;"></span>接近达标</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fc4c02;margin-right:4px;"></span>定量清零</span>
+<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e5484d;margin-right:4px;"></span>重点关注</span>
+<span><span style="color:#fc4c02;text-decoration:underline;">下划线</span>＝可下钻</span>
+</div>
+<span style="font-size:12px;color:#9aa6b6;">专业优化版 · 卸车区作业驾驶舱 · 仅供讨论</span>
+</div>
+</main>
+<!-- 多级抽屉叠层容器 -->
+<div class="drawer-stack" id="drawer-stack"></div>
+<!-- 照片预览 lightbox -->
+<div class="lightbox" id="lightbox">
+<div class="lbinner">
+<div class="lbimg" id="lb-img">📷 照片预览（示例占位）</div>
+<div class="lbcap" id="lb-cap"></div>
+<button class="lbclose" id="lb-close">关闭</button>
+</div>
+</div>
+<script>
+// 预计到车
+(function(){
+  var chart = echarts.init(document.getElementById('chart-eta'));
+  var hours = ['14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00'];
+  var dataset={
+    today:{
+      bill:[10200,15800,12500,11092,7000,3800,5200,2600,1800,0,1200,0,0,0,800,3200,6800,9100,7200,5400,3100,1800,900,0],
+      bag:[280,420,360,300,190,105,140,72,50,0,32,0,0,0,22,88,185,250,195,145,85,48,24,0],
+      vehicle:[2,3,3,2,2,1,2,1,1,0,1,0,0,0,1,2,2,3,2,2,1,1,1,0]
+    },
+    tomorrow:{
+      bill:[3800,8200,9100,12400,8600,7200,3400,6800,2900,2100,0,1500,0,0,2100,4500,7800,10200,8600,6200,2800,1200,600,0],
+      bag:[105,228,250,340,235,198,95,188,80,58,0,42,0,0,58,122,212,278,235,168,76,33,16,0],
+      vehicle:[1,2,2,3,2,2,1,2,1,1,0,1,0,0,1,2,3,3,2,2,1,1,1,0]
+    }
+  };
+  var meta={bill:{name:'预计到车票数',unit:'票'},bag:{name:'预计到车袋数',unit:'袋'}};
+  var ratio=[0.78,0.80,0.76,0.74,0.70,0.82,0.68,0.85,0.72,0.50,0.66,0.50,0.50,0.50,0.72,0.78,0.80,0.76,0.74,0.70,0.82,0.68,0.85,0.72];
+  function cum(a){var s=0;return a.map(function(v){s+=v;return s;});}
+  var state={day:'today',mode:'hour',metric:'bag',line:'all'};
+  function lineSeries(data){return {name:'车辆数',type:'line',yAxisIndex:1,data:data,smooth:true,lineStyle:{color:'#fc4c02',width:2,type:'dashed'},itemStyle:{color:'#fc4c02'},symbol:'circle',symbolSize:5};}
+  function build(){
+    var total=dataset[state.day][state.metric].slice();
+    var vehAll=dataset[state.day].vehicle.slice();
+    var trunk=total.map(function(v,i){return Math.round(v*ratio[i]);});
+    var branch=total.map(function(v,i){return v-Math.round(v*ratio[i]);});
+    var vehT=vehAll.map(function(v,i){return Math.round(v*ratio[i]);});
+    var vehB=vehAll.map(function(v,i){return v-Math.round(v*ratio[i]);});
+    if(state.mode==='cum'){ trunk=cum(trunk);branch=cum(branch);vehAll=cum(vehAll);vehT=cum(vehT);vehB=cum(vehB); }
+    var m=meta[state.metric];
+    var series=[];
+    if(state.line==='trunk'){
+      series.push({name:'干线（'+m.unit+'）',type:'bar',yAxisIndex:0,data:trunk,itemStyle:{color:'#fc4c02'},barWidth:'48%'});
+      series.push(lineSeries(vehT));
+    } else if(state.line==='branch'){
+      series.push({name:'支线（'+m.unit+'）',type:'bar',yAxisIndex:0,data:branch,itemStyle:{color:'#ffb899'},barWidth:'48%'});
+      series.push(lineSeries(vehB));
+    } else {
+      series.push({name:'干线（'+m.unit+'）',type:'bar',stack:'load',yAxisIndex:0,data:trunk,itemStyle:{color:'#fc4c02'},barWidth:'48%'});
+      series.push({name:'支线（'+m.unit+'）',type:'bar',stack:'load',yAxisIndex:0,data:branch,itemStyle:{color:'#ffb899'},barWidth:'48%'});
+      series.push(lineSeries(vehAll));
+    }
+    return {
+      tooltip:{trigger:'axis'},
+      legend:{top:0,textStyle:{fontSize:12,color:'#9aa6b6'},itemWidth:16,itemHeight:3},
+      grid:{left:55,right:50,top:35,bottom:30},
+      xAxis:{type:'category',data:hours,boundaryGap:true,axisLine:{lineStyle:{color:'#d6dde6'}},axisTick:{show:false},axisLabel:{color:'#9aa6b6',fontSize:11}},
+      yAxis:[
+        {type:'value',name:m.unit,nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:10,formatter:function(v){return v>=1000?(v/1000)+'k':v;}},splitLine:{lineStyle:{color:'#f0f0f0',type:'dashed'}}},
+        {type:'value',name:'辆',nameTextStyle:{color:'#fc4c02',fontSize:11},axisLabel:{color:'#fc4c02',fontSize:10},splitLine:{show:false}}
+      ],
+      series:series
+    };
+  }
+  chart.setOption(build());
+  function bindSeg(id,key){
+    document.querySelectorAll('#'+id+' span').forEach(function(s){
+      s.addEventListener('click',function(){
+        document.querySelectorAll('#'+id+' span').forEach(function(x){x.classList.remove('on');});
+        this.classList.add('on');
+        state[key]=this.getAttribute('data-'+key);
+        chart.setOption(build(),true);
+      });
+    });
+  }
+  bindSeg('seg-eta-mode','mode');bindSeg('seg-eta-metric','metric');bindSeg('seg-eta-line','line');
+  chart.on('click',function(p){
+    var i=p.dataIndex, d=dataset[state.day];
+    var bag=d.bag.slice(), bill=d.bill.slice(), veh=d.vehicle.slice();
+    if(state.line==='trunk'){
+      bag=bag.map(function(v,k){return Math.round(v*ratio[k]);});
+      bill=bill.map(function(v,k){return Math.round(v*ratio[k]);});
+      veh=veh.map(function(v,k){return Math.round(v*ratio[k]);});
+    } else if(state.line==='branch'){
+      bag=bag.map(function(v,k){return v-Math.round(v*ratio[k]);});
+      bill=bill.map(function(v,k){return v-Math.round(v*ratio[k]);});
+      veh=veh.map(function(v,k){return v-Math.round(v*ratio[k]);});
+    }
+    if(state.mode==='cum'){ bag=cum(bag); bill=cum(bill); veh=cum(veh); }
+    if(window.kbOpenDrawer){ window.kbOpenDrawer('flowtime',{hour:hours[i],bag:bag[i],bill:bill[i],veh:veh[i],mode:state.mode,line:state.line}); }
+  });
+  chart.getZr().on('mousemove',function(e){ chart.getZr().setCursorStyle('pointer'); });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 等待卸车时长分布
+(function(){
+  var el=document.getElementById('chart-wait'); if(!el) return;
+  var chart = echarts.init(el);
+  var buckets = ['0-0.5H','0.5-1H','1-3H','3-6H','6-12H','>12H'];
+  var data = [1,0,2,3,5,6];
+  function color(i){ return i<=1?'#16a34a':(i===5?'#e5484d':'#e0921a'); }
+  chart.setOption({
+    tooltip:{trigger:'axis',formatter:function(p){return p[0].axisValue+'：'+p[0].data+' 辆';}},
+    grid:{left:45,right:25,top:20,bottom:28},
+    xAxis:{type:'category',data:buckets,axisLine:{lineStyle:{color:'#d6dde6'}},axisLabel:{color:'#9aa6b6',fontSize:11}},
+    yAxis:{type:'value',name:'辆',nameTextStyle:{color:'#9aa6b6',fontSize:11},axisLabel:{color:'#9aa6b6',fontSize:11},splitLine:{lineStyle:{color:'#f0f0f0',type:'dashed'}}},
+    series:[{type:'bar',data:data.map(function(v,i){return {value:v,itemStyle:{color:color(i)}};}),barWidth:'46%',label:{show:true,position:'top',color:'#64718a',fontSize:11}}]
+  });
+  chart.on('click',function(p){
+    if(window.kbOpenDrawer){ window.kbOpenDrawer('waitveh',{bucket:p.name}); }
+  });
+  chart.getZr().on('mousemove',function(){ chart.getZr().setCursorStyle('pointer'); });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 卸车及时率
+(function(){
+  var el=document.getElementById('chart-timely'); if(!el) return;
+  var chart = echarts.init(el);
+  var ontime=1, late=16, rate=Math.round(ontime/(ontime+late)*1000)/10;
+  chart.setOption({
+    tooltip:{trigger:'item',formatter:'{b}：{c} 辆 ({d}%)'},
+    series:[{
+      type:'pie',radius:['58%','82%'],center:['50%','50%'],avoidLabelOverlap:false,
+      label:{show:true,position:'center',formatter:'及时率\n'+rate+'%',fontSize:14,fontWeight:'bold',color:'#16202e'},
+      labelLine:{show:false},
+      data:[
+        {value:ontime,name:'及时',itemStyle:{color:'#16a34a'}},
+        {value:late,name:'不及时',itemStyle:{color:'#e5484d'}}
+      ]
+    }]
+  });
+  window.addEventListener('resize',function(){chart.resize();});
+})();
+
+// 多级抽屉叠层
+(function(){
+  var stack=document.getElementById('drawer-stack');
+  var drawerLayers=[]; // {el, type, arg}
+
+  function createLayerEl(level){
+    var layer=document.createElement('div');
+    layer.className='drawer-layer level-'+level;
+    layer.innerHTML='<div class="drawer-backdrop"></div>'
+      +'<div class="drawer-panel">'
+      +'<div class="drawer-head"><h3 class="drawer-title">明细</h3><button class="drawer-close">✕</button></div>'
+      +'<div class="drawer-body"></div>'
+      +'</div>';
+    stack.appendChild(layer);
+    // bind close
+    var closeBtn=layer.querySelector('.drawer-close');
+    var backdrop=layer.querySelector('.drawer-backdrop');
+    closeBtn.addEventListener('click',function(){closeTopDrawer();});
+    backdrop.addEventListener('click',function(e){if(e.target===backdrop)closeTopDrawer();});
+    return layer;
+  }
+
+  function closeTopDrawer(){
+    if(drawerLayers.length===0) return;
+    var top=drawerLayers.pop();
+    top.el.classList.remove('on');
+    // remove after animation
+    setTimeout(function(){if(top.el.parentNode)top.el.parentNode.removeChild(top.el);},250);
+    if(drawerLayers.length===0){document.body.style.overflow='';}
+  }
+
+  function closeAllDrawers(){
+    while(drawerLayers.length>0){
+      var top=drawerLayers.pop();
+      top.el.classList.remove('on');
+      setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}(top.el),250);
+    }
+    document.body.style.overflow='';
+  }
+
+  function openDrawer(type,arg){
+    // Check if already at max 3 levels
+    if(drawerLayers.length>=3){
+      // Close topmost and replace
+      closeTopDrawer();
+    }
+    var level=drawerLayers.length+1;
+    var layerEl=createLayerEl(level);
+    layerEl.setAttribute('data-qa-context-id','drawer-'+type);
+    var titleEl=layerEl.querySelector('.drawer-title');
+    var bodyEl=layerEl.querySelector('.drawer-body');
+
+    var t='',content='';
+    function fmt(n){return n.toLocaleString();}
+  function split75(n){var t=Math.round(n*0.75);return {trunk:t,branch:n-t};}
+  function pagerHtml(total,pageSize,current,totalPages){
+    var sizes=[10,20,50,100],opts=sizes.map(function(s){return '<option value="'+s+'"'+(s===pageSize?' selected':'')+'>'+s+'条/页</option>';}).join('');
+    var nums=''; for(var p=1;p<=Math.min(totalPages,5);p++){ nums+='<button class="pg-no '+(p===current?'on':'')+'">'+p+'</button>'; }
+    if(totalPages>5) nums+='<span>…</span><button class="pg-no">'+totalPages+'</button>';
+    return '<div class="dpager">'
+      +'<button class="pg-step" disabled>&lt;&lt;</button>'
+      +'<button class="pg-step" disabled>&lt;</button>'
+      +nums
+      +'<button class="pg-step">&gt;</button>'
+      +'<button class="pg-step">&gt;&gt;</button>'
+      +'<select>'+opts+'</select>'
+      +'<span>前往</span><input value="'+current+'"/><span>页</span>'
+      +'<button>前往</button>'
+      +'<span>共'+total+'条记录</span>'
+      +'</div>';
+  }
+  function timeDistSelect(defaultVal){ var opts='<option value="">全部</option>'; var buckets=['≤0.5H','1H','2H','3H','4H','>4H']; buckets.forEach(function(b){ opts+='<option value="'+b+'"'+(defaultVal===b?' selected':'')+'>'+b+'</option>'; }); return '<select>'+opts+'</select>'; }
+  function navLink(text,type){ var label=type==='vehicleMonitor'?'车辆监控台':type==='tms'?'TMS出发到达管理':type==='dispatchMonitor'?'调度监控工作台':type==='bagQuery'?'袋号查询':'派件运单管理中的基本信息'; return '<span class="mtlink" onclick="event.stopPropagation();kbNavTo(\''+type+'\',\''+text+'\')" title="跳转至'+label+'">'+text+'</span>'; }
+  function filterBar(fields){
+    var f=fields.map(function(x){return '<div class="fld"><label>'+x[0]+'</label>'+x[1]+'</div>';}).join('');
+    return '<div class="dbar"><div class="dfilters">'+f+'</div>'
+      +'<div style="display:flex;gap:8px;"><button class="dexport">导出</button><button class="dquery">查询</button><button class="dreset">重置</button></div></div>';
+  }
+  function expBar(){ return '<div class="dbar"><button class="dexport">导出</button></div>'; }
+  function selHtml(ph){ return '<select><option>'+(ph||'请选择')+'</option></select>'; }
+  function statTable(dim,rows,opts){
+    opts=opts||{};
+    var drillVeh=opts.drillVeh||(opts.drillAll?'unloadveh':null);
+    var drillBag=opts.drillBag||(opts.drillAll?'unloadbag':null);
+    var drillBill=opts.drillBill||(opts.drillAll?'unloadbill':null);
+    var h='<div class="scroll"><table><thead><tr><th>'+dim+'</th><th>车辆数</th><th>袋数</th><th>运单数</th></tr></thead><tbody>';
+    rows.forEach(function(r,i){
+      var isTotal=i===0;
+      var bucket=r[0];
+      if(isTotal){
+        h+='<tr class="tot"><td>合计</td><td class="tot">'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td class="tot">'+fmt(r[3])+'</td></tr>';
+      } else {
+        var vehOnclick=drillVeh?'onclick="kbOpenDrawer(\''+drillVeh+'\',{bucket:\''+bucket+'\'})"':'';
+        var bagOnclick=drillBag?'onclick="kbOpenDrawer(\''+drillBag+'\',{bucket:\''+bucket+'\'})"':'';
+        var billOnclick=drillBill?'onclick="kbOpenDrawer(\''+drillBill+'\',{bucket:\''+bucket+'\'})"':'';
+        h+='<tr><td class="key-col">'+bucket+'</td>'
+          +'<td><span class="numlink" '+vehOnclick+'>'+r[1]+'</span></td>'
+          +'<td><span class="numlink" '+bagOnclick+'>'+fmt(r[2])+'</span></td>'
+          +'<td><span class="numlink" '+billOnclick+'>'+fmt(r[3])+'</span></td></tr>';
+      }
+    });
+    return h+'</tbody></table></div>';
+  }
+  function etaTimeTable(rows){
+    var h='<div class="scroll"><table><thead><tr><th>时间分布</th><th>总车辆数</th><th>总袋数</th><th>总运单数</th></tr></thead><tbody>';
+    rows.forEach(function(r,i){
+      var isTotal=i===0;
+      h+='<tr'+(isTotal?' class="tot"':'')+'>'
+        +'<td'+(isTotal?'':' class="key-col"')+'>'+r[0]+'</td>'
+        +'<td class="tot"><span class="numlink" data-drill="etaveh" data-bucket="'+r[0]+'" data-col="veh">'+r[1]+'</span></td>'
+        +'<td class="tot"><span class="numlink" data-drill="etabag" data-bucket="'+r[0]+'" data-col="bag">'+fmt(r[2])+'</span></td>'
+        +'<td class="tot"><span class="numlink" data-drill="etabill" data-bucket="'+r[0]+'" data-col="bill">'+fmt(r[3])+'</span></td></tr>';
+    });
+    return h+'</tbody></table></div>';
+  }
+  var flowsData=[
+    {n:'站点 · SDF',c:'lb-trunk',lt:'干线',veh:2,bag:58,bill:21300,hrs:[['16:00',1,30,11000],['18:30',1,28,10300]]},
+    {n:'站点 · BNA',c:'lb-trunk',lt:'干线',veh:2,bag:46,bill:16200,hrs:[['15:20',1,24,8600],['20:10',1,22,7600]]},
+    {n:'站点 · CLT',c:'lb-branch',lt:'支线',veh:1,bag:21,bill:8900,hrs:[['16:10',1,21,8900]]},
+    {n:'站点 · RDU',c:'lb-branch',lt:'支线',veh:1,bag:16,bill:6492,hrs:[['17:05',1,16,6492]]},
+    {n:'hub · ATL',c:'lb-trunk',lt:'干线',veh:1,bag:8,bill:3200,hrs:[['21:40',1,8,3200]]},
+    {n:'服务渠道',c:'lb-branch',lt:'支线',veh:1,bag:6,bill:500,hrs:[['19:00',1,6,500]]}
+  ];
+  function flowTableBody(line){
+    var fs=flowsData.filter(function(f){return line==='all'||(line==='trunk'&&f.lt==='干线')||(line==='branch'&&f.lt==='支线');});
+    fs=fs.slice().sort(function(a,b){return b.bag-a.bag;});
+    var tv=0,tb=0,tl=0; fs.forEach(function(f){tv+=f.veh;tb+=f.bag;tl+=f.bill;});
+    var h='<tr class="tot"><td>合计</td><td></td><td>'+tv+'</td><td>'+tb+'</td><td>'+fmt(tl)+'</td><td>100%</td><td></td></tr>';
+    fs.forEach(function(f,i){
+      var id='fd'+i, pct=tl?(Math.round(f.bill/tl*1000)/10):0;
+      h+='<tr><td class="key-col">'+f.n+'</td><td><span class="lbadge '+f.c+'">'+f.lt+'</span></td><td>'+f.veh+'</td><td class="tot">'+f.bag+'</td><td class="tot">'+fmt(f.bill)+'</td><td>'+pct+'%</td><td><span class="dd flow-exp" data-target="'+id+'">展开时段 ▾</span></td></tr>';
+      var sub=''; f.hrs.forEach(function(hh){ sub+='<tr><td>'+hh[0]+'</td><td>'+hh[1]+' 辆</td><td class="tot">'+hh[2]+'</td><td class="tot">'+fmt(hh[3])+'</td></tr>'; });
+      h+='<tr class="flow-detail" id="'+id+'" style="display:none;"><td colspan="7" style="background:#fafbfd;padding:10px 14px;">'
+        +'<div style="font-size:12px;color:#9aa6b6;margin-bottom:6px;">'+f.n+' · 到达时段</div>'
+        +'<div class="scroll"><table style="background:#fff;"><thead><tr><th>预计到达(ETA)</th><th>车辆</th><th>袋</th><th>票</th></tr></thead><tbody>'+sub+'</tbody></table></div></td></tr>';
+    });
+    return h;
+  }
+  function arrivedVehTable(mode){
+    var timeCol=mode==='etaVeh'?'预计到车时间':'实际抵达目的站时间';
+    var durCol=(mode==='timely'||mode==='late')?'卸车时间':'时长';
+    var head='<div class="scroll"><table><thead><tr><th>任务编码</th><th>'+timeCol+'</th><th>'+durCol+'</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var rLate=[
+      ['MT202609011346','06-15 23:10','15.4h',10,20,'SDF→LAX 干线','SDF','LAX H','06-15 08:00','06-15 22:00'],
+      ['MT-88207','06-15 23:40','14.9h',120,3910,'BNA→LAX 干线','BNA','LAX H','06-15 09:10','06-15 22:30'],
+      ['MT-88350','06-16 01:20','13.2h',110,3560,'CLT→LAX 支线','CLT','LAX H','06-15 11:00','06-16 00:30'],
+      ['MT-88412','06-16 10:05','4.5h',98,3120,'RDU→LAX 支线','RDU','LAX H','06-16 02:30','06-16 09:40']
+    ];
+    var rTimely=[
+      ['MT-88455','06-16 12:40','0.6h',86,2740,'BNA→LAX 干线','BNA','LAX H','06-16 04:00','06-16 12:30']
+    ];
+    function rows(arr){return arr.map(function(r){
+      var linkType=mode==='etaVeh'?'vehicleMonitor':'tms';
+      var bagDrill=mode==='etaVeh'?'etabag':'unloadbag';
+      var billDrill=mode==='etaVeh'?'etabill':'unloadbill';
+      return '<tr><td class="key-col">'+navLink(r[0],linkType)+'</td><td>'+r[1]+'</td><td'+(r[2].indexOf('h')>-1&&parseFloat(r[2])>1?' style="color:#e5484d;"':'')+'>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\''+bagDrill+'\',{bucket:\''+r[0]+'\'})">'+r[3]+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\''+billDrill+'\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    }).join('');}
+    var b,foot;
+    if(mode==='timely'){ b=rows(rTimely); foot='<tr><td class="key-col" colspan="5">合计 1 辆</td><td class="tot">86</td><td class="tot">2,740</td><td></td><td></td><td></td></tr>'; }
+    else if(mode==='late'){ b=rows(rLate); foot='<tr><td class="key-col" colspan="5">… 共 16 辆</td><td class="tot">1,743</td><td class="tot">57,013</td><td></td><td></td><td></td></tr>'; }
+    else { b=rows(rLate); foot='<tr><td class="key-col" colspan="5">… 共 17 辆</td><td class="tot">1,829</td><td class="tot">59,753</td><td></td><td></td><td></td></tr>'; }
+    return head+b+foot+'</tbody></table></div>'+pagerHtml(30,20,1,154);
+  }
+  function arrivedVehDrawer(bucketDefault,mode){
+    var tf=bucketDefault?'<select><option>'+bucketDefault+'</option></select>':selHtml('请选择');
+    var fields;
+    if(mode==='etaVeh'){
+      fields=[
+        ['时间分布状态',tf],
+        ['始发地',selHtml('请选择')],
+        ['运输类型',selHtml('请选择')],
+        ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+      ];
+    } else {
+      fields=[
+        ['时间分布',tf],
+        ['状态',selHtml('请选择')],
+        ['始发地',selHtml('请选择')],
+        ['运输类型',selHtml('请选择')]
+      ];
+    }
+    return filterBar(fields)+arrivedVehTable(mode);
+  }
+  function etaBagBillDrawer(bucketDefault,col){
+    var tf=bucketDefault?'<select><option>'+bucketDefault+'</option></select>':selHtml('请选择');
+    var fields=[
+      ['时间分布',tf],
+      [col==='bag'?'袋号':'运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+etaBagBillTable(col);
+  }
+  function etaBagBillTable(col){
+    var isBag=col==='bag';
+    var codeHead=isBag?'袋号':'运单号';
+    var codePrefix=isBag?'B':'WB';
+    var data=[
+      [codePrefix+'2606270009205','>4H',592,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270009208','>4H',400,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014236','>4H',591,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014238','>4H',697,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014243','>4H',610,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014249','>4H',439,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014251','>4H',335,'LAX.H','LAX.H','LAX01','','','LAX.H','MT2026062800229','EWR.H'],
+      [codePrefix+'2606270014720','>4H',162,'LAX.H','LAX.H','LAX01','','','LAX.H','LAX.H-SpeedX(TT)','EWR.H'],
+      [codePrefix+'2606270014721','>4H',1290,'LAX.H','LAX.H','LAX01','','','LAX.H','LAX.H-SwiftX(TT)','EWR.H']
+    ];
+    if(isBag){
+      var h='<div class="scroll"><table><thead><tr><th>'+codeHead+'</th><th>时长</th><th>运单数</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    } else {
+      var h='<div class="scroll"><table><thead><tr><th>'+codeHead+'</th><th>时长</th><th>袋号</th><th>目的中心</th><th>目的站点</th><th>目的路区</th><th>服务渠道</th><th>邮编</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    }
+    var sum=0;
+    data.forEach(function(r){ sum+=r[2]; });
+    data.forEach(function(r){
+      if(isBag){
+        h+='<tr><td class="key-col">'+navLink(r[0],'bagQuery')+'</td><td>'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+navLink(r[9],'vehicleMonitor')+'</td><td>'+r[10]+'</td><td>'+r[3]+'</td></tr>';
+      } else {
+        h+='<tr><td class="key-col">'+navLink(r[0],'billQuery')+'</td><td>'+r[1]+'</td><td>'+navLink(r[0].replace(codePrefix,'B'),'bagQuery')+'</td><td>'+r[3]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>LAX.H-FEDEX(TT)</td><td>90058</td><td>'+navLink('MT2026062800229','vehicleMonitor')+'</td><td>EWR.H</td><td>LAX.H</td></tr>';
+      }
+    });
+    if(isBag){
+      h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="8"></td></tr>';
+    } else {
+      h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="9"></td></tr>';
+    }
+    return h+'</tbody></table></div>'+pagerHtml(126,10,1,13);
+  }
+  function simpleVehicleDrawer(label,veh,bag,bill){
+    if(veh===0){
+      return '<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">'+label+'车辆</div><div class="v" style="color:#b0b5bc;">0<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v" style="color:#b0b5bc;">0</div><div class="stsplit">干线 0 · 支线 0</div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v" style="color:#b0b5bc;">0</div><div class="stsplit">干线 0 · 支线 0</div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><div class="drawer-sub" style="text-align:center;color:#b0b5bc;padding:24px 0;">当前无'+label+'车辆</div></div>';
+    }
+    var bg=split75(bag),bl=split75(bill);
+    return '<div class="drawer-stats">'
+      +'<div class="drawer-stat"><div class="l">'+label+'车辆</div><div class="v">'+veh+'<span class="u">辆</span></div></div>'
+      +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">'+fmt(bag)+'<span class="u">袋</span></div><div class="stsplit">干线 '+fmt(bg.trunk)+' · 支线 '+fmt(bg.branch)+'</div></div>'
+      +'<div class="drawer-stat"><div class="l">票数</div><div class="v">'+fmt(bill)+'<span class="u">票</span></div><div class="stsplit">干线 '+fmt(bl.trunk)+' · 支线 '+fmt(bl.branch)+'</div></div>'
+      +'</div>'
+      +'<div class="drawer-section"><h4>🚛 车辆明细（MT 号可点击）</h4>'
+      +'<div class="scroll"><table><thead><tr><th>MT 号</th><th>线路</th><th>承运/车牌</th><th>预计到达(ETA)</th><th>袋</th><th>票</th><th>始发地</th></tr></thead><tbody>'
+      +'<tr><td class="key-col"><span class="mtlink">MT-901'+veh+'0</span></td><td><span class="lbadge lb-trunk">干线</span></td><td>承运X · 7C-'+veh+'201</td><td>示例 ETA</td><td class="tot">'+Math.round(bag/veh)+'</td><td class="tot">'+fmt(Math.round(bill/veh))+'</td><td>SDF</td></tr>'
+      +'<tr><td class="key-col" colspan="7" style="text-align:center;color:#b0b5bc;">… 共 '+veh+' 辆（示例数据）</td></tr>'
+      +'</tbody></table></div></div>'
+      +'<div class="drawer-section"><h4>📍 目的地组织</h4>'
+      +'<div class="scroll"><table><thead><tr><th>目的组织</th><th>袋数</th><th>票数</th><th>占比</th></tr></thead><tbody>'
+      +'<tr><td class="key-col">站点</td><td class="tot">'+Math.round(bag*0.9)+'</td><td class="tot">'+fmt(Math.round(bill*0.9))+'</td><td>90%</td></tr>'
+      +'<tr><td class="key-col">hub</td><td class="tot">'+Math.round(bag*0.1)+'</td><td class="tot">'+fmt(Math.round(bill*0.1))+'</td><td>10%</td></tr>'
+      +'</tbody></table></div></div>';
+  }
+  // ===== 已到未卸下钻 =====
+  function unloadVehDrawer(bucketDefault){
+    var tf=timeDistSelect(bucketDefault);
+    var fields=[
+      ['时间分布',tf],
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadVehTable();
+  }
+  function unloadVehTable(){
+    var data=[
+      ['MT2026062800229','2026-06-28 14:30','>12H',720,33000,'干线任务A','EWR.H','LAX.H','2026-06-28 06:00','2026-06-28 13:00'],
+      ['MT2026062800231','2026-06-28 15:00','>12H',580,26000,'干线任务B','ORD.H','LAX.H','2026-06-28 07:00','2026-06-28 13:30'],
+      ['MT2026062800235','2026-06-28 16:20','>12H',140,7142,'支线任务C','SFO.H','LAX.H','2026-06-28 08:30','2026-06-28 14:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>实际抵达目的站时间</th><th>时长</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function unloadBagDrawer(bucketDefault,linkType){
+    linkType=linkType||'tms';
+    var tf=timeDistSelect(bucketDefault);
+    var fields=[
+      ['时间分布',tf],
+      ['袋号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBagTable(linkType);
+  }
+  function unloadBagTable(linkType){
+    linkType=linkType||'tms';
+    var data=[
+      ['B2606270009205','>12H',592,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270009208','>12H',400,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014236','>12H',591,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014238','>12H',697,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014243','>12H',610,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014249','>12H',439,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014251','>12H',335,'LAX.H','LAX01','','LAX.H','MT2026062800229','EWR.H','LAX.H'],
+      ['B2606270014720','>12H',162,'LAX.H','LAX01','','LAX.H','LAX.H-SpeedX(TT)','EWR.H','LAX.H'],
+      ['B2606270014721','>12H',1290,'LAX.H','LAX01','','LAX.H','LAX.H-SwiftX(TT)','EWR.H','LAX.H']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>袋号</th><th>时长</th><th>运单数</th><th>目的地</th><th>目的组织</th><th>目的区域</th><th>服务渠道</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    var sum=0;
+    data.forEach(function(r){sum+=r[2];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'bagQuery')+'</td><td>'+r[1]+'</td><td class="tot">'+fmt(r[2])+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+navLink(r[7],linkType)+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="8"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function unloadBillDrawer(bucketDefault,linkType){
+    linkType=linkType||'tms';
+    var tf=timeDistSelect(bucketDefault);
+    var fields=[
+      ['时间分布',tf],
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable(linkType);
+  }
+  function unloadBillTable(linkType){
+    linkType=linkType||'tms';
+    var data=[
+      ['WB2606270009205','>12H','B2606270009205','LAX.H','LAX01','','LAX.H-FEDEX(TT)','90058','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270009208','>12H','B2606270009208','LAX.H','LAX01','','LAX.H-UPS(TT)','90059','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014236','>12H','B2606270014236','LAX.H','LAX01','','LAX.H-DHL(TT)','90060','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014238','>12H','B2606270014238','LAX.H','LAX01','','LAX.H-GLS(TT)','90061','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014243','>12H','B2606270014243','LAX.H','LAX01','','LAX.H-ARAMEX(TT)','90062','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014249','>12H','B2606270014249','LAX.H','LAX01','','LAX.H-ONT(TT)','90063','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014251','>12H','B2606270014251','LAX.H','LAX01','','LAX.H-SPD(TT)','90064','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014720','>12H','B2606270014720','LAX.H','LAX01','','LAX.H-SpeedX(TT)','90065','MT2026062800229','EWR.H','LAX.H'],
+      ['WB2606270014721','>12H','B2606270014721','LAX.H','LAX01','','LAX.H-SwiftX(TT)','90066','MT2026062800229','EWR.H','LAX.H']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>运单号</th><th>时长</th><th>袋号</th><th>目的中心</th><th>目的站点</th><th>目的路区</th><th>服务渠道</th><th>邮编</th><th>任务编码</th><th>始发地</th><th>卸车地</th></tr></thead><tbody>';
+    var sum=0;
+    data.forEach(function(r){sum+=1;});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'billQuery')+'</td><td>'+r[1]+'</td><td>'+navLink(r[2],'bagQuery')+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+navLink(r[8],linkType)+'</td><td>'+r[9]+'</td><td>'+r[10]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="2">合计</td><td class="tot">'+fmt(sum)+'</td><td colspan="9"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  // ===== 已卸下钻 =====
+  function unloadedVehDrawer(bucketDefault){
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadedVehTable();
+  }
+  function unloadedVehTable(){
+    var data=[
+      ['MT2026062800101','2026-06-28 13:00','2026-06-28 13:45',120,5500,'干线任务A','EWR.H','LAX.H','2026-06-28 05:00','2026-06-28 12:00'],
+      ['MT2026062800102','2026-06-28 13:30','2026-06-28 14:20',80,3800,'干线任务B','ORD.H','LAX.H','2026-06-28 06:00','2026-06-28 12:30'],
+      ['MT2026062800103','2026-06-28 14:00','2026-06-28 14:50',60,2500,'支线任务C','SFO.H','LAX.H','2026-06-28 07:00','2026-06-28 13:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>实际抵达目的站时间</th><th>卸车时间</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadedbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'unloadedbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function unloadedBagDrawerFn(bucketDefault){
+    var fields=[
+      ['袋号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBagTable('tms');
+  }
+  function unloadedBillDrawerFn(bucketDefault){
+    var fields=[
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable('tms');
+  }
+  // ===== 上游未发车下钻 =====
+  function upstreamVehDrawer(bucketDefault){
+    var tf=selHtml('请选择');
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',tf],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+upstreamVehTable();
+  }
+  function upstreamVehTable(){
+    var data=[
+      ['MT2026062800401','2026-06-28 18:00','支线任务D','ORD.H','LAX.H','2026-06-29 02:00'],
+      ['MT2026062800402','2026-06-28 19:00','干线任务E','JFK.H','LAX.H','2026-06-29 04:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划发车时间</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>计划到车时间</th></tr></thead><tbody>';
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="1">合计 '+data.length+' 辆</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  // ===== 在途下钻 =====
+  function transitVehDrawer(bucketDefault){
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+transitVehTable();
+  }
+  function transitVehTable(){
+    var data=[
+      ['MT2026062800501','2026-06-28 16:00','2026-06-28 15:30',210,39100,'干线任务F','SDF.H','LAX.H','2026-06-28 08:00'],
+      ['MT2026062800502','2026-06-28 17:00','2026-06-28 16:20',60,9100,'支线任务G','CLT.H','LAX.H','2026-06-28 10:00'],
+      ['MT2026062800503','2026-06-28 18:00','2026-06-28 17:45',6,677,'支线任务H','RDU.H','LAX.H','2026-06-28 11:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划到车时间</th><th>预计到车时间</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'dispatchMonitor')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'transitbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'transitbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="4"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function transitBillDrawerFn(bucketDefault){
+    var fields=[
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable('dispatchMonitor');
+  }
+  // ===== 异常未到下钻 =====
+  function abnormalVehDrawer(bucketDefault){
+    var fields=[
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+abnormalVehTable();
+  }
+  function abnormalVehTable(){
+    var data=[
+      ['MT2026062800601','2026-06-28 13:00','2026-06-28 14:00',120,3000,'干线任务I','BNA.H','LAX.H','2026-06-28 06:00'],
+      ['MT2026062800602','2026-06-28 14:00','2026-06-28 15:00',46,1064,'支线任务J','MCO.H','LAX.H','2026-06-28 07:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>计划到车时间</th><th>预计到车时间</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'dispatchMonitor')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'abnormalbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'abnormalbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="4"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  function abnormalBillDrawerFn(bucketDefault){
+    var fields=[
+      ['运单号','<input placeholder="最多可查询100，以回车键隔开"/>'],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+unloadBillTable('dispatchMonitor');
+  }
+  // ===== 截单后到下钻 =====
+  function latestVehDrawer(bucketDefault){
+    var tf=bucketDefault?'<select><option>'+bucketDefault+'</option></select>':selHtml('请选择');
+    var fields=[
+      ['时间分布状态',tf],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+latestVehTable();
+  }
+  function latestVehTable(){
+    var data=[
+      ['MT2026062800701','2026-06-28 13:30','>12H',38,13900,'干线任务K','ATL.H','LAX.H','2026-06-28 07:00','2026-06-28 13:30'],
+      ['MT2026062800702','2026-06-28 14:00','>12H',11,3503,'支线任务L','TPA.H','LAX.H','2026-06-28 08:00','2026-06-28 14:00'],
+      ['MT2026062800703','2026-06-28 15:00','>12H',0,0,'干线任务M','MIA.H','LAX.H','2026-06-28 09:00','2026-06-28 15:00']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>预计到车时间</th><th>时长</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'vehicleMonitor')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'latestbag\',{bucket:\''+r[0]+'\'})">'+fmt(r[3])+'</span></td><td class="tot"><span class="numlink" onclick="kbOpenDrawer(\'latestbill\',{bucket:\''+r[0]+'\'})">'+fmt(r[4])+'</span></td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  // ===== 等待卸车时长分布下钻 (H) =====
+  function waitVehDetailDrawer(bucketDefault){
+    var buckets=['0-0.5H','0.5-1H','1-3H','3-6H','6-12H','>12H'];
+    var opts='<option value="">全部</option>';
+    buckets.forEach(function(b){ opts+='<option value="'+b+'"'+(bucketDefault===b?' selected':'')+'>'+b+'</option>'; });
+    var tf='<select>'+opts+'</select>';
+    var fields=[
+      ['时间分布',tf],
+      ['状态',selHtml('请选择')],
+      ['始发地',selHtml('请选择')],
+      ['运输类型',selHtml('请选择')],
+      ['任务编码','<input placeholder="最多可查询100，以回车键隔开"/>']
+    ];
+    return filterBar(fields)+waitVehDetailTable();
+  }
+  function waitVehDetailTable(){
+    var data=[
+      ['MT2026062800229','2026-06-28 14:30','>12H',720,33000,'干线任务A','EWR.H','LAX.H','2026-06-28 06:00','2026-06-28 13:00'],
+      ['MT2026062800231','2026-06-28 15:00','>12H',580,26000,'干线任务B','ORD.H','LAX.H','2026-06-28 07:00','2026-06-28 13:30'],
+      ['MT2026062800235','2026-06-28 16:20','>12H',140,7142,'支线任务C','SFO.H','LAX.H','2026-06-28 08:30','2026-06-28 14:00'],
+      ['MT2026062800405','2026-06-28 12:10','3.5H',98,3120,'干线任务N','JFK.H','LAX.H','2026-06-28 04:00','2026-06-28 11:30'],
+      ['MT2026062800408','2026-06-28 13:20','2.2H',86,2740,'支线任务P','RDU.H','LAX.H','2026-06-28 05:30','2026-06-28 12:40']
+    ];
+    var h='<div class="scroll"><table><thead><tr><th>任务编码</th><th>实际抵达目的站时间</th><th>时长</th><th>应卸袋数</th><th>应卸票数</th><th>任务名称</th><th>始发地</th><th>目的地</th><th>实际发车时间</th><th>计划到车时间</th></tr></thead><tbody>';
+    var sb=0,sl=0;
+    data.forEach(function(r){sb+=r[3];sl+=r[4];});
+    data.forEach(function(r){
+      h+='<tr><td class="key-col">'+navLink(r[0],'tms')+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="tot">'+fmt(r[3])+'</td><td class="tot">'+fmt(r[4])+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td><td>'+r[7]+'</td><td>'+r[8]+'</td><td>'+r[9]+'</td></tr>';
+    });
+    h+='<tr class="tot"><td class="key-col" colspan="3">合计</td><td class="tot">'+fmt(sb)+'</td><td class="tot">'+fmt(sl)+'</td><td colspan="5"></td></tr>';
+    return h+'</tbody></table></div>'+pagerHtml(data.length,10,1,1);
+  }
+  if(type==='flowtime'){
+      var info=arg||{};
+      var hr=info.hour||'该时段', bag=info.bag||0, bill=info.bill||0, veh=info.veh||0;
+      t='预计到车 · '+hr+' 时段流向';
+      var head='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">时段</div><div class="v">'+hr+'</div></div>'
+        +'<div class="drawer-stat"><div class="l">车辆</div><div class="v">'+veh+'<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">'+fmt(bag)+'<span class="u">袋</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v">'+fmt(bill)+'<span class="u">票</span></div></div>'
+        +'</div>';
+      if(bag===0&&bill===0&&veh===0){
+        content=head+'<div class="drawer-section"><div class="drawer-sub" style="text-align:center;color:#b0b5bc;padding:24px 0;">'+hr+' 时段暂无预计到车</div></div>';
+      } else {
+        var defs=[['站点 · SDF','lb-trunk','干线',0.38],['站点 · BNA','lb-trunk','干线',0.28],['站点 · CLT','lb-branch','支线',0.18],['hub · ATL','lb-trunk','干线',0.10],['服务渠道','lb-branch','支线',0.06]];
+        if(info.line==='trunk') defs=defs.filter(function(d){return d[2]==='干线';});
+        else if(info.line==='branch') defs=defs.filter(function(d){return d[2]==='支线';});
+        var sumR=defs.reduce(function(s,d){return s+d[3];},0)||1;
+        var frows='';
+        defs.forEach(function(d){
+          var share=d[3]/sumR;
+          frows+='<tr><td class="key-col">'+d[0]+'</td><td><span class="lbadge '+d[1]+'">'+d[2]+'</span></td><td class="tot">'+Math.round(bag*share)+'</td><td class="tot">'+fmt(Math.round(bill*share))+'</td><td>'+Math.round(share*100)+'%</td></tr>';
+        });
+        content=head
+          +'<div class="dbar"><div></div><button class="dexport">导出</button></div>'
+          +'<div class="drawer-section"><h4>📍 '+hr+' 预计到车流向分布</h4>'
+          +'<div class="scroll"><table><thead><tr><th>目的流向</th><th>线路</th><th>袋数</th><th>票数</th><th>票数占比</th></tr></thead><tbody>'
+          +frows
+          +'<tr class="tot"><td>合计</td><td></td><td>'+bag+'</td><td>'+fmt(bill)+'</td><td>100%</td></tr>'
+          +'</tbody></table></div></div>';
+      }
+    } else if(type==='flow'){
+      t='预计到车 · 目的流向明细';
+      content='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">预计到车车辆</div><div class="v">8<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">155<span class="u">袋</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v">56,592<span class="u">票</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">流向数</div><div class="v">6<span class="u">个</span></div></div>'
+        +'</div>'
+        +'<div class="dbar"><div class="dfilters"><div class="fld"><label>线路</label>'
+        +'<span class="seg" id="flow-fl"><span class="on" data-fline="all">全部</span><span data-fline="trunk">干线</span><span data-fline="branch">支线</span></span></div></div>'
+        +'<button class="dexport">导出</button></div>'
+        +'<div class="drawer-section"><h4>📍 目的流向明细</h4>'
+        +'<div class="scroll"><table><thead><tr><th>目的流向</th><th>线路</th><th>车辆</th><th>袋数</th><th>票数</th><th>票数占比</th><th>到达时段</th></tr></thead><tbody id="flow-tbody">'
+        +flowTableBody('all')
+        +'</tbody></table></div></div>';
+    } else if(type==='unload'){
+      t='查看明细-已到未卸';
+      content=expBar()
+        +statTable('时间分布',[
+          ['合计',17,1440,66142],
+          ['>12H',17,1440,66142]
+        ],{drillVeh:'unloadveh',drillBag:'unloadbag',drillBill:'unloadbill'});
+    } else if(type==='unloaded'){
+      t='查看明细-已卸';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',10,184,59585],
+          ['SDF.H',3,61,16608],
+          ['BNA.H',2,38,20123],
+          ['CLT.H',1,18,8302],
+          ['RDU.H',1,43,8248],
+          ['ATL.H',1,21,6255],
+          ['MCO.H',2,3,49]
+        ],{drillVeh:'unloadedveh',drillBag:'unloadedbag',drillBill:'unloadedbill'});
+    } else if(type==='overtime'){
+      t='超时未卸预警 · 已到未卸车辆';
+      content=arrivedVehDrawer('全部','late');
+    } else if(type==='eta'){
+      t='查看明细-预计到车';
+      content=expBar()
+        +etaTimeTable([
+          ['合计',30,300,3000],
+          ['<=0H',3,30,300],
+          ['0.5H',0,0,0],
+          ['1H',3,30,300],
+          ['2H',3,30,300],
+          ['3H',3,30,300],
+          ['4H',6,60,600],
+          ['>4H',12,120,1200]
+        ]);
+    } else if(type==='etaveh'){
+      t='查看明细-预计到车车辆数';
+      content=arrivedVehDrawer(arg&&arg.bucket?arg.bucket:null,'etaVeh');
+    } else if(type==='etabag'){
+      t='查看明细-预计到车-袋数';
+      content=etaBagBillDrawer(arg&&arg.bucket?arg.bucket:null,'bag');
+    } else if(type==='etabill'){
+      t='查看明细-预计到车-运单数';
+      content=etaBagBillDrawer(arg&&arg.bucket?arg.bucket:null,'bill');
+    } else if(type==='unloadveh'){
+      t='查看明细-已到未卸-车辆数';
+      content=unloadVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadbag'){
+      t='查看明细-已到未卸-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadbill'){
+      t='查看明细-已到未卸-运单数';
+      content=unloadBillDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadedveh'){
+      t='查看明细-已卸-车辆数';
+      content=unloadedVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadedbag'){
+      t='查看明细-已卸-袋数';
+      content=unloadedBagDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='unloadedbill'){
+      t='查看明细-已卸-运单数';
+      content=unloadedBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='upstream'){
+      t='查看明细-上游未发车';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +'<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">上游未发车车辆</div><div class="v" style="color:#b0b5bc;">0<span class="u">辆</span></div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><h4>始发地分布</h4>'
+        +'<div class="scroll"><table><thead><tr><th>始发地</th><th>车辆数</th></tr></thead><tbody>'
+        +'<tr class="tot"><td>合计</td><td>0</td></tr>'
+        +'</tbody></table></div></div>'
+        +'<div class="drawer-sub" style="text-align:center;color:#b0b5bc;padding:24px 0;">当前无上游未发车车辆</div>';
+    } else if(type==='transit'){
+      t='查看明细-在途';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',7,276,48877],
+          ['SDF.H',1,50,8200],
+          ['BNA.H',2,60,15200],
+          ['CLT.H',1,46,9140],
+          ['RDU.H',2,70,10600],
+          ['ATL.H',1,50,5737]
+        ],{drillVeh:'transitveh',drillBag:'transitbag',drillBill:'transitbill'});
+    } else if(type==='abnormal'){
+      t='查看明细-异常未到';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',2,166,4064],
+          ['BNA.H',1,120,3000],
+          ['MCO.H',1,46,1064]
+        ],{drillVeh:'abnormalveh',drillBag:'abnormalbag',drillBill:'abnormalbill'});
+    } else if(type==='latest'){
+      t='查看明细-截单后到';
+      content=expBar()+statTable('时间分布',[
+        ['合计',3,49,17403],
+        ['>12H',3,49,17403]
+      ],{drillVeh:'latestveh',drillBag:'latestbag',drillBill:'latestbill'});
+    } else if(type==='upstreamveh'){
+      t='查看明细-上游未发车-车辆数';
+      content=upstreamVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='transitveh'){
+      t='查看明细-在途-车辆数';
+      content=transitVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='transitbag'){
+      t='查看明细-在途-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null,'dispatchMonitor');
+    } else if(type==='transitbill'){
+      t='查看明细-在途-运单数';
+      content=transitBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='abnormalveh'){
+      t='查看明细-异常未到-车辆数';
+      content=abnormalVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='abnormalbag'){
+      t='查看明细-异常未到-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null,'dispatchMonitor');
+    } else if(type==='abnormalbill'){
+      t='查看明细-异常未到-运单数';
+      content=abnormalBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='latestveh'){
+      t='查看明细-截单后到-车辆数';
+      content=latestVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='latestbag'){
+      t='查看明细-截单后到-袋数';
+      content=unloadBagDrawer(arg&&arg.bucket?arg.bucket:null,'vehicleMonitor');
+    } else if(type==='latestbill'){
+      t='查看明细-截单后到-运单数';
+      content=unloadBillDrawer(arg&&arg.bucket?arg.bucket:null,'vehicleMonitor');
+    } else if(type==='timelyveh'){
+      t='及时卸车车辆明细（≤1H）';
+      content=arrivedVehDrawer(null,'timely');
+    } else if(type==='lateveh'){
+      t='不及时卸车车辆明细（>1H）';
+      content=arrivedVehDrawer(null,'late');
+    } else if(type==='waitveh'){
+      t='等待卸车 · '+arg.bucket+' 车辆明细';
+      content=waitVehDetailDrawer(arg.bucket);
+    } else if(type==='wait'){
+      t='等待卸车 · 时长分布';
+      var buckets=['0-0.5H','0.5-1H','1-3H','3-6H','6-12H','>12H'];
+      var counts=[1,0,2,3,5,6];
+      var h='';
+      h+=expBar();
+      h+='<div class="drawer-stats">'
+        +'<div class="drawer-stat"><div class="l">等待卸车车辆</div><div class="v">17<span class="u">辆</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">袋数</div><div class="v">1,440<span class="u">袋</span></div></div>'
+        +'<div class="drawer-stat"><div class="l">票数</div><div class="v">66,142<span class="u">票</span></div></div>'
+        +'</div>'
+        +'<div class="drawer-section"><h4>等待时长分布</h4>'
+        +'<div class="scroll"><table><thead><tr><th>等待时长</th><th>车辆数</th></tr></thead><tbody>';
+      for(var i=0;i<buckets.length;i++){
+        h+='<tr><td class="key-col">'+buckets[i]+'</td><td><span class="numlink" onclick="kbOpenDrawer(\'waitveh\',{bucket:\''+buckets[i]+'\'})">'+counts[i]+'</span></td></tr>';
+      }
+      h+='<tr class="tot"><td>合计</td><td>17</td></tr></tbody></table></div></div>';
+      content=h;
+    } else if(type==='timely'){
+      t='卸车及时率 · 明细';
+      content=filterBar([['始发地',selHtml('请选择')],['运输类型',selHtml('请选择')]])
+        +statTable('始发地',[
+          ['合计',17,184,59585],
+          ['SDF.H',3,61,16608],
+          ['BNA.H',2,38,20123],
+          ['CLT.H',1,18,8302],
+          ['RDU.H',1,43,8248],
+          ['ATL.H',1,21,6255],
+          ['MCO.H',2,3,49]
+        ],{drillVeh:'timelyunloadedveh',drillBag:'timelyunloadedbag',drillBill:'timelyunloadedbill'});
+    } else if(type==='timelyunloadedveh'){
+      t='卸车及时率 · 车辆明细';
+      content=unloadedVehDrawer(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='timelyunloadedbag'){
+      t='卸车及时率 · 袋数明细';
+      content=unloadedBagDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    } else if(type==='timelyunloadedbill'){
+      t='卸车及时率 · 运单数明细';
+      content=unloadedBillDrawerFn(arg&&arg.bucket?arg.bucket:null);
+    }
+    titleEl.textContent=t;
+    bodyEl.innerHTML=content;
+    layerEl.classList.add('on');
+    drawerLayers.push({el:layerEl,type:type,arg:arg});
+    document.body.style.overflow='hidden';
+    // 绑定流向展开
+    bodyEl.querySelectorAll('.flow-exp').forEach(function(el){
+      el.addEventListener('click',function(){
+        var tgt=bodyEl.querySelector('#'+this.getAttribute('data-target'));
+        if(tgt){
+          var h=tgt.style.display;
+          tgt.style.display=h==='none'?'table-row':'none';
+          this.textContent=h==='none'?'收起时段 ▴':'展开时段 ▾';
+        }
+      });
+    });
+    // 绑定流向线路切换
+    var fl=bodyEl.querySelector('#flow-fl');
+    if(fl){
+      fl.querySelectorAll('span').forEach(function(s){
+        s.addEventListener('click',function(){
+          fl.querySelectorAll('span').forEach(function(x){x.classList.remove('on');});
+          this.classList.add('on');
+          var line=this.getAttribute('data-fline');
+          var tb=bodyEl.querySelector('#flow-tbody');
+          if(tb) tb.innerHTML=flowTableBody(line);
+          // 重新绑定展开
+          bodyEl.querySelectorAll('.flow-exp').forEach(function(el){
+            el.addEventListener('click',function(){
+              var tgt=bodyEl.querySelector('#'+this.getAttribute('data-target'));
+              if(tgt){
+                var h=tgt.style.display;
+                tgt.style.display=h==='none'?'table-row':'none';
+                this.textContent=h==='none'?'收起时段 ▴':'展开时段 ▾';
+              }
+            });
+          });
+        });
+      });
+    }
+  }
+  window.kbOpenDrawer=openDrawer;
+  window.kbNavTo=function(type,text){
+    var labels={'vehicleMonitor':'车辆监控台','tms':'TMS出发到达管理','dispatchMonitor':'调度监控工作台','bagQuery':'袋号查询','billQuery':'派件运单管理中的基本信息'};
+    alert('跳转至：'+labels[type]+'\n编码：'+text);
+  };
+  // 绑定所有 data-drawer 点击
+  document.querySelectorAll('[data-drawer]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
+      openDrawer(this.getAttribute('data-drawer'));
+    });
+  });
+  // 绑定表格中数字下钻（时间分布汇总表 → 车辆/袋/运单明细）
+  document.addEventListener('click',function(e){
+    var target=e.target.closest('[data-drill]');
+    if(!target) return;
+    var drillType=target.getAttribute('data-drill');
+    var bucket=target.getAttribute('data-bucket');
+    if(drillType==='etaveh'){
+      openDrawer('etaveh',{bucket:bucket});
+    } else if(drillType==='etabag'){
+      openDrawer('etabag',{bucket:bucket});
+    } else if(drillType==='etabill'){
+      openDrawer('etabill',{bucket:bucket});
+    } else if(drillType==='unloadveh'){
+      openDrawer('unloadveh',{bucket:bucket});
+    } else if(drillType==='unloadbag'){
+      openDrawer('unloadbag',{bucket:bucket});
+    } else if(drillType==='unloadbill'){
+      openDrawer('unloadbill',{bucket:bucket});
+    } else if(drillType==='unloadedveh'){
+      openDrawer('unloadedveh',{bucket:bucket});
+    } else if(drillType==='unloadedbag'){
+      openDrawer('unloadedbag',{bucket:bucket});
+    } else if(drillType==='unloadedbill'){
+      openDrawer('unloadedbill',{bucket:bucket});
+    } else if(drillType==='upstreamveh'){
+      openDrawer('upstreamveh',{bucket:bucket});
+    } else if(drillType==='transitveh'){
+      openDrawer('transitveh',{bucket:bucket});
+    } else if(drillType==='transitbag'){
+      openDrawer('transitbag',{bucket:bucket});
+    } else if(drillType==='transitbill'){
+      openDrawer('transitbill',{bucket:bucket});
+    } else if(drillType==='abnormalveh'){
+      openDrawer('abnormalveh',{bucket:bucket});
+    } else if(drillType==='abnormalbag'){
+      openDrawer('abnormalbag',{bucket:bucket});
+    } else if(drillType==='abnormalbill'){
+      openDrawer('abnormalbill',{bucket:bucket});
+    } else if(drillType==='latestveh'){
+      openDrawer('latestveh',{bucket:bucket});
+    } else if(drillType==='latestbag'){
+      openDrawer('latestbag',{bucket:bucket});
+    } else if(drillType==='latestbill'){
+      openDrawer('latestbill',{bucket:bucket});
+    } else if(drillType==='timelyunloadedveh'){
+      openDrawer('timelyunloadedveh',{bucket:bucket});
+    } else if(drillType==='timelyunloadedbag'){
+      openDrawer('timelyunloadedbag',{bucket:bucket});
+    } else if(drillType==='timelyunloadedbill'){
+      openDrawer('timelyunloadedbill',{bucket:bucket});
+    }
+  });
+  // 辅助卡展开/收起
+  var auxToggle=document.getElementById('aux-toggle');
+  var auxCards=document.getElementById('aux-cards');
+  if(auxToggle){
+    auxToggle.addEventListener('click',function(){
+      var h=auxCards.style.display;
+      auxCards.style.display=h==='none'?'grid':'none';
+      this.textContent=h==='none'?'收起上游状态 ▴':'展开上游状态（未发车 / 在途 / 异常未到 / 截单后到）▾';
+    });
+  }
+  // lightbox 关闭
+  var lb=document.getElementById('lightbox');
+  document.getElementById('lb-close').addEventListener('click',function(){lb.classList.remove('on');});
+  lb.addEventListener('click',function(e){if(e.target===lb)lb.classList.remove('on');});
+  // ESC 关闭
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeTopDrawer();lb.classList.remove('on');}
+  });
+})();
+</script>
+
+<!-- ===== 页面标注系统（卸车区：按一级/二级页面及 Tab 上下文隔离；删除状态持久化） ===== -->
+<style id="qa-annotation-style">
+  :root{
+    --qa-orange:#fc4c02;--qa-red:#e5484d;--qa-blue:#2563eb;--qa-green:#16a34a;--qa-purple:#7c3aed;
+    --qa-ink:#172033;--qa-muted:#66758a;--qa-line:#dfe5ec;--qa-bg:#fff;
+  }
+  body.qa-annotating,body.qa-annotating *{cursor:crosshair!important}
+  body.qa-annotating .qa-ui,body.qa-annotating .qa-ui *{cursor:auto!important}
+  #qa-runtime-root{position:static;z-index:auto}
+  #qa-marker-layer{position:absolute;left:0;top:0;width:0;height:0;z-index:auto;pointer-events:none}
+  .qa-marker{position:absolute;display:flex!important;align-items:center!important;justify-content:center!important;width:30px;height:30px;margin:-15px 0 0 -15px;padding:0!important;border:2px solid #fff;border-radius:50%;background:var(--qa-orange);color:#fff!important;-webkit-text-fill-color:#fff!important;font:700 12px/1 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif!important;text-indent:0!important;box-shadow:0 4px 14px rgba(15,23,42,.28);pointer-events:auto;cursor:grab!important;user-select:none;overflow:visible!important;transition:transform .15s ease,box-shadow .15s ease;z-index:2}
+  .qa-marker-num{display:block!important;position:relative;z-index:1;min-width:1em;color:#fff!important;-webkit-text-fill-color:#fff!important;font:700 12px/1 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif!important;text-align:center!important;letter-spacing:0!important;opacity:1!important;visibility:visible!important}
+  .qa-marker:hover{transform:scale(1.12);box-shadow:0 7px 20px rgba(15,23,42,.34)}
+  .qa-marker:active{cursor:grabbing!important}
+  .qa-marker[data-type="问题"]{background:var(--qa-red)}
+  .qa-marker[data-type="建议"]{background:var(--qa-blue)}
+  .qa-marker[data-type="确认"]{background:var(--qa-green)}
+  .qa-marker[data-type="系统逻辑"]{background:var(--qa-purple)}
+  .qa-marker.qa-focus{animation:qaPulse .9s ease 2}
+  @keyframes qaPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
+  #qa-hover-box{position:fixed;display:none;border:2px solid rgba(252,76,2,.82);background:rgba(252,76,2,.06);border-radius:6px;z-index:2147482000;pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.65) inset}
+  body.qa-annotating #qa-hover-box{display:block}
+  .qa-marker-tooltip{position:fixed;left:0;top:0;display:none;width:max-content;max-width:min(340px,calc(100vw - 24px));padding:10px 12px;border:1px solid rgba(124,58,237,.25);border-radius:10px;background:rgba(23,32,51,.96);color:#fff;box-shadow:0 12px 34px rgba(15,23,42,.3);font:12px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;white-space:normal;word-break:break-word;pointer-events:none;z-index:2147483645;opacity:0;transform:translateY(4px);transition:opacity .12s ease,transform .12s ease}
+  .qa-marker-tooltip.qa-show{display:block;opacity:1;transform:translateY(0)}
+  .qa-marker-tooltip-head{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:11px;font-weight:700;color:#f8fafc}
+  .qa-marker-tooltip-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.16);font-family:"IBM Plex Mono",Consolas,monospace}
+  .qa-marker-tooltip-type{color:#d8b4fe}
+  .qa-marker-tooltip-text{color:#fff;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;tab-size:4}
+  .qa-toolbar{position:fixed;right:22px;bottom:22px;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid rgba(221,227,235,.95);border-radius:13px;background:rgba(255,255,255,.96);box-shadow:0 12px 35px rgba(15,23,42,.18);backdrop-filter:blur(12px);z-index:2147483640}
+  .qa-btn{height:34px;padding:0 11px;border:1px solid var(--qa-line);border-radius:8px;background:#fff;color:var(--qa-ink);font:600 12px/1 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;cursor:pointer!important;white-space:nowrap}
+  .qa-btn:hover{border-color:#ff9b75;background:#fff7f2;color:var(--qa-orange)}
+  .qa-btn.qa-primary{border-color:var(--qa-orange);background:var(--qa-orange);color:#fff;box-shadow:0 5px 13px rgba(252,76,2,.22)}
+  .qa-btn.qa-primary:hover{background:#e9470d;color:#fff}
+  .qa-btn.qa-on{border-color:var(--qa-orange);background:#fff1e9;color:var(--qa-orange)}
+  .qa-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:5px;padding:0 6px;border-radius:999px;background:#f1f5f9;color:var(--qa-muted);font-size:10px}
+  .qa-btn.qa-on .qa-count,.qa-primary .qa-count{background:rgba(255,255,255,.2);color:inherit}
+  .qa-panel{position:fixed;right:0;top:0;width:370px;max-width:92vw;height:100vh;display:flex;flex-direction:column;background:#fff;border-left:1px solid var(--qa-line);box-shadow:-18px 0 50px rgba(15,23,42,.18);z-index:2147483635;transform:translateX(104%);transition:transform .2s ease}
+  .qa-panel.qa-open{transform:translateX(0)}
+  .qa-panel-hd{display:flex;align-items:center;justify-content:space-between;padding:17px 18px;border-bottom:1px solid #edf0f4;background:linear-gradient(180deg,#fff,#fafbfd)}
+  .qa-panel-title{font-size:15px;font-weight:750;color:var(--qa-ink)}
+  .qa-panel-sub{margin-top:3px;font-size:11px;color:var(--qa-muted)}
+  .qa-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--qa-line);border-radius:8px;background:#fff;color:var(--qa-muted);font-size:18px;cursor:pointer!important}
+  .qa-icon-btn:hover{background:#f5f7fa;color:var(--qa-ink)}
+  .qa-panel-actions{display:flex;gap:7px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #edf0f4;background:#fafbfd}
+  .qa-panel-actions .qa-btn{height:30px;padding:0 9px;font-size:11px}
+  .qa-list{flex:1;overflow:auto;padding:12px}
+  .qa-empty{padding:54px 18px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.8}
+  .qa-item{position:relative;margin-bottom:9px;padding:12px 12px 11px 44px;border:1px solid #e6ebf1;border-radius:11px;background:#fff;cursor:pointer!important;transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+  .qa-item:hover{transform:translateY(-1px);border-color:#ffc2aa;box-shadow:0 7px 18px rgba(15,23,42,.07)}
+  .qa-item-num{position:absolute;left:11px;top:12px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--qa-orange);color:#fff;font-size:11px;font-weight:700}
+  .qa-item[data-type="问题"] .qa-item-num{background:var(--qa-red)}
+  .qa-item[data-type="建议"] .qa-item-num{background:var(--qa-blue)}
+  .qa-item[data-type="确认"] .qa-item-num{background:var(--qa-green)}
+  .qa-item[data-type="系统逻辑"] .qa-item-num{background:var(--qa-purple)}
+  .qa-item-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+  .qa-type{display:inline-flex;align-items:center;height:21px;padding:0 7px;border-radius:999px;background:#f1f5f9;color:#58677a;font-size:10px;font-weight:700}
+  .qa-item-time{color:#a0aaba;font-size:9.5px}
+  .qa-item-text{color:var(--qa-ink);font-size:12.5px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;tab-size:4}
+  .qa-item-target{margin-top:6px;color:#8a96a8;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qa-dialog-mask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,.42);backdrop-filter:blur(3px);z-index:2147483646}
+  .qa-dialog-mask.qa-open{display:flex}
+  .qa-dialog{width:480px;max-width:95vw;border:1px solid var(--qa-line);border-radius:15px;background:#fff;box-shadow:0 28px 80px rgba(15,23,42,.28);overflow:hidden;animation:qaIn .18s ease}
+  @keyframes qaIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .qa-dialog-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #edf0f4}
+  .qa-dialog-title{font-size:15px;font-weight:750;color:var(--qa-ink)}
+  .qa-dialog-bd{padding:16px 18px}
+  .qa-field{margin-bottom:13px}
+  .qa-field label{display:block;margin-bottom:6px;color:#5f6e80;font-size:11px;font-weight:700}
+  .qa-select,.qa-textarea{width:100%;border:1px solid #dfe5ec;border-radius:9px;background:#fff;color:var(--qa-ink);font:12.5px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;outline:none}
+  .qa-select{height:36px;padding:0 10px}
+  .qa-textarea{min-height:118px;padding:10px 11px;resize:vertical}
+  .qa-select:focus,.qa-textarea:focus{border-color:#ff9b75;box-shadow:0 0 0 3px rgba(252,76,2,.09)}
+  .qa-target-preview{padding:9px 10px;border:1px solid #e8edf3;border-radius:8px;background:#f8fafc;color:#7a8798;font-size:10.5px;line-height:1.5;word-break:break-all}
+  .qa-dialog-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-top:1px solid #edf0f4;background:#fafbfd}
+  .qa-dialog-ft-right{display:flex;gap:8px;margin-left:auto}
+  .qa-danger{border-color:#f1c4c2!important;color:#d43f45!important}
+  .qa-danger:hover{background:#fff3f2!important;border-color:#e9a8a5!important}
+  .qa-toast{position:fixed;left:50%;top:76px;z-index:2147483647;transform:translate(-50%,-8px);padding:10px 15px;border-radius:8px;background:rgba(23,32,51,.95);color:#fff;font-size:12px;box-shadow:0 10px 30px rgba(15,23,42,.25);opacity:0;pointer-events:none;transition:.18s ease}
+  .qa-toast.qa-show{opacity:1;transform:translate(-50%,0)}
+  .qa-help{position:fixed;right:22px;bottom:72px;max-width:310px;padding:10px 12px;border:1px solid #ffd4c3;border-radius:10px;background:#fff8f4;color:#8a4a32;font-size:11px;line-height:1.55;box-shadow:0 8px 24px rgba(15,23,42,.1);z-index:2147483638;display:none}
+  .qa-persist-note{margin:0 14px 10px;padding:9px 10px;border:1px solid #ffe0d2;border-radius:9px;background:#fff8f4;color:#7b5142;font-size:11px;line-height:1.6}
+  .qa-persist-note b{color:#a43f1e}
+  body.qa-annotating .qa-help{display:block}
+  @media(max-width:760px){.qa-toolbar{right:10px;bottom:10px;max-width:calc(100vw - 20px);overflow:auto}.qa-toolbar .qa-label-hide{display:none}.qa-panel{width:92vw}}
+  @media print{.qa-ui{display:none!important}.qa-marker{box-shadow:none!important}}
+</style>
+
+
+<script id="qa-export-seed">window.__QA_ANNOTATION_SEED__=[{"id":"qa_mrse27ev_dattjs","x":182,"y":328,"target":"div.node-top · 预计到车 未来 24H","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"预计到车：\n\n业务逻辑：\n    上游节点实际有操作发车，tag的预计到车时间/按照实际发车时间加上运行时长计算的预计到车时间在当前操作日的运输任务数\n\n系统逻辑：\n    车：\n1.数据来源：出发到达任务\n2.目的地【目的组织】等于当前组织\n3.ETA时间在 查询时间范围内\n4.车辆状态为 在途\n\n袋数：\n1.车辆中需要在当前地卸车的袋数\n\n运单数：\n1.车辆中需要在当前地卸车的运单数","createdAt":"2026-07-19T22:50:03.655Z","updatedAt":"2026-07-19T22:50:03.655Z"},{"id":"qa_mrse2j8k_hrk1jq","x":749,"y":326,"target":"b · 已到未卸","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"已到未卸\n业务逻辑：\n     车辆进入电子围栏时间/实际到达时间在当前或在之前操作日内且没有卸车的任务数。\n\n系统逻辑：\n1.数据来源：出发到达任务\n2.目的地（目的地组织）等于当前组织\n3.车辆状态为到达/在途\n4.实际抵达目的站时间 在 查询时间范围内 加上  实际抵达目的站时间 在近15天内\n5.卸车状态等于 否\n6.一个任务计数量为1\n7.或者如果车内的袋号在应卸目的地已卸比例90%，则标记为已卸\n8.剔除目的地为 .T ，.G【剔除网外地址】","createdAt":"2026-07-19T22:50:18.980Z","updatedAt":"2026-07-19T22:50:18.980Z"},{"id":"qa_mrse32mm_ozq1r3","x":1360,"y":331,"target":"b · 已卸","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"业务逻辑：\n车辆在当前班次内或者之前班次实际操作实际卸车，且在本节点班次内实际产生卸车扫描第一枪的运输任务数\n\n系统逻辑：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.车辆任务状态为到达\n4.卸车完成时间查询时间范围内\n5.卸车状态等于 是\n6.一个任务计数量为1","createdAt":"2026-07-19T22:50:44.110Z","updatedAt":"2026-07-19T22:51:00.769Z"},{"id":"qa_mrse43fp_g6u4g9","x":154,"y":494,"target":"div.al · 上游未发车","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"业务逻辑：\n上游节点已调度/装车，但是没有操作发车/车辆没有驶离电子围栏范围，计划到车时间在本节点当前作业班次/之前作业班次内的运输任务数\n\n系统逻辑：\n车辆数：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.计划到车时间在 查询时间范围内\n4.实际发车时间为空，且任务状态为待发车 \n5.一个任务计数量为1","createdAt":"2026-07-19T22:51:31.813Z","updatedAt":"2026-07-19T22:51:31.813Z"},{"id":"qa_mrse4n8c_f7wc9w","x":583,"y":491,"target":"div.al · 在途","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"在途：\n\n业务逻辑：\n上游节点实际有操作发车，计划到车时间在本节点当前作业班次/之前作业班次内的运输任务数\n\n系统逻辑：\n车辆数：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.计划到车时间在查询时间范围内，加上 计划到车时间在近15天内 且实际抵达目的站时间时间为空\n4.车辆状态为 在途\n5.一个任务计数量为1","createdAt":"2026-07-19T22:51:57.468Z","updatedAt":"2026-07-19T22:51:57.468Z"},{"id":"qa_mrse5qq4_bxk50u","x":1037,"y":488,"target":"div.al · 异常未到","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"业务逻辑：\n在当前查询时间节点前，本节点尚未有实际到车操作且上游节点有实际操作发车，计划到车时间在本节点当前作业班次/之前作业班次内的运输任务数\n\n系统逻辑：\n车辆数：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.计划到车时间在 查询时间范围内 加上 计划到车时间在近15天内且抵达目的地电子围栏时间为空，并且当前时间大于计划到达时间\n4.车辆状态为 在途\n5.一个任务计数量为1","createdAt":"2026-07-19T22:52:48.652Z","updatedAt":"2026-07-19T22:52:48.652Z"},{"id":"qa_mrse6nck_bet7tt","x":1501,"y":491,"target":"div.al · 截单后到","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"}],"type":"系统逻辑","text":"业务逻辑：\n上游节点实际有操作发车，系统结合车辆绑定的tag设备实时点位距离目的站运距计算出来预计到车时间，预计到车时间在本节点当前作业班次结束之前2小时的运输任务数\n\n系统逻辑：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.预计到车时间在 查询时间范围内 加上 到车时间在近15天内，并且预计达到时间大于散货最晚到车时间【散货最晚到车时间取路由系统中】；\n4.车辆状态为 在途","createdAt":"2026-07-19T22:53:30.932Z","updatedAt":"2026-07-19T22:53:30.932Z"},{"id":"qa_mrse9r09_zr2p5r","x":922,"y":624,"target":"span · 干线","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|id:seg-eta-line|0","value":"line:trunk","label":"干线"}],"type":"系统逻辑","text":"业务逻辑：\n车辆内的货物都是干线货物。\n\n系统逻辑：\n    袋号 目的组织不等于当前组织/或者袋号目的组织对应的取件中心不等于当前组织。【包含空】\n详细描述：\n  2.1 目的组织为空 或 = 0\n  2.2 或者目的组织是中心 且 目的组织 ≠ 当前组织\n  2.3 或者目的组织是站点/车队 且 取件中心 ≠ 当前组织","createdAt":"2026-07-19T22:55:55.641Z","updatedAt":"2026-07-19T22:55:55.641Z"},{"id":"qa_mrsediiw_8mkm0k","x":973,"y":638,"target":"span.on · 支线","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|id:seg-eta-line|0","value":"line:branch","label":"支线"}],"type":"系统逻辑","text":"业务逻辑：\n车辆内的货物都是支线（站点）的货物。\n\n系统逻辑：\n袋号目的组织等于当前组织/或者袋号目的组织对应的取件中心等于当前组织。\n详细描述：Step 2（支线判断，满足任一即命中）：\n  3.1 目的组织是中心 且 目的组织 = 当前组织\n  3.2 目的组织是站点/车队 且 取件中心 = 当前组织\nStep 3：以上均不满足 → 返回空字符串\n一个袋子不允许同时存在干线/支线内","createdAt":"2026-07-19T22:58:51.272Z","updatedAt":"2026-07-19T22:58:51.272Z"},{"id":"qa_mrsee9y8_txz2o2","x":1040,"y":625,"target":"span.on · 单小时","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|id:seg-eta-mode|0","value":"mode:hour","label":"单小时"}],"type":"系统逻辑","text":"业务逻辑：\n按照预计到车的时间在那个时间上看\n\n系统逻辑：\n按照 预计到车时间 所在的 小时 进行汇总统计。","createdAt":"2026-07-19T22:59:26.816Z","updatedAt":"2026-07-19T22:59:26.816Z"},{"id":"qa_mrsefsal_4iytai","x":1084,"y":633,"target":"span · 累计","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|id:seg-eta-mode|0","value":"mode:cum","label":"累计"}],"type":"系统逻辑","text":"业务逻辑:\n 前面所有时间相加\n\n系统逻辑：\n 以预计到达时间 为主，将前面所有的时间相加，得到一个累计值","createdAt":"2026-07-19T23:00:37.245Z","updatedAt":"2026-07-19T23:00:37.245Z"},{"id":"qa_mrsegbre_2peubd","x":1433,"y":649,"target":"div.risk-item · ! 超时未卸 到达后超过 1H 仍未卸完 16 辆","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[],"type":"系统逻辑","text":"逻辑不变，如果超过一个小时没有卸车就显示","createdAt":"2026-07-19T23:01:02.474Z","updatedAt":"2026-07-19T23:01:02.474Z"},{"id":"qa_mrsegr5d_v7bbda","x":1459,"y":716,"target":"div.risk-item · ⌛ 超长等待 等待时间超过 12H，需优先排台 6 辆","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[],"type":"系统逻辑","text":"逻辑不变； \n\n如果超过了12H小时没有卸车就显示","createdAt":"2026-07-19T23:01:22.417Z","updatedAt":"2026-07-19T23:01:22.417Z"},{"id":"qa_mrsejwww_rxgqbg","x":164,"y":1013,"target":"div.ops-title · 卸车进度与时效","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[{"groupId":"primary|aria:中心看板业务区域|0","value":"businessTab:unload","label":"卸车区"},{"groupId":"primary|aria:日期范围|0","value":"text:今日","label":"今日"},{"groupId":"primary|id:seg-eta-line|0","value":"line:branch","label":"支线"},{"groupId":"primary|id:seg-eta-mode|0","value":"mode:hour","label":"单小时"},{"groupId":"primary|id:seg-eta-metric|0","value":"metric:bag","label":"袋数"}],"type":"系统逻辑","text":"业务逻辑： \n\n当出现了没有卸车的车辆，那么会按照当前时间和车辆到达时间进行展示\n\n系统逻辑：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.实际抵达目的站时间 在 查询时间范围内 加上实际抵达目的站时间在近15天内\n4.卸车状态等于 否\n5.一个任务计数量为1\n6.以实际到车时间减去当前时间聚合，","createdAt":"2026-07-19T23:03:49.856Z","updatedAt":"2026-07-19T23:03:49.856Z"},{"id":"qa_mrsekzmc_0oej3n","x":1324,"y":1244,"target":"div.aux-card · 及时（≤1H） 1 辆","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[],"type":"系统逻辑","text":"业务逻辑：\n 车辆到达后，在1H内卸车完毕\n\n系统逻辑：\n\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.车辆实际到达时间在当前班次内，并且车辆实际到达时间 + 1H > 第一票卸车时间。如果卸车时间为空，那么车辆实际到达时间 + 1H >当前时间","createdAt":"2026-07-19T23:04:40.020Z","updatedAt":"2026-07-19T23:04:40.020Z"},{"id":"qa_mrsellbo_ccw09w","x":1787,"y":1247,"target":"div.aux-card · 不及时（>1H） 16 辆","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[],"type":"系统逻辑","text":"业务逻辑：\n车辆到达后，在一个小时内没有卸车完毕。\n\n系统逻辑：\n1.数据来源：出发到达任务\n2.目的地等于当前组织\n3.车辆实际到达时间在当前班次内，并且车辆实际到达时间 + 1H <= 第一票卸车时间。如果卸车时间为空，那么车辆实际到达时间 + 1H <=当前时间","createdAt":"2026-07-19T23:05:08.148Z","updatedAt":"2026-07-19T23:05:08.148Z"},{"id":"qa_mrsenvhk_bbycj9","x":251,"y":1068,"target":"div.chart-panel-title · 等待卸车 · 时长分布 查看明细 ›","layerZ":2,"contextId":"primary","contextLabel":"一级页面","tabScopes":[],"type":"系统逻辑","text":"业务逻辑：\n车辆到达后，还没有卸车的时间分布情况\n\n系统逻辑：\n按照当前时间 减去  预计到车时间 ，并且按照时间进行排布","createdAt":"2026-07-19T23:06:54.632Z","updatedAt":"2026-07-19T23:06:54.632Z"}];</script><script id="qa-export-deleted">window.__QA_ANNOTATION_DELETED__={"qa_mrseal2o_051qlk":"2026-07-19T22:58:02.560Z"};</script><script id="qa-annotation-system">
+(function(){
+  'use strict';
+  if(window.__QA_ANNOTATION_READY__) return;
+  window.__QA_ANNOTATION_READY__=true;
+
+  var STORAGE_KEY='qa_annotations_v2_gofo_unloading_dashboard';
+  var DELETED_KEY=STORAGE_KEY+'_deleted';
+  var LEGACY_STORAGE_PREFIX='qa_annotations_v1_gofo_unloading_dashboard_';
+  var notes=[];
+  var deletedNotes={};
+  var mode=false;
+  var editingId=null;
+  var draftPoint=null;
+  var dragState=null;
+  var suppressMarkerClick=false;
+  var hoverTarget=null;
+  var toastTimer=null;
+  var CONTEXT_SELECTOR='.drawer-layer,.drawer-mask,.lightbox,.modal-mask,.modal-overlay,.dialog-mask,[data-qa-page-context]';
+  var TAB_GROUP_SELECTOR='[role="tablist"],.seg,.seg-group,.filter-tabs,.main-flow-tabs,.gofo-business-tabs,.history-dimension-tabs,.flow-filter-tabs,.eta-chart-seg,[class*="-tabs"],[class*="-seg"]';
+  var TAB_ITEM_SELECTOR='button,[role="tab"],[role="button"],a,span,label,input[type="radio"]';
+  var TAB_SCOPE_ROOT_SELECTOR='[data-qa-tab-scope],.card,.abn-panel,.gofo-filter-card,.chart-panel,.risk-panel,.drawer-body,.drawer-panel,.drawer-bd,.drawer,.lightbox-box,.lightbox,.modal-content,.dialog-content,.query-table-card,main';
+  var contextObserver=null;
+  var tabObserver=null;
+  var currentContextId='primary';
+  var currentViewKey='';
+  var contextRefreshQueued=false;
+
+  function uid(){return 'qa_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+  function nowISO(){return new Date().toISOString()}
+  function safeParse(v){try{return JSON.parse(v)}catch(e){return null}}
+  function normalizeNotes(arr){
+    return (Array.isArray(arr)?arr:[]).filter(function(n){return n&&typeof n.x==='number'&&typeof n.y==='number'}).map(function(n){
+      var contextId=(typeof n.contextId==='string'&&n.contextId)?n.contextId:'primary';
+      var contextLabel=(typeof n.contextLabel==='string'&&n.contextLabel)?n.contextLabel:(contextId==='primary'?'一级页面':'二级页面');
+      var tabScopes=Array.isArray(n.tabScopes)?n.tabScopes.map(function(scope){
+        return scope&&typeof scope==='object'?{groupId:String(scope.groupId||''),value:String(scope.value||''),label:String(scope.label||scope.value||'')} : null;
+      }).filter(function(scope){return scope&&scope.groupId&&scope.value}):null;
+      return Object.assign({},n,{id:n.id||uid(),contextId:contextId,contextLabel:contextLabel,tabScopes:tabScopes,createdAt:n.createdAt||nowISO(),updatedAt:n.updatedAt||n.createdAt||nowISO()});
+    });
+  }
+  function mergeNotes(){
+    var merged=new Map();
+    Array.prototype.slice.call(arguments).forEach(function(arr){normalizeNotes(arr).forEach(function(n){
+      var old=merged.get(n.id);
+      if(!old||String(n.updatedAt||'')>=String(old.updatedAt||''))merged.set(n.id,n);
+    })});
+    return Array.from(merged.values());
+  }
+  function normalizeDeleted(value){
+    var out={};
+    if(Array.isArray(value)){
+      value.forEach(function(item){
+        if(typeof item==='string'&&item)out[item]=nowISO();
+        else if(item&&item.id)out[String(item.id)]=String(item.deletedAt||item.updatedAt||nowISO());
+      });
+    }else if(value&&typeof value==='object'){
+      Object.keys(value).forEach(function(id){
+        if(id)out[String(id)]=String(value[id]||nowISO());
+      });
+    }
+    return out;
+  }
+  function mergeDeleted(){
+    var out={};
+    Array.prototype.slice.call(arguments).forEach(function(value){
+      var normalized=normalizeDeleted(value);
+      Object.keys(normalized).forEach(function(id){
+        if(!out[id]||String(normalized[id])>String(out[id]))out[id]=normalized[id];
+      });
+    });
+    return out;
+  }
+  function applyDeleted(arr){
+    return normalizeNotes(arr).filter(function(n){return !deletedNotes[n.id]});
+  }
+  function markDeleted(ids){
+    var deletedAt=nowISO();
+    (Array.isArray(ids)?ids:[]).forEach(function(id){if(id)deletedNotes[String(id)]=deletedAt});
+  }
+  function persistState(){
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(notes));
+      localStorage.setItem(DELETED_KEY,JSON.stringify(deletedNotes));
+    }catch(e){}
+  }
+  function load(){
+    var seed=Array.isArray(window.__QA_ANNOTATION_SEED__)?window.__QA_ANNOTATION_SEED__:[];
+    var seedDeleted=normalizeDeleted(window.__QA_ANNOTATION_DELETED__);
+    var saved=[];var savedDeleted={};var legacy=[];
+    try{
+      saved=safeParse(localStorage.getItem(STORAGE_KEY))||[];
+      savedDeleted=safeParse(localStorage.getItem(DELETED_KEY))||{};
+      for(var i=0;i<localStorage.length;i++){
+        var key=localStorage.key(i);
+        if(key&&key.indexOf(LEGACY_STORAGE_PREFIX)===0){legacy=legacy.concat(safeParse(localStorage.getItem(key))||[])}
+      }
+    }catch(e){}
+    deletedNotes=mergeDeleted(savedDeleted,seedDeleted);
+    notes=applyDeleted(mergeNotes(legacy,saved,seed));
+    persistState();
+  }
+  function save(){notes=applyDeleted(notes);persistState();renderAll()}
+  function escText(s){return String(s==null?'':s)}
+  function fmtTime(iso){var d=new Date(iso);if(isNaN(d))return '';return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+  function toast(msg){var el=document.getElementById('qa-toast');el.textContent=msg;el.classList.add('qa-show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('qa-show')},1800)}
+  function isQA(el){return !!(el&&el.closest&&el.closest('.qa-ui'))}
+  function describeTarget(el){
+    if(!el)return '页面空白区域';
+    var tag=(el.tagName||'').toLowerCase();
+    var id=el.id?'#'+el.id:'';
+    var cls='';
+    if(el.classList&&el.classList.length)cls='.'+Array.prototype.slice.call(el.classList,0,2).join('.');
+    var txt=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim().slice(0,60);
+    return tag+id+cls+(txt?' · '+txt:'');
+  }
+  function contextElements(){
+    return Array.prototype.slice.call(document.querySelectorAll(CONTEXT_SELECTOR)).filter(function(el){return !isQA(el)});
+  }
+  function contextElementId(el){
+    if(!el)return 'primary';
+    var customId=el.getAttribute&&el.getAttribute('data-qa-context-id');
+    if(customId)return 'overlay:'+customId;
+    if(el.id)return 'overlay:'+el.id;
+    var all=contextElements();
+    var index=all.indexOf(el);
+    return 'overlay:auto-'+Math.max(0,index);
+  }
+  function contextLabel(el){
+    if(!el)return '一级页面';
+    var custom=el.getAttribute('data-qa-context-label');
+    if(custom)return custom;
+    var title=el.querySelector('.drawer-hd .ttl,.drawer-title,.modal-title,[aria-labelledby]');
+    if(title){
+      if(title.hasAttribute&&title.hasAttribute('aria-labelledby')){
+        var labelled=document.getElementById(title.getAttribute('aria-labelledby'));
+        if(labelled&&labelled.textContent.trim())return labelled.textContent.trim();
+      }
+      if(title.textContent&&title.textContent.trim())return title.textContent.trim();
+    }
+    var dialog=el.querySelector('[role="dialog"][aria-labelledby]');
+    if(dialog){var labelledId=dialog.getAttribute('aria-labelledby');var labelledEl=labelledId&&document.getElementById(labelledId);if(labelledEl&&labelledEl.textContent.trim())return labelledEl.textContent.trim()}
+    return '二级页面';
+  }
+  function isContextElementVisible(el){
+    if(!el||el.hidden||el.getAttribute('aria-hidden')==='true')return false;
+    var style=window.getComputedStyle(el);
+    if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+    var rect=el.getBoundingClientRect();
+    return rect.width>1&&rect.height>1;
+  }
+  function contextZ(el){
+    var style=window.getComputedStyle(el);
+    var z=parseInt(style.zIndex,10);
+    return Number.isFinite(z)?z:0;
+  }
+  function getCurrentContext(){
+    var visible=contextElements().filter(isContextElementVisible);
+    if(!visible.length)return {id:'primary',label:'一级页面',element:null};
+    visible.sort(function(a,b){var diff=contextZ(a)-contextZ(b);if(diff)return diff;return contextElements().indexOf(a)-contextElements().indexOf(b)});
+    var el=visible[visible.length-1];
+    return {id:contextElementId(el),label:contextLabel(el),element:el};
+  }
+  function getElementContext(el){
+    var contextEl=el&&el.closest?el.closest(CONTEXT_SELECTOR):null;
+    if(contextEl&&isQA(contextEl))contextEl=null;
+    if(!contextEl){
+      var current=getCurrentContext();
+      return current.element?current:{id:'primary',label:'一级页面',element:null};
+    }
+    return {id:contextElementId(contextEl),label:contextLabel(contextEl),element:contextEl};
+  }
+  function noteContextId(note){return note&&note.contextId?note.contextId:'primary'}
+  function isElementVisible(el){
+    if(!el||el.hidden||el.getAttribute('aria-hidden')==='true')return false;
+    var style=window.getComputedStyle(el);
+    if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+    var rect=el.getBoundingClientRect();
+    return rect.width>1&&rect.height>1;
+  }
+  function tabItems(group){
+    if(!group)return [];
+    return Array.prototype.slice.call(group.querySelectorAll(TAB_ITEM_SELECTOR)).filter(function(item){
+      var owner=item.closest&&item.closest(TAB_GROUP_SELECTOR);
+      return owner===group;
+    });
+  }
+  function isTabItemActive(item){
+    if(!item)return false;
+    return item.classList.contains('on')||item.classList.contains('active')||item.classList.contains('selected')||item.classList.contains('is-active')||item.getAttribute('aria-selected')==='true'||item.getAttribute('data-state')==='active'||item.checked===true;
+  }
+  function activeTabItem(group){
+    var items=tabItems(group);
+    for(var i=0;i<items.length;i++)if(isTabItemActive(items[i]))return items[i];
+    return null;
+  }
+  function isTabGroup(group){
+    if(!group||isQA(group))return false;
+    var items=tabItems(group);
+    return items.length>=2&&!!activeTabItem(group);
+  }
+  function tabGroupsWithin(root){
+    var scope=root&&root.querySelectorAll?root:document;
+    var groups=Array.prototype.slice.call(scope.querySelectorAll(TAB_GROUP_SELECTOR));
+    if(scope!==document&&scope.matches&&scope.matches(TAB_GROUP_SELECTOR))groups.unshift(scope);
+    return groups.filter(function(group,index,arr){return arr.indexOf(group)===index&&isTabGroup(group)});
+  }
+  function tabItemValue(item){
+    if(!item)return '';
+    var priority=['qaTabValue','mainFlowPerspective','mainFlowType','mainFlowTime','mainFlowView','businessTab','historyDimension','mode','line','metric','fline','scope','view','type','tab'];
+    for(var i=0;i<priority.length;i++){
+      var key=priority[i];
+      if(item.dataset&&item.dataset[key]!=null&&String(item.dataset[key])!=='')return key+':'+String(item.dataset[key]);
+    }
+    if(item.value!=null&&String(item.value)!=='')return 'value:'+String(item.value);
+    if(item.id)return 'id:'+item.id;
+    return 'text:'+String(item.textContent||'').replace(/\s+/g,' ').trim().slice(0,80);
+  }
+  function tabItemLabel(item){
+    return String(item&&item.textContent||'').replace(/\s+/g,' ').trim().slice(0,80)||tabItemValue(item);
+  }
+  function tabGroupSignature(group){
+    if(group.id)return 'id:'+group.id;
+    var aria=group.getAttribute('aria-label');
+    if(aria)return 'aria:'+aria;
+    var classes=Array.prototype.slice.call(group.classList||[]).filter(function(name){return /tab|seg|filter/i.test(name)}).sort();
+    return group.tagName.toLowerCase()+'.'+(classes.join('.')||'tab-group');
+  }
+  function tabGroupId(group){
+    var ctx=getElementContext(group);
+    var root=ctx.element||document;
+    var signature=tabGroupSignature(group);
+    var same=tabGroupsWithin(root).filter(function(item){return tabGroupSignature(item)===signature});
+    return ctx.id+'|'+signature+'|'+Math.max(0,same.indexOf(group));
+  }
+  function tabScopeFrom(group,item){
+    item=item||activeTabItem(group);
+    if(!group||!item)return null;
+    return {groupId:tabGroupId(group),value:tabItemValue(item),label:tabItemLabel(item)};
+  }
+  function targetTabItem(target,group){
+    var item=target&&target.closest?target.closest(TAB_ITEM_SELECTOR):null;
+    return item&&item.closest&&item.closest(TAB_GROUP_SELECTOR)===group?item:null;
+  }
+  function relevantTabRoot(target){
+    var root=target&&target.closest?target.closest(TAB_SCOPE_ROOT_SELECTOR):null;
+    if(root)return root;
+    var current=getCurrentContext();
+    return current.element||document.querySelector('main')||document.body;
+  }
+  function collectTabScopes(target){
+    if(!target||isQA(target))return [];
+    var directGroup=target.closest&&target.closest(TAB_GROUP_SELECTOR);
+    if(directGroup&&isTabGroup(directGroup)){
+      var direct=tabScopeFrom(directGroup,targetTabItem(target,directGroup)||activeTabItem(directGroup));
+      return direct?[direct]:[];
+    }
+    var root=relevantTabRoot(target);
+    var targetRect=target.getBoundingClientRect?target.getBoundingClientRect():null;
+    var scopes=[];
+    tabGroupsWithin(root).forEach(function(group){
+      if(!isElementVisible(group))return;
+      var relation=group.compareDocumentPosition(target);
+      var precedes=!!(relation&Node.DOCUMENT_POSITION_FOLLOWING);
+      var groupRect=group.getBoundingClientRect();
+      var visuallyBefore=targetRect&&groupRect.top<=targetRect.bottom+2;
+      if(!precedes&&!visuallyBefore)return;
+      var scope=tabScopeFrom(group,activeTabItem(group));
+      if(scope&&!scopes.some(function(old){return old.groupId===scope.groupId}))scopes.push(scope);
+    });
+    return scopes;
+  }
+  function currentTabStateMap(current){
+    var root=current&&current.element?current.element:document;
+    var map={};
+    tabGroupsWithin(root).forEach(function(group){
+      if(!isElementVisible(group))return;
+      var scope=tabScopeFrom(group,activeTabItem(group));
+      if(scope)map[scope.groupId]=scope.value;
+    });
+    return map;
+  }
+  function noteMatchesTabs(note,stateMap){
+    var scopes=Array.isArray(note&&note.tabScopes)?note.tabScopes:[];
+    if(!scopes.length)return true;
+    return scopes.every(function(scope){return stateMap[scope.groupId]===scope.value});
+  }
+  function visibleNotes(){
+    var current=getCurrentContext();
+    currentContextId=current.id;
+    var stateMap=currentTabStateMap(current);
+    return notes.filter(function(n){return noteContextId(n)===current.id&&noteMatchesTabs(n,stateMap)});
+  }
+  function currentViewStateKey(){
+    var current=getCurrentContext();
+    var stateMap=currentTabStateMap(current);
+    return current.id+'|'+Object.keys(stateMap).sort().map(function(key){return key+'='+stateMap[key]}).join('&');
+  }
+  function getDocumentElementAtPagePoint(pageX,pageY){
+    var all=document.body.querySelectorAll('*');
+    var best=null,bestArea=Infinity,bestDepth=-1;
+    for(var i=0;i<all.length;i++){
+      var el=all[i];
+      if(isQA(el)||!isElementVisible(el))continue;
+      var rect=el.getBoundingClientRect();
+      var left=rect.left+window.scrollX,top=rect.top+window.scrollY,right=left+rect.width,bottom=top+rect.height;
+      if(pageX<left||pageX>right||pageY<top||pageY>bottom)continue;
+      var area=Math.max(1,rect.width*rect.height),depth=0,node=el;
+      while(node&&node!==document.body){depth++;node=node.parentElement}
+      if(area<bestArea||(area===bestArea&&depth>bestDepth)){best=el;bestArea=area;bestDepth=depth}
+    }
+    return best;
+  }
+  function migrateLegacyTabScopes(){
+    var changed=false;
+    notes.forEach(function(note){
+      if(Array.isArray(note.tabScopes))return;
+      var target=getDocumentElementAtPagePoint(note.x,note.y);
+      note.tabScopes=collectTabScopes(target);
+      changed=true;
+    });
+    if(changed){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(notes))}catch(e){}}
+  }
+  function scheduleContextRefresh(force){
+    if(contextRefreshQueued)return;
+    contextRefreshQueued=true;
+    requestAnimationFrame(function(){
+      contextRefreshQueued=false;
+      var next=getCurrentContext();
+      var nextKey=currentViewStateKey();
+      if(force||next.id!==currentContextId||nextKey!==currentViewKey){currentContextId=next.id;currentViewKey=nextKey;renderAll()}
+    });
+  }
+  function bindContextObservers(){
+    if(contextObserver)contextObserver.disconnect();
+    if(tabObserver)tabObserver.disconnect();
+    contextObserver=new MutationObserver(function(){scheduleContextRefresh(false)});
+    contextElements().forEach(function(el){contextObserver.observe(el,{attributes:true,attributeFilter:['class','style','hidden','aria-hidden']})});
+    tabObserver=new MutationObserver(function(mutations){
+      if(mutations.some(function(m){return m.type==='attributes'&&!isQA(m.target)}))scheduleContextRefresh(false);
+    });
+    tabObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','aria-selected','data-state','checked','hidden','style']});
+    currentContextId=getCurrentContext().id;
+    currentViewKey=currentViewStateKey();
+  }
+  function parseLayerZ(value){
+    var n=parseInt(value,10);
+    return Number.isFinite(n)?n:null;
+  }
+  function getElementLayer(el){
+    var maxZ=1;
+    var node=el;
+    while(node&&node.nodeType===1){
+      if(!isQA(node)){
+        var style=window.getComputedStyle(node);
+        var z=parseLayerZ(style.zIndex);
+        if(z!==null&&z>=0)maxZ=Math.max(maxZ,z);
+      }
+      node=node.parentElement;
+    }
+    return Math.min(maxZ+1,2147481000);
+  }
+  function getPageElementAt(pageX,pageY){
+    var clientX=pageX-window.scrollX;
+    var clientY=pageY-window.scrollY;
+    if(clientX<0||clientY<0||clientX>window.innerWidth||clientY>window.innerHeight)return null;
+    var stack=document.elementsFromPoint(clientX,clientY);
+    for(var i=0;i<stack.length;i++){
+      if(!isQA(stack[i]))return stack[i];
+    }
+    return null;
+  }
+  function resolveMarkerLayer(note){
+    var saved=parseLayerZ(note&&note.layerZ);
+    if(saved!==null&&saved>=1)return Math.min(saved,2147481000);
+    var target=getPageElementAt(note.x,note.y);
+    return target?getElementLayer(target):2;
+  }
+  function refreshMarkerLayers(){
+    document.querySelectorAll('.qa-marker').forEach(function(marker){
+      var note=notes.find(function(n){return n.id===marker.dataset.id});
+      if(note)marker.style.zIndex=String(resolveMarkerLayer(note));
+    });
+  }
+  function createRuntime(){
+    var root=document.createElement('div');root.id='qa-runtime-root';root.className='qa-ui';root.setAttribute('data-qa-runtime','1');
+    root.innerHTML=''
+      +'<div id="qa-marker-layer"></div><div id="qa-hover-box"></div><div id="qa-marker-tooltip" class="qa-marker-tooltip" role="tooltip"></div>'
+      +'<div class="qa-help">标注模式已开启：标注会绑定当前页面与 Tab；点击任意位置添加，拖动编号可重新归属。快捷键：<b>Alt + A</b></div>'
+      +'<div class="qa-toolbar">'
+      +'<button id="qa-toggle" class="qa-btn qa-primary">✚ <span class="qa-label-hide">开始标注</span></button>'
+      +'<button id="qa-list-btn" class="qa-btn">☰ <span class="qa-label-hide">标注列表</span><span id="qa-count" class="qa-count">0</span></button>'
+      +'<button id="qa-visibility" class="qa-btn" title="显示/隐藏标记">◉</button>'
+      +'</div>'
+      +'<aside id="qa-panel" class="qa-panel">'
+      +'<div class="qa-panel-hd"><div><div class="qa-panel-title">页面标注</div><div id="qa-panel-sub" class="qa-panel-sub">当前：一级页面</div></div><button id="qa-panel-close" class="qa-icon-btn">×</button></div>'
+      +'<div class="qa-panel-actions"><button id="qa-export-json" class="qa-btn">导出 JSON</button><button id="qa-import-json" class="qa-btn">导入旧标注</button><button id="qa-export-html" class="qa-btn qa-primary">保存带标注 HTML</button><button id="qa-clear" class="qa-btn qa-danger">清空</button><input id="qa-file" type="file" accept="application/json,.json,text/html,.html,.htm" hidden></div>'
+      +'<div class="qa-persist-note"><b>跨版本保留标注：</b>请使用“保存带标注 HTML”作为下一次修改的源文件。标注、页面层级、Tab 归属及删除记录都会写入文件，已删除标注不会被旧缓存恢复。</div>'
+      +'<div id="qa-list" class="qa-list"></div>'
+      +'</aside>'
+      +'<div id="qa-dialog-mask" class="qa-dialog-mask"><div class="qa-dialog" role="dialog" aria-modal="true">'
+      +'<div class="qa-dialog-hd"><div id="qa-dialog-title" class="qa-dialog-title">添加标注</div><button id="qa-dialog-close" class="qa-icon-btn">×</button></div>'
+      +'<div class="qa-dialog-bd"><div class="qa-field"><label>标注类型</label><select id="qa-type" class="qa-select"><option>问题</option><option>建议</option><option>确认</option><option>系统逻辑</option><option>其他</option></select></div>'
+      +'<div class="qa-field"><label>标注内容</label><textarea id="qa-text" class="qa-textarea" placeholder="请输入问题、修改建议、确认结论或系统逻辑……"></textarea></div>'
+      +'<div class="qa-field"><label>标注位置</label><div id="qa-target" class="qa-target-preview"></div></div></div>'
+      +'<div class="qa-dialog-ft"><button id="qa-delete" class="qa-btn qa-danger" style="display:none">删除标注</button><div class="qa-dialog-ft-right"><button id="qa-cancel" class="qa-btn">取消</button><button id="qa-save" class="qa-btn qa-primary">保存</button></div></div>'
+      +'</div></div><div id="qa-toast" class="qa-toast"></div>';
+    document.body.appendChild(root);
+  }
+  function renderMarkers(){
+    var layer=document.getElementById('qa-marker-layer');
+    layer.innerHTML='';
+    var currentNotes=visibleNotes();
+    currentNotes.forEach(function(n,i){
+      var b=document.createElement('button');b.className='qa-marker';b.type='button';b.dataset.id=n.id;b.dataset.type=n.type||'其他';b.dataset.number=String(i+1);b.setAttribute('aria-label','标注 '+(i+1)+'，'+(n.type||'其他')+'：'+(n.text||''));b.title='';b.style.left=n.x+'px';b.style.top=n.y+'px';b.style.zIndex=String(resolveMarkerLayer(n));
+      var num=document.createElement('span');num.className='qa-marker-num';num.textContent=String(i+1);b.appendChild(num);
+      b.addEventListener('mouseenter',function(e){showMarkerTooltip(b,e)});
+      b.addEventListener('mousemove',function(e){positionMarkerTooltip(e)});
+      b.addEventListener('mouseleave',hideMarkerTooltip);
+      b.addEventListener('focus',function(e){showMarkerTooltip(b,e)});
+      b.addEventListener('blur',hideMarkerTooltip);
+      layer.appendChild(b);
+    });
+  }
+  function renderList(){
+    var list=document.getElementById('qa-list');
+    var current=getCurrentContext();
+    var currentNotes=visibleNotes();
+    var count=document.getElementById('qa-count');count.textContent=String(currentNotes.length);
+    var sub=document.getElementById('qa-panel-sub');
+    if(sub)sub.textContent='当前：'+current.label+' · 当前 Tab 视图 · '+currentNotes.length+'/'+notes.length+' 条';
+    if(!currentNotes.length){
+      var hiddenCount=Math.max(0,notes.length-currentNotes.length);
+      list.innerHTML='<div class="qa-empty">当前“'+escText(current.label)+' / 当前 Tab 视图”暂无标注'+(hiddenCount?'<br>其他页面或 Tab 另有 '+hiddenCount+' 条标注。':'<br>点击“开始标注”，再点击页面元素即可添加。')+'</div>';
+      return
+    }
+    list.innerHTML='';
+    currentNotes.forEach(function(n,i){
+      var item=document.createElement('div');item.className='qa-item';item.dataset.id=n.id;item.dataset.type=n.type||'其他';
+      var num=document.createElement('div');num.className='qa-item-num';num.textContent=String(i+1);
+      var meta=document.createElement('div');meta.className='qa-item-meta';
+      var type=document.createElement('span');type.className='qa-type';type.textContent=n.type||'其他';
+      var time=document.createElement('span');time.className='qa-item-time';time.textContent=fmtTime(n.updatedAt||n.createdAt);
+      meta.append(type,time);
+      var txt=document.createElement('div');txt.className='qa-item-text';txt.textContent=n.text||'（无内容）';
+      var target=document.createElement('div');target.className='qa-item-target';target.textContent=n.target||'页面位置';
+      item.append(num,meta,txt,target);list.appendChild(item);
+    });
+  }
+  function markerNote(marker){return marker&&notes.find(function(x){return x.id===marker.dataset.id})}
+  function positionMarkerTooltip(e){
+    var tip=document.getElementById('qa-marker-tooltip');if(!tip||!tip.classList.contains('qa-show'))return;
+    var x=(e&&typeof e.clientX==='number'?e.clientX:window.innerWidth/2)+14;
+    var y=(e&&typeof e.clientY==='number'?e.clientY:window.innerHeight/2)+16;
+    var r=tip.getBoundingClientRect();
+    x=Math.max(12,Math.min(x,window.innerWidth-r.width-12));
+    y=Math.max(12,Math.min(y,window.innerHeight-r.height-12));
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  function showMarkerTooltip(marker,e){
+    var n=markerNote(marker);var tip=document.getElementById('qa-marker-tooltip');if(!n||!tip)return;
+    tip.innerHTML='';
+    var head=document.createElement('div');head.className='qa-marker-tooltip-head';
+    var num=document.createElement('span');num.className='qa-marker-tooltip-num';num.textContent='#'+(marker.dataset.number||'');
+    var type=document.createElement('span');type.className='qa-marker-tooltip-type';type.textContent=n.type||'其他';
+    head.append(num,type);
+    var txt=document.createElement('div');txt.className='qa-marker-tooltip-text';txt.textContent=n.text||'（无内容）';
+    tip.append(head,txt);tip.classList.add('qa-show');positionMarkerTooltip(e);
+  }
+  function hideMarkerTooltip(){var tip=document.getElementById('qa-marker-tooltip');if(tip)tip.classList.remove('qa-show')}
+  function renderAll(){hideMarkerTooltip();renderMarkers();renderList()}
+  function setMode(on){
+    mode=!!on;document.body.classList.toggle('qa-annotating',mode);
+    var btn=document.getElementById('qa-toggle');btn.classList.toggle('qa-on',mode);btn.classList.toggle('qa-primary',!mode);
+    btn.innerHTML=mode?'✓ <span class="qa-label-hide">退出标注</span>':'✚ <span class="qa-label-hide">开始标注</span>';
+    if(!mode){document.getElementById('qa-hover-box').style.display='none'}
+    toast(mode?'标注模式已开启':'标注模式已关闭');
+  }
+  function openPanel(on){document.getElementById('qa-panel').classList.toggle('qa-open',on!==false)}
+  function openDialog(note,point){
+    editingId=note?note.id:null;draftPoint=point||null;
+    document.getElementById('qa-dialog-title').textContent=note?'编辑标注':'添加标注';
+    document.getElementById('qa-type').value=note?(note.type||'其他'):'问题';
+    document.getElementById('qa-text').value=note?(note.text||''):'';
+    var ctxLabel=note?(note.contextLabel||'一级页面'):(point?(point.contextLabel||'一级页面'):'一级页面');
+    var scopes=note?(Array.isArray(note.tabScopes)?note.tabScopes:[]):(point&&Array.isArray(point.tabScopes)?point.tabScopes:[]);
+    var tabLabel=scopes.length?' / '+scopes.map(function(scope){return scope.label}).join(' / '):'';
+    var targetText=note?(note.target||('页面坐标 '+Math.round(note.x)+', '+Math.round(note.y))):(point?point.target:'页面位置');
+    document.getElementById('qa-target').textContent='['+ctxLabel+tabLabel+'] '+targetText;
+    document.getElementById('qa-delete').style.display=note?'inline-flex':'none';
+    document.getElementById('qa-dialog-mask').classList.add('qa-open');
+    setTimeout(function(){document.getElementById('qa-text').focus()},30)
+  }
+  function closeDialog(){document.getElementById('qa-dialog-mask').classList.remove('qa-open');editingId=null;draftPoint=null}
+  function saveDialog(){
+    var text=document.getElementById('qa-text').value.trim();
+    if(!text){toast('请填写标注内容');document.getElementById('qa-text').focus();return}
+    var type=document.getElementById('qa-type').value;
+    if(editingId){
+      var n=notes.find(function(x){return x.id===editingId});if(n){n.text=text;n.type=type;n.updatedAt=nowISO()}
+    }else if(draftPoint){
+      notes.push({id:uid(),x:draftPoint.x,y:draftPoint.y,target:draftPoint.target,layerZ:draftPoint.layerZ||2,contextId:draftPoint.contextId||'primary',contextLabel:draftPoint.contextLabel||'一级页面',tabScopes:Array.isArray(draftPoint.tabScopes)?draftPoint.tabScopes:[],type:type,text:text,createdAt:nowISO(),updatedAt:nowISO()});
+    }
+    var wasEdit=!!editingId;save();closeDialog();toast(wasEdit?'标注已更新':'标注已添加')
+  }
+  function deleteEditing(){
+    if(!editingId)return;
+    markDeleted([editingId]);
+    notes=notes.filter(function(n){return n.id!==editingId});save();closeDialog();toast('标注已删除，并已记录删除状态')
+  }
+  function focusNote(id){
+    var n=notes.find(function(x){return x.id===id});if(!n)return;
+    window.scrollTo({left:Math.max(0,n.x-window.innerWidth/2),top:Math.max(0,n.y-window.innerHeight/2),behavior:'smooth'});
+    setTimeout(function(){var m=document.querySelector('.qa-marker[data-id="'+CSS.escape(id)+'"]');if(m){m.classList.add('qa-focus');setTimeout(function(){m.classList.remove('qa-focus')},1900)}},350)
+  }
+  function download(name,type,content){var blob=new Blob([content],{type:type});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},0)}
+  function stamp(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')}
+  function exportJSON(){download('页面标注-'+stamp()+'.json','application/json;charset=utf-8',JSON.stringify({version:2,title:document.title,url:location.href,exportedAt:nowISO(),annotations:notes,deletedAnnotations:deletedNotes},null,2));toast('JSON 已导出')}
+  function extractAnnotationStateFromText(text,fileName){
+    var data=safeParse(text);
+    if(Array.isArray(data))return {annotations:data,deleted:{}};
+    if(data&&Array.isArray(data.annotations))return {annotations:data.annotations,deleted:normalizeDeleted(data.deletedAnnotations||data.deleted||{})};
+    if(/\.html?$/i.test(fileName||'')||/<html[\s>]/i.test(text)){
+      try{
+        var doc=new DOMParser().parseFromString(text,'text/html');
+        var seed=doc.querySelector('#qa-export-seed');
+        var code=seed?seed.textContent:'';
+        var match=code.match(/window\.__QA_ANNOTATION_SEED__\s*=\s*([\s\S]*?)\s*;?\s*$/);
+        var parsed=match?safeParse(match[1]):null;
+        var deletedSeed=doc.querySelector('#qa-export-deleted');
+        var deletedCode=deletedSeed?deletedSeed.textContent:'';
+        var deletedMatch=deletedCode.match(/window\.__QA_ANNOTATION_DELETED__\s*=\s*([\s\S]*?)\s*;?\s*$/);
+        var parsedDeleted=deletedMatch?safeParse(deletedMatch[1]):{};
+        if(Array.isArray(parsed))return {annotations:parsed,deleted:normalizeDeleted(parsedDeleted)};
+      }catch(e){}
+    }
+    return null;
+  }
+  function importAnnotationFile(file){
+    var r=new FileReader();r.onload=function(){
+      var state=extractAnnotationStateFromText(String(r.result||''),file.name||'');
+      if(!state){toast('无法识别该标注文件');return}
+      var valid=normalizeNotes(state.annotations);
+      var incomingDeleted=normalizeDeleted(state.deleted);
+      if(!valid.length&&!Object.keys(incomingDeleted).length){toast('文件中没有有效标注');return}
+      if(confirm('导入 '+valid.length+' 条标注。\n“确定”合并到现有标注，“取消”将替换现有标注及删除记录。')){
+        deletedNotes=mergeDeleted(deletedNotes,incomingDeleted);
+        notes=applyDeleted(mergeNotes(notes,valid));
+      }else{
+        deletedNotes=incomingDeleted;
+        notes=applyDeleted(valid);
+      }
+      migrateLegacyTabScopes();save();toast('标注及删除状态已导入')
+    };r.readAsText(file,'utf-8')
+  }
+  function exportHTML(){
+    notes=applyDeleted(notes);persistState();
+    var clone=document.documentElement.cloneNode(true);
+    var runtime=clone.querySelector('#qa-runtime-root');if(runtime)runtime.remove();
+    clone.querySelectorAll('.qa-focus').forEach(function(el){el.classList.remove('qa-focus')});
+    var oldSeed=clone.querySelector('#qa-export-seed');if(oldSeed)oldSeed.remove();
+    var oldDeleted=clone.querySelector('#qa-export-deleted');if(oldDeleted)oldDeleted.remove();
+    var seed=clone.ownerDocument.createElement('script');seed.id='qa-export-seed';seed.textContent='window.__QA_ANNOTATION_SEED__='+JSON.stringify(notes).replace(/<\//g,'<\\/')+';';
+    var deletedSeed=clone.ownerDocument.createElement('script');deletedSeed.id='qa-export-deleted';deletedSeed.textContent='window.__QA_ANNOTATION_DELETED__='+JSON.stringify(deletedNotes).replace(/<\//g,'<\\/')+';';
+    var sys=clone.querySelector('#qa-annotation-system');
+    if(sys&&sys.parentNode){sys.parentNode.insertBefore(seed,sys);sys.parentNode.insertBefore(deletedSeed,sys)}else{clone.querySelector('head').appendChild(seed);clone.querySelector('head').appendChild(deletedSeed)}
+    var html='<!DOCTYPE html>\n'+clone.outerHTML;
+    download('卸车区看板-标注版-'+stamp()+'.html','text/html;charset=utf-8',html);toast('带标注 HTML 已导出（含删除记录）')
+  }
+  function updateHover(e){
+    if(!mode||isQA(e.target))return;
+    var el=document.elementFromPoint(e.clientX,e.clientY);if(isQA(el))return;
+    hoverTarget=el;
+    var r=el&&el.getBoundingClientRect?el.getBoundingClientRect():null;var box=document.getElementById('qa-hover-box');
+    if(!r||r.width<2||r.height<2){box.style.display='none';return}
+    box.style.display='block';box.style.left=r.left+'px';box.style.top=r.top+'px';box.style.width=r.width+'px';box.style.height=r.height+'px';
+  }
+  function startDrag(e,marker){
+    var n=notes.find(function(x){return x.id===marker.dataset.id});if(!n)return;
+    dragState={note:n,startX:e.clientX,startY:e.clientY,origX:n.x,origY:n.y,moved:false};marker.setPointerCapture&&marker.setPointerCapture(e.pointerId);e.preventDefault();e.stopPropagation();
+  }
+  function moveDrag(e){if(!dragState)return;var dx=e.clientX-dragState.startX,dy=e.clientY-dragState.startY;if(Math.abs(dx)+Math.abs(dy)>4)dragState.moved=true;dragState.note.x=Math.max(0,dragState.origX+dx);dragState.note.y=Math.max(0,dragState.origY+dy);var m=document.querySelector('.qa-marker[data-id="'+CSS.escape(dragState.note.id)+'"]');if(m){m.style.left=dragState.note.x+'px';m.style.top=dragState.note.y+'px'}}
+  function endDrag(){if(!dragState)return;if(dragState.moved){var target=getPageElementAt(dragState.note.x,dragState.note.y)||getDocumentElementAtPagePoint(dragState.note.x,dragState.note.y);var ctx=getElementContext(target);dragState.note.layerZ=target?getElementLayer(target):(dragState.note.layerZ||2);dragState.note.contextId=ctx.id;dragState.note.contextLabel=ctx.label;dragState.note.tabScopes=collectTabScopes(target);dragState.note.updatedAt=nowISO();suppressMarkerClick=true;save();toast('标注位置、页面及 Tab 归属已调整');setTimeout(function(){suppressMarkerClick=false},80)}dragState=null}
+
+  load();migrateLegacyTabScopes();createRuntime();bindContextObservers();renderAll();
+
+  document.getElementById('qa-toggle').addEventListener('click',function(){setMode(!mode)});
+  document.getElementById('qa-list-btn').addEventListener('click',function(){openPanel(true)});
+  document.getElementById('qa-panel-close').addEventListener('click',function(){openPanel(false)});
+  document.getElementById('qa-dialog-close').addEventListener('click',closeDialog);
+  document.getElementById('qa-cancel').addEventListener('click',closeDialog);
+  document.getElementById('qa-save').addEventListener('click',saveDialog);
+  document.getElementById('qa-delete').addEventListener('click',deleteEditing);
+  document.getElementById('qa-export-json').addEventListener('click',exportJSON);
+  document.getElementById('qa-import-json').addEventListener('click',function(){document.getElementById('qa-file').click()});
+  document.getElementById('qa-file').addEventListener('change',function(){if(this.files&&this.files[0])importAnnotationFile(this.files[0]);this.value=''});
+  document.getElementById('qa-export-html').addEventListener('click',exportHTML);
+  document.getElementById('qa-clear').addEventListener('click',function(){var current=getCurrentContext();var currentNotes=visibleNotes();if(currentNotes.length&&confirm('确定清空“'+current.label+' / 当前 Tab 视图”的全部 '+currentNotes.length+' 条标注吗？')){var idList=currentNotes.map(function(n){return n.id});var ids=new Set(idList);markDeleted(idList);notes=notes.filter(function(n){return !ids.has(n.id)});save();toast('当前页面与 Tab 的标注已清空，并已记录删除状态')}});
+  document.getElementById('qa-visibility').addEventListener('click',function(){var layer=document.getElementById('qa-marker-layer');var hidden=layer.style.display==='none';layer.style.display=hidden?'':'none';this.textContent=hidden?'◉':'◎';if(!hidden)hideMarkerTooltip();toast(hidden?'标记已显示':'标记已隐藏')});
+  document.getElementById('qa-dialog-mask').addEventListener('click',function(e){if(e.target===this)closeDialog()});
+  document.getElementById('qa-list').addEventListener('click',function(e){var item=e.target.closest('.qa-item');if(!item)return;focusNote(item.dataset.id);openPanel(false)});
+
+  document.addEventListener('mousemove',updateHover,true);
+  document.addEventListener('click',function(e){
+    var marker=e.target.closest&&e.target.closest('.qa-marker');
+    if(marker){e.preventDefault();e.stopPropagation();if(!suppressMarkerClick){var n=notes.find(function(x){return x.id===marker.dataset.id});if(n)openDialog(n)}return}
+    if(!mode||isQA(e.target))return;
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    var target=hoverTarget||e.target;
+    var ctx=getElementContext(target);
+    openDialog(null,{x:e.pageX,y:e.pageY,target:describeTarget(target),layerZ:getElementLayer(target),contextId:ctx.id,contextLabel:ctx.label,tabScopes:collectTabScopes(target)});
+  },true);
+  document.addEventListener('pointerdown',function(e){var m=e.target.closest&&e.target.closest('.qa-marker');if(m)startDrag(e,m)},true);
+  document.addEventListener('pointermove',moveDrag,true);
+  document.addEventListener('pointerup',endDrag,true);
+  window.addEventListener('resize',function(){refreshMarkerLayers();scheduleContextRefresh(false)});
+  window.addEventListener('scroll',refreshMarkerLayers,{passive:true});
+  document.addEventListener('click',function(){setTimeout(function(){scheduleContextRefresh(true)},0)},false);
+  document.addEventListener('change',function(){setTimeout(function(){scheduleContextRefresh(true)},0)},false);
+  document.addEventListener('keydown',function(e){
+    if(e.altKey&&(e.key==='a'||e.key==='A')){e.preventDefault();setMode(!mode)}
+    if(e.key==='Escape'){if(document.getElementById('qa-dialog-mask').classList.contains('qa-open'))closeDialog();else if(document.getElementById('qa-panel').classList.contains('qa-open'))openPanel(false);else if(mode)setMode(false)}
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&document.getElementById('qa-dialog-mask').classList.contains('qa-open'))saveDialog();
+  });
+})();
+</script>
+<!-- ===== 页面标注系统结束 ===== -->
+
+
+</body></html>
