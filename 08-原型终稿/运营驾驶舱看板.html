@@ -683,6 +683,8 @@
     .oc15d-table th,.oc15d-table td{height:31px;padding:0 10px;border-right:1px solid #ebeef5;border-bottom:1px solid #ebeef5;text-align:center;white-space:nowrap}
     .oc15d-table th{position:sticky;top:0;z-index:2;background:#fafafa;color:#606266;font-weight:600}.oc15d-table th:last-child,.oc15d-table td:last-child{border-right:0}.oc15d-table tbody tr:hover{background:#fff7f2}
     .oc15d-sort{display:inline-block;margin-left:3px;color:#409eff;font-size:9px;vertical-align:1px}
+    #arrDetailTable{table-layout:auto;min-width:940px}
+    #arrDetailTable th,#arrDetailTable td{padding:0 14px}
     .oc15d-link-note{display:flex;align-items:center;gap:8px;margin-left:auto;color:#909399;font-size:11px}.oc15d-link-note b{color:#606266;font-weight:500}
     @media(max-width:1280px){.oc15d-page{min-width:1024px}.oc15d-chart{height:230px}.oc15d-card.tall .oc15d-chart{height:245px}}
     /* ===== V3.30 已分拣 · 目的流向交互 ===== */
@@ -979,7 +981,7 @@
               <button class="group-more" data-open-drill="shipmentOnTime">明细 &gt;</button>
             </div>
             <div class="group-grid">
-              <article class="metric-card">
+              <article class="metric-card drill-card" role="button" tabindex="0" aria-label="查看产能-到件下钻">
                 <div class="metric-title">HUB到件量</div>
                 <div class="metric-value dark">569,340</div>
                 <div class="metric-compare"><div>环比昨日： <span class="down">↓0.78%</span></div><div>同比上周： <span class="up">↑3.25%</span></div></div>
@@ -1319,6 +1321,46 @@
               <tr data-oc15d-date="2026-07-21"><td>日</td><td>7.21</td><td>482,300</td><td>45,800</td><td>436,500</td><td>90.51%</td><td>261,100</td><td>0</td><td>221,200</td><td>0</td></tr>
               <tr data-oc15d-date="2026-07-20"><td>日</td><td>7.20</td><td>451,900</td><td>39,700</td><td>412,200</td><td>91.21%</td><td>218,600</td><td>0</td><td>233,300</td><td>0</td></tr>
             </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="oc15d-overlay" id="arrivalCockpitOverlay" aria-hidden="true" role="dialog" aria-label="运营驾驶舱HUB到件量近15天数据">
+  <div class="oc15d-page">
+    <header class="oc15d-titlebar">
+      <strong>产能-到件</strong>
+      <button type="button" class="oc15d-close" id="arrivalCockpitClose" aria-label="关闭并返回运营驾驶舱">×</button>
+    </header>
+    <div class="oc15d-toolbar">
+      <div class="oc15d-granularity" aria-label="统计粒度">
+        <button type="button" class="on" data-arr-granularity="day">日</button>
+        <button type="button" data-arr-granularity="week">周</button>
+        <button type="button" data-arr-granularity="month">月</button>
+      </div>
+      <div class="oc15d-date-range" aria-label="日期范围">
+        <input class="oc15d-date-input" id="arrStartDate" type="text" value="10/07/2026" maxlength="10" inputmode="numeric" aria-label="开始日期，格式为日/月/年">
+        <span class="arrow" aria-hidden="true">→</span>
+        <input class="oc15d-date-input" id="arrEndDate" type="text" value="09/08/2026" maxlength="10" inputmode="numeric" aria-label="结束日期，格式为日/月/年">
+        <span class="calendar" aria-hidden="true">▣</span>
+      </div>
+      <button type="button" class="oc15d-query" id="arrivalCockpitQuery">查询</button>
+      <div class="oc15d-link-note"><b>默认范围：</b>近30天</div>
+    </div>
+    <main class="oc15d-content">
+      <section class="oc15d-card tall">
+        <div class="oc15d-card-title">HUB到件量</div>
+        <div class="oc15d-chart" id="arrHubChart"></div>
+      </section>
+      <section class="oc15d-card oc15d-detail">
+        <div class="oc15d-detail-title">明细</div>
+        <div class="oc15d-detail-tabs"><button type="button" class="oc15d-detail-tab">HUB到件量</button></div>
+        <div class="oc15d-table-wrap">
+          <table class="oc15d-table" id="arrDetailTable">
+            <thead><tr><th>维度</th><th>日期<span class="oc15d-sort">◆</span></th><th>HUB到件量</th><th>上门揽收</th><th>清关提货</th><th>中转到货</th><th>客户自送</th></tr></thead>
+            <tbody id="arrDetailBody"></tbody>
           </table>
         </div>
       </section>
@@ -2197,6 +2239,93 @@
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           openOperationsCockpit15d();
+        }
+      });
+    }
+  });
+
+  /* ===== 产能-到件（HUB到件量）下钻 ===== */
+  const arrLabels = ['7.6','7.7','7.8','7.9','7.10','7.11','7.12','7.13','7.14','7.15','7.16','7.17','7.18','7.19','7.20','7.21','7.22','7.23','7.24','7.25','7.26','7.27','7.28','7.29','7.30','7.31','8.1','8.2','8.3','8.4','8.5'];
+  const arrLocal = [168230,172110,175420,169880,173200,171650,176980,170230,168540,174100,169430,177200,172660,170980,175330,171240,169880,176100,173540,171730,178200,172480,170120,175990,171660,174450,179230,173110,170780,176540,172290];
+  const arrClear = [98600,101200,98840,102730,99560,104120,100380,98210,103860,99450,101980,105640,99820,102470,106110,100940,98340,104520,99780,103160,107340,101220,98560,105090,100130,103880,108460,102350,98870,106420,101040];
+  const arrCart = [61230,59840,62410,60520,63270,61080,59890,62740,60450,61890,63520,60010,62360,60940,62810,60230,58970,62180,59830,62540,64080,60720,59650,63190,60380,61840,64410,60980,59820,63620,60540];
+  const arrTransit = [78430,80120,79260,81540,78900,80630,82350,79040,80970,79680,81420,82960,79310,80540,82280,78740,80360,82610,79050,81270,83040,79720,78560,81830,79170,80690,83520,79940,78410,82240,79600];
+  function sumArr(i){return arrLocal[i]+arrClear[i]+arrCart[i]+arrTransit[i];}
+  let arrChart = null;
+  const ARR_COLORS = ['#2b6cde','#7aa7f0','#3ec9a0','#b3e2d0'];
+
+  function renderArrChart(){
+    const el = document.getElementById('arrHubChart');
+    if (!el || !window.echarts) return;
+    if (!arrChart) arrChart = echarts.init(el);
+    arrChart.setOption({
+      color: ARR_COLORS,
+      tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
+      legend: { data:['上门揽收','清关提货','中转到货','客户自送'], top:0, textStyle:{ color:'#172033', fontSize:12 } },
+      grid: { left:50, right:20, top:40, bottom:28 },
+      xAxis: { type:'category', data:arrLabels, axisLine:{ lineStyle:{color:'#e5eaf0'} }, axisLabel:{ color:'#66758a' } },
+      yAxis: { type:'value', axisLine:{ show:false }, splitLine:{ lineStyle:{ color:'#eef1f5' } }, axisLabel:{ color:'#66758a' } },
+      series: [
+        { name:'上门揽收', type:'bar', stack:'t', data:arrLocal, barWidth:'55%' },
+        { name:'清关提货', type:'bar', stack:'t', data:arrClear, barWidth:'55%' },
+        { name:'中转到货', type:'bar', stack:'t', data:arrCart, barWidth:'55%' },
+        { name:'客户自送', type:'bar', stack:'t', data:arrTransit, barWidth:'55%' }
+      ]
+    }, true);
+  }
+
+  let arrGranularity = 'day';
+  function renderArrDetail(){
+    const body = document.getElementById('arrDetailBody');
+    if (!body) return;
+    body.innerHTML = '';
+    const dimText = arrGranularity === 'month' ? '月' : (arrGranularity === 'week' ? '周' : '日');
+    const rows = [];
+    for (let i=arrLabels.length-1;i>=0;i--){
+      rows.push(`<tr><td>${dimText}</td><td>${arrLabels[i]}</td><td>${sumArr(i).toLocaleString()}</td><td>${arrLocal[i].toLocaleString()}</td><td>${arrClear[i].toLocaleString()}</td><td>${arrCart[i].toLocaleString()}</td><td>${arrTransit[i].toLocaleString()}</td></tr>`);
+    }
+    body.innerHTML = rows.join('');
+  }
+  const arrGranBtns = document.querySelectorAll('[data-arr-granularity]');
+  arrGranBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      arrGranBtns.forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      arrGranularity = btn.getAttribute('data-arr-granularity');
+      renderArrDetail();
+    });
+  });
+
+  function openArrivalCockpit(){
+    const overlay = document.getElementById('arrivalCockpitOverlay');
+    if (!overlay) return;
+    overlay.classList.add('on');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    renderArrDetail();
+    requestAnimationFrame(()=>{ renderArrChart(); arrChart?.resize(); });
+  }
+  function closeArrivalCockpit(){
+    const overlay = document.getElementById('arrivalCockpitOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('on');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('arrivalCockpitClose')?.addEventListener('click', closeArrivalCockpit);
+  document.addEventListener('keydown',event=>{
+    if (event.key==='Escape' && document.getElementById('arrivalCockpitOverlay')?.classList.contains('on')) closeArrivalCockpit();
+  });
+  window.addEventListener('resize',()=>{ arrChart?.resize(); });
+
+  document.querySelectorAll('#capacity .metric-card.drill-card .metric-title').forEach(titleEl => {
+    if (titleEl.textContent.trim() === 'HUB到件量') {
+      const card = titleEl.closest('.metric-card');
+      card.addEventListener('click', openArrivalCockpit);
+      card.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openArrivalCockpit();
         }
       });
     }
