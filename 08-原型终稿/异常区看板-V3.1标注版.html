@@ -5591,22 +5591,22 @@ setInterval(() => {
     var exception=['异常待处理汇总','待人工判断','待登记问题件','待上架'];
     var shelf=['上架待处理汇总','等待客服指令','待下架退回','待下架分拣','待下架销毁','在库时长'];
     var internal=['下架&异常待处理汇总','待重派','待换单打印','待退件打印','待下架时长分布'];
-    var returns=['退件监控汇总','待退件集包','待退回目的中心','待退回客户','待自提'];
+    var returns=['退件监控汇总','待退回目的中心','待退回客户','待自提'];
     var bagReturns=['待退回目的中心','待退回客户','待自提'];
     if(handoff.indexOf(name)>-1){
       return {key:'handoff',title:'查看明细 · 异常待接收 · 运单数',filters:['运单号','袋号'],
         columns:['运单号','运单最新状态','签入袋号','签入时间','邮编'],minWidth:760};
     }
     if(exception.indexOf(name)>-1){
-      return {key:'exception',title:'查看明细 · 异常待处理 · 运单数',filters:['运单号','袋号','处理状态'],
+      return {key:'exception',title:'查看明细 · 异常待处理 · 运单数',filters:['运单号','处理状态'],
         columns:['运单号','运单最新状态','处理状态','异常处理时间','异常处理指引','邮编'],minWidth:1050};
     }
     if(shelf.indexOf(name)>-1){
-      return {key:'shelf',title:'查看明细 · 上架待处理 · 运单数',filters:['运单号','袋号','处理状态','问题件类型','上架天数'],
+      return {key:'shelf',title:'查看明细 · 上架待处理 · 运单数',filters:['运单号','处理状态','问题件类型','上架天数'],
         columns:['运单号','运单最新状态','退回转运中心时间','上架时间','上架天数','下达指令时间','处理指令','邮编','客户','问题件类型'],minWidth:1580};
     }
     if(internal.indexOf(name)>-1){
-      return {key:'internal',title:'查看明细 · 下架待处理 · 运单数',filters:['运单号','袋号','处理状态','问题件类型'],
+      return {key:'internal',title:'查看明细 · 下架待处理 · 运单数',filters:['运单号','处理状态','问题件类型'],
         columns:['运单号','运单最新状态','异常处理时间','退回转运中心时间','上架时间','上架天数','指令下达时间','处理指令','下架时间','下架天数','邮编','客户','问题件类型'],minWidth:2030};
     }
     if(bagReturns.indexOf(name)>-1){
@@ -5615,6 +5615,10 @@ setInterval(() => {
     }
     if(returns.indexOf(name)>-1){
       return {key:'return',title:'查看明细 · 退件库存 · 运单数',filters:['运单号','袋号','处理状态','问题件类型'],
+        columns:['运单号','运单最新状态','邮编','客户','问题件类型','退回时间','上架时间','暂存天数','退回机构'],minWidth:1350};
+    }
+    if(name==='待退件集包'){
+      return {key:'return',title:'查看明细 · 退件库存 · 运单数',filters:['运单号','处理状态','问题件类型'],
         columns:['运单号','运单最新状态','邮编','客户','问题件类型','退回时间','上架时间','暂存天数','退回机构'],minWidth:1350};
     }
     return {key:'default',title:'查看明细 · '+name+' · 运单数',filters:['运单号','袋号'],
