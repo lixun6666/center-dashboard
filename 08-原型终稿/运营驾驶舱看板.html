@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>运营驾驶舱</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
     :root {
       --orange: #ff4b16;
@@ -645,6 +646,150 @@
       .group-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .mobile-btn { min-width: 110px; }
     }
+
+    /* ===== 产能-分拣 overlay 复刻（来自分拣区看板 V3.36）===== */
+    /* 变量作用域：仅对 .oc15d-overlay 及其子元素生效，避免污染全局 */
+    .oc15d-overlay { --accent:#ff5a1f; --accent-soft:#fff3ed; --accent-line:#ffd2bf; --text:#172033; --muted:#66758a; --faint:#9aa7b6; --line:#e5eaf0; --line-2:#edf0f4; --r-tag:9px; }
+
+    /* ===== V3.36 运营驾驶舱 · 日期筛选与已分拣非下钻 ===== */
+    .oc15d-overlay{display:none;position:fixed;inset:0;z-index:20000;overflow:auto;background:#f1f3f6;color:#303133;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif}
+    .oc15d-overlay.on{display:block}
+    .oc15d-page{min-width:1180px;min-height:100vh;background:#f1f3f6}
+    .oc15d-titlebar{position:sticky;top:0;z-index:6;display:flex;align-items:center;justify-content:space-between;height:42px;padding:0 14px 0 16px;border-bottom:1px solid #e3e6eb;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .oc15d-titlebar strong{font-size:14px;font-weight:650;color:#1f2329}
+    .oc15d-close{display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:0;background:transparent;color:#303133;font-size:22px;line-height:1;cursor:pointer}
+    .oc15d-close:hover{background:#f4f5f7;color:#fc4c02;transform:none!important}
+    .oc15d-toolbar{display:flex;align-items:center;gap:12px;height:48px;padding:0 14px;border-bottom:1px solid #e5e7eb;background:#eef0f3}
+    .oc15d-granularity{display:inline-flex;height:30px;border:1px solid #d8dde5;border-radius:2px;overflow:hidden;background:#fff}
+    .oc15d-granularity button{min-width:42px;padding:0 12px;border:0;border-right:1px solid #e5e7eb;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}
+    .oc15d-granularity button:last-child{border-right:0}.oc15d-granularity button.on{background:#fff4ef;color:#fc4c02;box-shadow:inset 0 0 0 1px #fc4c02}
+    .oc15d-date-range{display:flex;align-items:center;width:350px;height:30px;padding:0 9px;border:1px solid #d8dde5;border-radius:2px;background:#fff;color:#606266;font-size:12px}
+    .oc15d-date-input{width:112px;height:26px;padding:0 4px;border:0;background:transparent;color:#303133;font-family:inherit;font-size:12px;text-align:center;outline:none}
+    .oc15d-date-input:focus{background:#fff7f2;box-shadow:inset 0 -1px 0 #fc4c02}
+    .oc15d-date-range .arrow{margin:0 8px;color:#a8abb2}.oc15d-date-range .calendar{margin-left:auto;padding-left:6px;color:#a8abb2;font-size:13px}
+    .oc15d-query{height:30px;padding:0 18px;border:1px solid #fc4c02;border-radius:2px;background:#fc4c02;color:#fff;font-family:inherit;font-size:12px;cursor:pointer}
+    .oc15d-query:hover{background:#e9470d;transform:none!important}
+    .oc15d-content{display:flex;flex-direction:column;gap:12px;padding:12px 5px 24px}
+    .oc15d-card{border:1px solid #eceef2;background:#fff}
+    .oc15d-card-title{height:42px;padding:14px 14px 0;font-size:14px;font-weight:650;color:#20242a}
+    .oc15d-chart{width:100%;height:250px}
+    .oc15d-card.tall .oc15d-chart{height:270px}.oc15d-card.type .oc15d-chart{height:255px}
+    .oc15d-detail{padding:0 10px 12px}.oc15d-detail-title{padding:14px 0 10px;font-size:14px;font-weight:650}
+    .oc15d-detail-tabs{display:flex;align-items:flex-end;height:36px;border-bottom:1px solid #ebeef5}
+    .oc15d-detail-tab{position:relative;height:36px;padding:0 2px;border:0;background:transparent;color:#fc4c02;font-family:inherit;font-size:12px;font-weight:650;cursor:pointer}
+    .oc15d-detail-tab:after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#fc4c02}
+    .oc15d-table-wrap{max-height:285px;overflow:auto;border:1px solid #ebeef5;border-top:0}
+    .oc15d-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;color:#606266}
+    .oc15d-table th,.oc15d-table td{height:31px;padding:0 10px;border-right:1px solid #ebeef5;border-bottom:1px solid #ebeef5;text-align:center;white-space:nowrap}
+    .oc15d-table th{position:sticky;top:0;z-index:2;background:#fafafa;color:#606266;font-weight:600}.oc15d-table th:last-child,.oc15d-table td:last-child{border-right:0}.oc15d-table tbody tr:hover{background:#fff7f2}
+    .oc15d-sort{display:inline-block;margin-left:3px;color:#409eff;font-size:9px;vertical-align:1px}
+    .oc15d-link-note{display:flex;align-items:center;gap:8px;margin-left:auto;color:#909399;font-size:11px}.oc15d-link-note b{color:#606266;font-weight:500}
+    @media(max-width:1280px){.oc15d-page{min-width:1024px}.oc15d-chart{height:230px}.oc15d-card.tall .oc15d-chart{height:245px}}
+    /* ===== V3.30 已分拣 · 目的流向交互 ===== */
+    .oc15d-flow-card{padding-bottom:12px}
+    .oc15d-flow-title-row{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:48px;padding:8px 14px 4px}
+    .oc15d-flow-title-group{display:flex;align-items:center;gap:12px;min-width:0}
+    .oc15d-flow-title{font-size:14px;font-weight:650;color:#20242a;white-space:nowrap}
+    .oc15d-flow-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .oc15d-flow-seg{display:inline-flex;align-items:center;height:28px;padding:2px;border:1px solid #dfe4eb;border-radius:3px;background:#f4f6f8}
+    .oc15d-flow-seg button{height:22px;min-width:46px;padding:0 10px;border:0;border-radius:2px;background:transparent;color:#606266;font-family:inherit;font-size:11px;cursor:pointer}
+    .oc15d-flow-seg button.on{background:#fff;color:#fc4c02;box-shadow:0 1px 4px rgba(31,41,55,.12);font-weight:650}
+    .oc15d-flow-tabs{display:flex;align-items:center;gap:6px;padding:8px 14px 5px;border-top:1px solid #f1f2f5;overflow-x:auto}
+    .oc15d-flow-tab{height:28px;padding:0 14px;border:1px solid #dfe4eb;border-radius:14px;background:#fff;color:#606266;font-family:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+    .oc15d-flow-tab:hover{border-color:#ffb397;color:#fc4c02;transform:none!important}
+    .oc15d-flow-tab.on{border-color:#fc4c02;background:#fff3ed;color:#fc4c02;font-weight:650}
+    .oc15d-flow-breadcrumb{display:flex;align-items:center;gap:7px;min-height:30px;padding:0 14px;color:#909399;font-size:11px}
+    .oc15d-flow-breadcrumb b{color:#303133;font-weight:650}.oc15d-flow-breadcrumb .sep{color:#c0c4cc}
+    .oc15d-flow-chart{width:100%;height:300px;cursor:pointer}
+    .oc15d-flow-table-wrap{display:none;margin:0 14px 4px;max-height:300px;overflow:auto;border:1px solid #ebeef5}
+    .oc15d-flow-table-wrap.on{display:block}.oc15d-flow-chart.off{display:none}
+    .oc15d-flow-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;color:#606266}
+    .oc15d-flow-table th,.oc15d-flow-table td{height:34px;padding:0 12px;border-right:1px solid #ebeef5;border-bottom:1px solid #ebeef5;text-align:right;white-space:nowrap}
+    .oc15d-flow-table th{position:sticky;top:0;z-index:1;background:#fafafa;font-weight:600}.oc15d-flow-table th:first-child,.oc15d-flow-table td:first-child{text-align:left}.oc15d-flow-table th:last-child,.oc15d-flow-table td:last-child{border-right:0}.oc15d-flow-table tbody tr:hover{background:#fff7f2}
+    .oc15d-flow-link{padding:0;border:0;background:transparent;color:#fc4c02;font-family:inherit;font-size:11px;font-weight:650;cursor:pointer}.oc15d-flow-link:hover{text-decoration:underline;transform:none!important}
+    .oc15d-flow-click-hint{display:flex;justify-content:flex-end;padding:2px 14px 0;color:#909399;font-size:10.5px}
+    .oc15d-flow-detail-mask{display:none;position:fixed;inset:0;z-index:20030;background:rgba(31,41,55,.32);align-items:stretch;justify-content:flex-end}
+    .oc15d-flow-detail-mask.on{display:flex}
+    .oc15d-flow-detail-panel{width:520px;max-width:94vw;height:100vh;background:#fff;box-shadow:-12px 0 36px rgba(31,41,55,.20);display:flex;flex-direction:column;animation:oc15dFlowIn .2s ease}
+    @keyframes oc15dFlowIn{from{transform:translateX(24px);opacity:.5}to{transform:translateX(0);opacity:1}}
+    .oc15d-flow-detail-head{display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 18px;border-bottom:1px solid #ebeef5}
+    .oc15d-flow-detail-head strong{font-size:14px}.oc15d-flow-detail-close{width:30px;height:30px;border:0;background:transparent;color:#606266;font-size:22px;cursor:pointer}.oc15d-flow-detail-close:hover{color:#fc4c02;background:#f5f7fa;transform:none!important}
+    .oc15d-flow-detail-body{flex:1;overflow:auto;padding:16px 18px}
+    .oc15d-flow-detail-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .oc15d-flow-detail-stat{padding:12px;border:1px solid #ebeef5;border-radius:6px;background:#fafbfc}.oc15d-flow-detail-stat span{display:block;color:#909399;font-size:10.5px}.oc15d-flow-detail-stat b{display:block;margin-top:5px;color:#303133;font-size:16px}.oc15d-flow-detail-stat.primary b{color:#fc4c02}
+    .oc15d-flow-detail-context{margin-bottom:14px;padding:10px 12px;border:1px solid #f3d8cc;border-radius:5px;background:#fff8f4;color:#7a5142;font-size:11px;line-height:1.6}
+    .oc15d-flow-detail-table{width:100%;border-collapse:collapse;font-size:11px;color:#606266}.oc15d-flow-detail-table th,.oc15d-flow-detail-table td{height:34px;padding:0 8px;border:1px solid #ebeef5;text-align:left}.oc15d-flow-detail-table th{background:#fafafa;font-weight:600}
+    @media(max-width:1280px){.oc15d-flow-chart{height:270px}.oc15d-flow-title-row{align-items:flex-start}.oc15d-flow-actions{gap:5px}}
+
+    /* ===== Main purpose-flow interactive module ===== */
+    .main-flow-filterbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:2px 0 12px;padding:10px 12px;border:1px solid #edf0f4;border-radius:12px;background:#fafbfd}
+    .main-flow-filter-left{display:flex;flex-direction:column;gap:9px;min-width:0}
+    .main-flow-perspective-row,.main-flow-type-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .main-flow-filter-label{flex:0 0 58px;font-size:11.5px;color:var(--faint);font-weight:600}
+    .main-flow-type-tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10.5px;margin-left:6px}
+    .main-flow-structure-hint{display:inline-flex;align-items:center;gap:5px;color:#7a8798;font-size:11px}
+    .main-flow-structure-hint b{color:var(--text)}
+    .main-flow-tabs{display:inline-flex;align-items:center;gap:3px;padding:3px;border:1px solid #e1e6ed;border-radius:10px;background:#f2f5f8}
+    .main-flow-tab{min-width:64px;padding:7px 13px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-family:inherit;font-size:12.5px;cursor:pointer;transition:all .16s ease}
+    .main-flow-tab:hover{color:var(--accent);background:#fff8f4;transform:none!important}
+    .main-flow-tab.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 2px 8px rgba(31,41,55,.11)}
+    .main-flow-summary{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted)}
+    .main-flow-summary b{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text)}
+    .main-flow-breadcrumb{display:flex;align-items:center;gap:7px;min-height:31px;margin-bottom:9px;font-size:12px;color:var(--muted)}
+    .main-flow-breadcrumb .sep{color:#c1c9d4}.main-flow-breadcrumb b{color:var(--text)}
+    .main-flow-back{padding:4px 8px;border:1px solid #e1e6ed;border-radius:7px;background:#fff;color:var(--accent);font-family:inherit;font-size:11.5px;cursor:pointer}
+    .main-flow-name-btn,.main-flow-number-btn{border:0;background:transparent;padding:0;font-family:inherit;cursor:pointer}
+    .main-flow-name-btn{display:inline-flex;align-items:center;gap:5px;color:var(--accent);font-weight:650;text-align:left}
+    .main-flow-name-btn:hover{text-decoration:underline}.main-flow-name-btn .arrow{font-size:16px;line-height:1;color:#f4875d}
+    .main-flow-number-btn{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:12.5px}
+    .main-flow-number-btn:hover{text-decoration:underline}
+    .main-flow-chart-wrap{display:none;height:330px;border:1px solid #edf0f4;border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#fff);padding:8px}
+    .main-flow-chart-wrap.on{display:block}.main-flow-table-wrap.off{display:none}
+    .main-flow-name-static{display:inline-flex;align-items:center;font-weight:600;color:var(--text);padding:4px 0}
+    .main-flow-note{margin-top:9px;padding:8px 11px;border-radius:9px;background:#f8fafc;color:#7a8798;font-size:11.5px;line-height:1.55}
+    .main-flow-empty{padding:42px 10px;text-align:center;color:var(--faint)}
+    #mainFlowTable th:first-child,#mainFlowTable td:first-child{text-align:left}
+    #mainFlowTable td{white-space:nowrap}
+    @media(max-width:1200px){.main-flow-filterbar{align-items:flex-start}.main-flow-summary{width:100%;justify-content:flex-end}}
+
+    /* ===== .seg-group（作用域到 overlay，避免污染全局）===== */
+    .oc15d-overlay .seg-group{display:inline-flex;border:1px solid #d6dde6;border-radius:var(--r-tag);overflow:hidden;background:#fff}
+    .oc15d-overlay .seg-group span{padding:7px 13px;font-size:12.5px;cursor:pointer;color:var(--text);border-right:1px solid #e3e8ee}
+    .oc15d-overlay .seg-group span:last-child{border-right:none}
+    .oc15d-overlay .seg-group span.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+
+    /* ===== .section-export-btn（作用域到 overlay）===== */
+    .oc15d-overlay .section-export-btn{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border:1px solid var(--accent-line);border-radius:7px;background:#fff;color:var(--accent);font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .oc15d-overlay .section-export-btn:before{content:'⇩';margin-right:4px;font-size:12px;line-height:1}
+    .oc15d-overlay .section-export-btn:hover{background:var(--accent-soft);transform:none!important}
+
+    /* ===== .num 数字字体 ===== */
+    .num{font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;font-variant-numeric:tabular-nums}
+
+    /* ===== 已分拣·目的流向卡片 header 相关（作用域到 overlay）===== */
+    .oc15d-overlay .card{padding:18px 22px}
+    .oc15d-overlay .card-hd{margin-bottom:15px}
+    .oc15d-overlay .card-title{display:flex;align-items:center;gap:10px}
+    .oc15d-overlay .bar{width:5px;height:20px;border-radius:5px;background:linear-gradient(180deg,#ff743f,#ef4b12)}
+    .oc15d-overlay .card-title .h1{font-size:18px;letter-spacing:-.2px}
+    .oc15d-overlay .card-title .h2{font-size:15px;font-weight:600;margin-top:1px}
+
+    /* ===== 已分拣目的流向明细表 .tbl（作用域到 overlay）===== */
+    .oc15d-overlay .tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'IBM Plex Mono',monospace}
+    .oc15d-overlay .tbl th{padding:9px 12px;text-align:right;color:var(--muted);font-weight:600;border-bottom:2px solid var(--line-2);background:#fafbfd;white-space:nowrap}
+    .oc15d-overlay .tbl th:first-child{text-align:left}
+    .oc15d-overlay .tbl td{padding:9px 12px;text-align:right;border-bottom:1px solid #f0f3f7;color:#3c4757}
+    .oc15d-overlay .tbl td:first-child{text-align:left;font-weight:600;color:var(--text)}
+    .oc15d-overlay .tbl tr.total td{font-weight:700;color:var(--text)}
+    .oc15d-overlay .tbl tr:hover:not(.total){background:#fafbfd;cursor:pointer}
+
+    /* ===== #oc15dMainFlowCard 专属 ===== */
+    #oc15dMainFlowCard{margin:0;border-radius:0;box-shadow:none;padding:16px 18px 14px}
+    #oc15dMainFlowCard .main-flow-table-wrap{max-height:390px;overflow:auto}
+    #oc15dMainFlowCard .tbl{min-width:1900px}
+    #oc15dMainFlowCard .tbl th,#oc15dMainFlowCard .tbl td{white-space:nowrap}
+    #oc15dMainFlowCard .main-flow-chart-wrap{height:340px}
+    #oc15dMainFlowCard .main-flow-note{margin-top:10px}
   </style>
 </head>
 <body>
@@ -827,7 +972,115 @@
       </div>
 
       <div id="capacity" class="dashboard-panel hidden-panel">
-        <div class="empty-note">产能指标区域（可按同一视觉规范扩展）</div>
+        <div id="capacitySummary">
+          <section class="group-panel">
+            <div class="group-header">
+              <h2 class="group-title">操作</h2>
+              <button class="group-more" data-open-drill="shipmentOnTime">明细 &gt;</button>
+            </div>
+            <div class="group-grid">
+              <article class="metric-card">
+                <div class="metric-title">HUB到件量</div>
+                <div class="metric-value dark">569,340</div>
+                <div class="metric-compare"><div>环比昨日： <span class="down">↓0.78%</span></div><div>同比上周： <span class="up">↑3.25%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card drill-card" role="button" tabindex="0" aria-label="查看产能-分拣下钻">
+                <div class="metric-title">HUB分拣量</div>
+                <div class="metric-value dark">528,109</div>
+                <div class="metric-compare"><div>环比昨日： <span class="up">↑4.39%</span></div><div>同比上周： <span class="up">↑3.99%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">HUB签出量</div>
+                <div class="metric-value dark">600,966</div>
+                <div class="metric-compare"><div>环比昨日： <span class="up">↑7.58%</span></div><div>同比上周： <span class="up">↑6.53%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+            </div>
+          </section>
+
+          <section class="group-panel">
+            <div class="group-header">
+              <h2 class="group-title">运输</h2>
+              <button class="group-more" data-open-drill="shipmentOnTime">明细 &gt;</button>
+            </div>
+            <div class="group-grid">
+              <article class="metric-card">
+                <div class="metric-title">路段装载率</div>
+                <div class="metric-value good">89.84%</div>
+                <div class="metric-compare"><div>环比昨日： <span class="up">↑1.78%</span></div><div>同比上周： <span class="down">↓9.08%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">一级干线路段装载率</div>
+                <div class="metric-value dark">71.52%</div>
+                <div class="metric-compare"><div>环比昨日： <span class="up">↑10.26%</span></div><div>同比上周： <span class="up">↑1.40%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">实际发车车次</div>
+                <div class="metric-value dark">62</div>
+                <div class="metric-compare"><div>环比昨日： <span class="down">↓3.13%</span></div><div>同比上周： <span class="up">↑3.33%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+            </div>
+          </section>
+
+          <section class="group-panel">
+            <div class="group-header">
+              <h2 class="group-title">设备</h2>
+              <button class="group-more" data-open-drill="shipmentOnTime">明细 &gt;</button>
+            </div>
+            <div class="group-grid">
+              <article class="metric-card">
+                <div class="metric-title">设备分拣率</div>
+                <div class="metric-value dark">84.39%</div>
+                <div class="metric-compare"><div>环比昨日： <span class="down">↓3.19%</span></div><div>同比上周： <span class="down">↓0.46%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">设备分拣量</div>
+                <div class="metric-value dark">445,653</div>
+                <div class="metric-compare"><div>环比昨日： <span class="up">↑0.59%</span></div><div>同比上周： <span class="up">↑3.42%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">设备回流率</div>
+                <div class="metric-value dark">2.46%</div>
+                <div class="metric-compare"><div>环比昨日： <span class="up">↑0.64%</span></div><div>同比上周： <span class="up">↑0.16%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">设备运行处理效率</div>
+                <div class="metric-value dark">10,062</div>
+                <div class="metric-compare"><div>环比昨日： <span class="down">↓2.74%</span></div><div>同比上周： <span class="down">↓5.07%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+            </div>
+          </section>
+
+          <section class="group-panel">
+            <div class="group-header">
+              <h2 class="group-title">异常</h2>
+              <button class="group-more" data-open-drill="crossShift">明细 &gt;</button>
+            </div>
+            <div class="group-grid">
+              <article class="metric-card">
+                <div class="metric-title">异常处理率</div>
+                <div class="metric-value dark">43.71%</div>
+                <div class="metric-compare"><div>环比昨日： <span class="down">↓50.94%</span></div><div>同比上周： <span class="down">↓54.27%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-title">下架操作完结率</div>
+                <div class="metric-value good">95.04%</div>
+                <div class="metric-compare"><div>环比昨日： <span class="down">↓2.89%</span></div><div>同比上周： <span class="down">↓1.36%</span></div></div>
+                <div class="metric-date date-label">2026-08-08</div>
+              </article>
+            </div>
+          </section>
+        </div>
       </div>
 
       <div id="timeliness" class="dashboard-panel hidden-panel">
@@ -964,6 +1217,113 @@
       </div>
     </section>
   </main>
+</div>
+
+<div class="oc15d-overlay" id="operationsCockpit15dOverlay" aria-hidden="true" role="dialog" aria-label="运营驾驶舱已分拣近15天数据">
+  <div class="oc15d-page">
+    <header class="oc15d-titlebar">
+      <strong>产能-分拣</strong>
+      <button type="button" class="oc15d-close" id="operationsCockpit15dClose" aria-label="关闭并返回分拣区看板">×</button>
+    </header>
+    <div class="oc15d-toolbar">
+      <div class="oc15d-granularity" aria-label="统计粒度">
+        <button type="button" class="on" data-oc15d-granularity="day">日</button>
+        <button type="button" data-oc15d-granularity="week">周</button>
+        <button type="button" data-oc15d-granularity="month">月</button>
+      </div>
+      <div class="oc15d-date-range" aria-label="日期范围">
+        <input class="oc15d-date-input" id="oc15dStartDate" type="text" value="20/07/2026" maxlength="10" inputmode="numeric" aria-label="开始日期，格式为日/月/年">
+        <span class="arrow" aria-hidden="true">→</span>
+        <input class="oc15d-date-input" id="oc15dEndDate" type="text" value="03/08/2026" maxlength="10" inputmode="numeric" aria-label="结束日期，格式为日/月/年">
+        <span class="calendar" aria-hidden="true">▣</span>
+      </div>
+      <button type="button" class="oc15d-query" id="operationsCockpit15dQuery">查询</button>
+      <div class="oc15d-link-note"><b>默认范围：</b>近15天</div>
+    </div>
+    <main class="oc15d-content">
+      <section class="oc15d-card tall">
+        <div class="oc15d-card-title">HUB分拣量</div>
+        <div class="oc15d-chart" id="oc15dHubChart"></div>
+      </section>
+      <section class="oc15d-card tall">
+        <div class="oc15d-card-title">分拣量-设备&amp;人工</div>
+        <div class="oc15d-chart" id="oc15dMachineManualChart"></div>
+      </section>
+      <section class="oc15d-card type card" id="oc15dMainFlowCard">
+        <div class="card-hd">
+          <div class="card-title">
+            <span class="bar"></span>
+            <div><div class="h2">已分拣 · 目的流向</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+            <div class="seg-group" id="oc15dMainFlowTimeTabs" role="tablist" aria-label="目的流向日期口径">
+              <span class="on" role="tab" tabindex="0" data-oc-main-flow-time="daily" aria-selected="true">按日</span>
+            </div>
+            <div class="seg-group" id="oc15dMainFlowViewTabs" role="tablist" aria-label="目的流向展示方式">
+              <span class="on" role="tab" tabindex="0" data-oc-main-flow-view="table" aria-selected="true">表格</span>
+              <span role="tab" tabindex="0" data-oc-main-flow-view="chart" aria-selected="false">图表</span>
+            </div>
+            <button type="button" class="section-export-btn" id="oc15dMainFlowExportBtn" aria-label="导出已分拣目的流向数据">导出</button>
+          </div>
+        </div>
+
+        <div class="main-flow-filterbar">
+          <div class="main-flow-filter-left">
+            <div class="main-flow-perspective-row">
+              <span class="main-flow-filter-label">统计视角</span>
+              <div class="seg-group" id="oc15dMainFlowPerspectiveTabs" role="tablist" aria-label="目的流向统计视角">
+                <span class="on" role="tab" tabindex="0" data-oc-main-flow-perspective="type" aria-selected="true">按分拣类型</span>
+                <span role="tab" tabindex="0" data-oc-main-flow-perspective="org" aria-selected="false">按组织维度</span>
+              </div>
+            </div>
+            <div class="main-flow-type-row">
+              <span class="main-flow-filter-label" id="oc15dMainFlowTypeLabel">分拣类型</span>
+              <div class="main-flow-tabs" id="oc15dMainFlowTabs" role="tablist" aria-label="目的流向分类筛选"></div>
+            </div>
+          </div>
+          <div class="main-flow-summary" id="oc15dMainFlowSummary" style="display:none;"></div>
+        </div>
+
+        <div class="main-flow-breadcrumb" id="oc15dMainFlowBreadcrumb"></div>
+        <div class="main-flow-table-wrap" id="oc15dMainFlowTableWrap" style="overflow-x:auto;">
+          <table class="tbl" id="oc15dMainFlowTable">
+            <thead id="oc15dMainFlowTableHead"></thead>
+            <tbody id="oc15dMainFlowTableBody"></tbody>
+          </table>
+        </div>
+        <div class="main-flow-chart-wrap" id="oc15dMainFlowChartWrap">
+          <div id="oc15dMainFlowChart" style="width:100%;height:100%;"></div>
+        </div>
+        <div class="main-flow-note" id="oc15dMainFlowNote"></div>
+      </section>
+      <section class="oc15d-card oc15d-detail">
+        <div class="oc15d-detail-title">明细</div>
+        <div class="oc15d-detail-tabs"><button type="button" class="oc15d-detail-tab">HUB分拣量</button></div>
+        <div class="oc15d-table-wrap">
+          <table class="oc15d-table">
+            <thead><tr><th>维度</th><th>日期<span class="oc15d-sort">◆</span></th><th>HUB分拣量</th><th>人工分拣量</th><th>设备分拣量</th><th>设备分拣率</th><th>按HUB</th><th>按站点</th><th>按路区</th><th>按服务渠道</th></tr></thead>
+            <tbody>
+              <tr data-oc15d-date="2026-08-03"><td>日</td><td>8.3</td><td>458,230</td><td>49,650</td><td>408,580</td><td>89.16%</td><td>203,527</td><td>0</td><td>254,703</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-08-02"><td>日</td><td>8.2</td><td>461,014</td><td>49,398</td><td>406,077</td><td>88.08%</td><td>202,753</td><td>0</td><td>252,664</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-08-01"><td>日</td><td>8.1</td><td>508,345</td><td>72,365</td><td>431,010</td><td>84.79%</td><td>234,938</td><td>0</td><td>268,395</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-31"><td>日</td><td>7.31</td><td>514,526</td><td>67,888</td><td>444,974</td><td>86.48%</td><td>236,646</td><td>0</td><td>276,121</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-30"><td>日</td><td>7.30</td><td>506,767</td><td>67,345</td><td>437,695</td><td>86.37%</td><td>245,283</td><td>1</td><td>259,728</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-29"><td>日</td><td>7.29</td><td>496,836</td><td>47,460</td><td>447,947</td><td>90.16%</td><td>274,404</td><td>0</td><td>220,978</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-28"><td>日</td><td>7.28</td><td>493,084</td><td>42,756</td><td>436,149</td><td>88.45%</td><td>261,264</td><td>0</td><td>217,537</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-27"><td>日</td><td>7.27</td><td>411,598</td><td>37,793</td><td>367,509</td><td>89.29%</td><td>222,847</td><td>1</td><td>182,377</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-26"><td>日</td><td>7.26</td><td>381,960</td><td>44,843</td><td>335,394</td><td>87.81%</td><td>178,848</td><td>0</td><td>201,361</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-25"><td>日</td><td>7.25</td><td>475,310</td><td>38,366</td><td>435,638</td><td>91.65%</td><td>201,235</td><td>0</td><td>272,719</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-24"><td>日</td><td>7.24</td><td>477,106</td><td>40,508</td><td>432,960</td><td>90.75%</td><td>240,322</td><td>2</td><td>233,119</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-23"><td>日</td><td>7.23</td><td>462,800</td><td>42,100</td><td>420,700</td><td>90.90%</td><td>214,900</td><td>0</td><td>247,900</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-22"><td>日</td><td>7.22</td><td>468,500</td><td>41,600</td><td>426,900</td><td>91.12%</td><td>245,500</td><td>0</td><td>223,000</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-21"><td>日</td><td>7.21</td><td>482,300</td><td>45,800</td><td>436,500</td><td>90.51%</td><td>261,100</td><td>0</td><td>221,200</td><td>0</td></tr>
+              <tr data-oc15d-date="2026-07-20"><td>日</td><td>7.20</td><td>451,900</td><td>39,700</td><td>412,200</td><td>91.21%</td><td>218,600</td><td>0</td><td>233,300</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
 </div>
 
 <script>
@@ -1473,6 +1833,372 @@
   window.addEventListener('resize', () => {
     if (!document.getElementById('timelinessDrill').classList.contains('hidden-panel')) {
       setActiveDetail(currentDetailKey);
+    }
+  });
+
+  /* ================= 产能-分拣 overlay（复刻自分拣区看板 V3.36）================= */
+  function showPrototypeToast(msg) { alert(msg); }
+
+  let oc15dCharts = [];
+  let oc15dChartsReady = false;
+  let oc15dMainFlowChart = null;
+
+  function oc15dBaseGrid() {
+    return { left: 50, right: 48, top: 45, bottom: 34, containLabel: true };
+  }
+
+  const oc15dDays = ['7.20','7.21','7.22','7.23','7.24','7.25','7.26','7.27','7.28','7.29','7.30','7.31','8.1','8.2','8.3'];
+  const oc15dDateKeys = ['2026-07-20','2026-07-21','2026-07-22','2026-07-23','2026-07-24','2026-07-25','2026-07-26','2026-07-27','2026-07-28','2026-07-29','2026-07-30','2026-07-31','2026-08-01','2026-08-02','2026-08-03'];
+  let oc15dVisibleIndices = oc15dDateKeys.map((_, index) => index);
+
+  function oc15dVisibleDays() { return oc15dVisibleIndices.map(index => oc15dDays[index]); }
+  function oc15dSlice(values) { return oc15dVisibleIndices.map(index => values[index]); }
+  function oc15dFormatKey(key) {
+    const [year, month, day] = String(key).split('-');
+    return `${day}/${month}/${year}`;
+  }
+  function oc15dParseDisplayDate(value) {
+    const match = String(value || '').trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+    if (date.getUTCFullYear() !== Number(year) || date.getUTCMonth() !== Number(month) - 1 || date.getUTCDate() !== Number(day)) return null;
+    return `${year}-${month}-${day}`;
+  }
+  function oc15dSelectedRangeLabel() {
+    const first = oc15dDateKeys[oc15dVisibleIndices[0]];
+    const last = oc15dDateKeys[oc15dVisibleIndices[oc15dVisibleIndices.length - 1]];
+    return `${oc15dFormatKey(first)} → ${oc15dFormatKey(last)}`;
+  }
+  function updateOc15dDetailRows() {
+    const selected = new Set(oc15dVisibleIndices.map(index => oc15dDateKeys[index]));
+    document.querySelectorAll('.oc15d-table tbody tr[data-oc15d-date]').forEach(row => {
+      row.hidden = !selected.has(row.dataset.oc15dDate);
+    });
+  }
+  function applyOc15dDateRange() {
+    const startInput = document.getElementById('oc15dStartDate');
+    const endInput = document.getElementById('oc15dEndDate');
+    const startKey = oc15dParseDisplayDate(startInput?.value);
+    const endKey = oc15dParseDisplayDate(endInput?.value);
+    if (!startKey || !endKey) {
+      if (typeof showPrototypeToast === 'function') showPrototypeToast('请输入正确日期，格式为 DD/MM/YYYY');
+      return false;
+    }
+    if (startKey > endKey) {
+      if (typeof showPrototypeToast === 'function') showPrototypeToast('开始日期不能晚于结束日期');
+      return false;
+    }
+    const minKey = oc15dDateKeys[0];
+    const maxKey = oc15dDateKeys[oc15dDateKeys.length - 1];
+    if (startKey < minKey || endKey > maxKey) {
+      if (typeof showPrototypeToast === 'function') showPrototypeToast(`当前原型数据范围为 ${oc15dFormatKey(minKey)} → ${oc15dFormatKey(maxKey)}`);
+      return false;
+    }
+    const indices = oc15dDateKeys.map((key, index) => ({key, index})).filter(item => item.key >= startKey && item.key <= endKey).map(item => item.index);
+    if (!indices.length) {
+      if (typeof showPrototypeToast === 'function') showPrototypeToast('当前日期范围内暂无数据');
+      return false;
+    }
+    oc15dVisibleIndices = indices;
+    startInput.value = oc15dFormatKey(startKey);
+    endInput.value = oc15dFormatKey(endKey);
+    updateOc15dDetailRows();
+    return true;
+  }
+  const oc15dHubTotals = [451900,482300,468500,462800,477106,475310,381960,411598,493084,496836,506767,514526,508345,461014,458230];
+  const oc15dManualTotals = [39700,45800,41600,42100,40508,38366,44843,37793,42756,47460,67345,67888,72365,49398,49650];
+  const ocMainFlowState = { perspective:'type', type:'all', timeMode:'daily', viewMode:'table' };
+  const ocMainFlowTypeLabels = { all:'全部', hub:'HUB分拣', station:'站点分拣', road:'路区分拣', channel:'服务渠道分拣' };
+  const ocMainFlowOrgLabels = { all:'全部', hub:'HUB维度', station:'站点维度', channel:'服务渠道维度' };
+  const ocMainFlowTypeTabs = [
+    {key:'all',label:'全部'}, {key:'hub',label:'HUB'}, {key:'station',label:'站点'},
+    {key:'road',label:'路区'}, {key:'channel',label:'服务渠道'}
+  ];
+  const ocMainFlowOrgTabs = [
+    {key:'all',label:'全部'}, {key:'hub',label:'HUB维度'},
+    {key:'station',label:'站点维度'}, {key:'channel',label:'服务渠道维度'}
+  ];
+  const ocMainFlowBase = {
+    hub:[
+      {name:'DFW H',weight:.255,bagsRate:38}, {name:'IAH H',weight:.185,bagsRate:39}
+    ],
+    station:[
+      {name:'ATL01',weight:.135,bagsRate:38}, {name:'ATL03',weight:.092,bagsRate:39},
+      {name:'SFO03',weight:.054,bagsRate:40}, {name:'其他站点',weight:.019,bagsRate:41}
+    ],
+    road:[
+      {name:'ATL-R01',weight:.082,bagsRate:38,station:'ATL01'},
+      {name:'ATL-R02',weight:.056,bagsRate:39,station:'ATL03'},
+      {name:'SFO-R03',weight:.039,bagsRate:40,station:'SFO03'},
+      {name:'IAH-R04',weight:.017,bagsRate:41,station:'IAH02'},
+      {name:'其他目的区域',weight:.006,bagsRate:42,station:'其他站点'}
+    ],
+    channel:[
+      {name:'LAX.H-USPS(TT)',weight:.027,bagsRate:37},
+      {name:'LAX.H-USPS(PM)',weight:.016,bagsRate:39},
+      {name:'LAX.H-FEDEX(IP)',weight:.010,bagsRate:40},
+      {name:'其他',weight:.007,bagsRate:42}
+    ]
+  };
+
+  const ocMFFormat = value => Number(value || 0).toLocaleString('en-US');
+  const ocMFSum = values => values.reduce((sum,value)=>sum+Number(value||0),0);
+  function ocMFDateValues(item, typeIndex, rowIndex) {
+    return oc15dHubTotals.map((total,index) => {
+      const wave = 1 + ((((index + typeIndex * 3 + rowIndex * 2) % 7) - 3) * .008);
+      return Math.max(0, Math.round(total * item.weight * wave));
+    });
+  }
+  function ocMFSourceRows(type) {
+    const typeIndex = ['hub','station','road','channel'].indexOf(type);
+    return (ocMainFlowBase[type] || []).map((item,index) => {
+      const dates = ocMFDateValues(item, typeIndex, index);
+      const tickets = ocMFSum(dates);
+      return {...item, typeKey:type, dates, tickets, bags:Math.max(1,Math.round(tickets / item.bagsRate))};
+    });
+  }
+  function ocMFSumRows(rows, name, extra={}) {
+    const dates = oc15dDays.map((_,index)=>rows.reduce((sum,row)=>sum+(row.dates?.[index]||0),0));
+    const tickets = ocMFSum(dates);
+    return {name, dates, tickets, bags:rows.reduce((sum,row)=>sum+(row.bags||0),0), ...extra};
+  }
+  function ocMFTypeSummaryRows() {
+    return ['hub','station','road','channel'].map(type=>ocMFSumRows(ocMFSourceRows(type),ocMainFlowTypeLabels[type],{typeKey:type}));
+  }
+  function ocMFStationRows() {
+    const map = new Map();
+    const ensure = name => {
+      if (!map.has(name)) map.set(name,{name,dates:oc15dDays.map(()=>0),bags:0,stationTickets:0,roadTickets:0});
+      return map.get(name);
+    };
+    ocMFSourceRows('station').forEach(row=>{
+      const target=ensure(row.name); target.stationTickets+=row.tickets; target.bags+=row.bags;
+      target.dates=target.dates.map((value,index)=>value+row.dates[index]);
+    });
+    ocMFSourceRows('road').forEach(row=>{
+      const target=ensure(row.station||row.name); target.roadTickets+=row.tickets; target.bags+=row.bags;
+      target.dates=target.dates.map((value,index)=>value+row.dates[index]);
+    });
+    return [...map.values()].map(row=>({...row,tickets:ocMFSum(row.dates)})).sort((a,b)=>b.tickets-a.tickets);
+  }
+  function ocMFOrgSummaryRows() {
+    return [
+      ocMFSumRows(ocMFSourceRows('hub'),'HUB维度',{orgKey:'hub'}),
+      ocMFSumRows(ocMFStationRows(),'站点维度',{orgKey:'station'}),
+      ocMFSumRows(ocMFSourceRows('channel'),'服务渠道维度',{orgKey:'channel'})
+    ];
+  }
+  function ocMFRawRows() {
+    if (ocMainFlowState.perspective === 'type') {
+      return ocMainFlowState.type === 'all' ? ocMFTypeSummaryRows() : ocMFSourceRows(ocMainFlowState.type);
+    }
+    if (ocMainFlowState.type === 'all') return ocMFOrgSummaryRows();
+    if (ocMainFlowState.type === 'station') return ocMFStationRows();
+    if (ocMainFlowState.type === 'channel') return ocMFSourceRows('channel');
+    return ocMFSourceRows('hub');
+  }
+  function ocMFApplyVisibleRange(row) {
+    const fullDates = row.dates || [];
+    const dates = oc15dSlice(fullDates);
+    const fullTickets = Number(row.tickets || ocMFSum(fullDates));
+    const tickets = ocMFSum(dates);
+    const ratio = fullTickets > 0 ? tickets / fullTickets : 0;
+    return {
+      ...row,
+      dates,
+      tickets,
+      bags: Math.max(0, Math.round(Number(row.bags || 0) * ratio)),
+      stationTickets: Math.max(0, Math.round(Number(row.stationTickets || 0) * ratio)),
+      roadTickets: Math.max(0, Math.round(Number(row.roadTickets || 0) * ratio))
+    };
+  }
+  function ocMFRows() { return ocMFRawRows().map(ocMFApplyVisibleRange); }
+  function ocMFDisplayDates(values) {
+    return values;
+  }
+  function ocMFLabel() {
+    return ocMainFlowState.perspective === 'type'
+      ? (ocMainFlowTypeLabels[ocMainFlowState.type] || '全部')
+      : (ocMainFlowOrgLabels[ocMainFlowState.type] || '全部');
+  }
+  function ocMFColumnName() {
+    if (ocMainFlowState.perspective==='type' && ocMainFlowState.type==='all') return '分拣类型';
+    if (ocMainFlowState.perspective==='org' && ocMainFlowState.type==='all') return '组织维度';
+    if (ocMainFlowState.type==='hub') return '目的中心';
+    if (ocMainFlowState.type==='station') return '目的站点';
+    if (ocMainFlowState.type==='road') return '目的区域';
+    return '服务渠道';
+  }
+  function renderOcMainFlowTabs() {
+    const defs=ocMainFlowState.perspective==='type'?ocMainFlowTypeTabs:ocMainFlowOrgTabs;
+    if (!defs.some(item=>item.key===ocMainFlowState.type)) ocMainFlowState.type='all';
+    document.getElementById('oc15dMainFlowTypeLabel').textContent=ocMainFlowState.perspective==='type'?'分拣类型':'组织维度';
+    document.getElementById('oc15dMainFlowTabs').innerHTML=defs.map(item=>`<button type="button" class="main-flow-tab ${item.key===ocMainFlowState.type?'on':''}" data-oc-main-flow-type="${item.key}" role="tab" aria-selected="${item.key===ocMainFlowState.type?'true':'false'}">${item.label}</button>`).join('');
+  }
+  function renderOcMainFlowChart(rows) {
+    const chartDom=document.getElementById('oc15dMainFlowChart');
+    if (!chartDom || !window.echarts) return;
+    if (!oc15dMainFlowChart) oc15dMainFlowChart=echarts.init(chartDom);
+    const seriesRows=rows.slice(0,8);
+    oc15dMainFlowChart.setOption({
+      animationDuration:350,
+      tooltip:{trigger:'axis',axisPointer:{type:'line'},formatter(params){
+        const lines=[params?.[0]?.axisValue||''];
+        (params||[]).forEach(param=>lines.push(`${param.marker}${param.seriesName}：${ocMFFormat(param.value)} 票`));
+        return lines.join('<br>');
+      }},
+      legend:{top:3,type:'scroll',itemWidth:18,itemHeight:3,textStyle:{fontSize:10,color:'#606266'}},
+      grid:{left:48,right:20,top:48,bottom:34,containLabel:true},
+      xAxis:{type:'category',boundaryGap:false,data:oc15dVisibleDays(),axisLine:{lineStyle:{color:'#dcdfe6'}},axisTick:{show:false},axisLabel:{fontSize:10,color:'#606266'}},
+      yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},axisLabel:{fontSize:10,color:'#606266',formatter:value=>Number(value).toLocaleString()},splitLine:{lineStyle:{color:'#ebeef5'}}},
+      series:seriesRows.map(row=>({
+        name:row.name,
+        type:'line',
+        smooth:false,
+        showSymbol:true,
+        symbol:'circle',
+        symbolSize:6,
+        connectNulls:true,
+        lineStyle:{width:2},
+        data:row.dates,
+        emphasis:{focus:'series',scale:true}
+      }))
+    },true);
+  }
+  function renderOcMainFlow() {
+    renderOcMainFlowTabs();
+    const rows=ocMFRows();
+    const visibleDays=oc15dVisibleDays();
+    const totalDates=visibleDays.map((_,index)=>rows.reduce((sum,row)=>sum+(row.dates?.[index]||0),0));
+    const totalTickets=ocMFSum(totalDates);
+    const totalBags=rows.reduce((sum,row)=>sum+(row.bags||0),0);
+    const modeLabel='按日';
+
+    document.querySelectorAll('#oc15dMainFlowPerspectiveTabs [data-oc-main-flow-perspective]').forEach(tab=>{
+      const on=tab.dataset.ocMainFlowPerspective===ocMainFlowState.perspective;
+      tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+    });
+    document.querySelectorAll('#oc15dMainFlowTimeTabs [data-oc-main-flow-time]').forEach(tab=>{
+      const on=tab.dataset.ocMainFlowTime===ocMainFlowState.timeMode;
+      tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+    });
+    document.querySelectorAll('#oc15dMainFlowViewTabs [data-oc-main-flow-view]').forEach(tab=>{
+      const on=tab.dataset.ocMainFlowView===ocMainFlowState.viewMode;
+      tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+    });
+    const perspectiveLabel=ocMainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
+    document.getElementById('oc15dMainFlowBreadcrumb').innerHTML=`<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><b>${ocMFLabel()}</b><span class="sep">›</span><span>${modeLabel}</span><span class="sep">›</span><span>${oc15dSelectedRangeLabel()}</span>`;
+
+    const dateHeaders=visibleDays.map(day=>`<th>${day}</th>`).join('');
+    const isStationDimension=ocMainFlowState.perspective==='org'&&ocMainFlowState.type==='station';
+    if (isStationDimension) {
+      document.getElementById('oc15dMainFlowTableHead').innerHTML=`<tr><th>${ocMFColumnName()}</th><th>站点分拣票</th><th>路区分拣票</th><th>合计票</th><th>合计袋</th>${dateHeaders}</tr>`;
+      const totalStation=rows.reduce((sum,row)=>sum+(row.stationTickets||0),0);
+      const totalRoad=rows.reduce((sum,row)=>sum+(row.roadTickets||0),0);
+      const totalCells=totalDates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
+      const rowHtml=rows.map(row=>{
+        const cells=row.dates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
+        return `<tr><td><span class="main-flow-name-static">${row.name}</span></td><td><span class="num">${ocMFFormat(row.stationTickets||0)}</span></td><td><span class="num">${ocMFFormat(row.roadTickets||0)}</span></td><td><span class="num">${ocMFFormat(row.tickets)}</span></td><td><span class="num">${ocMFFormat(row.bags)}</span></td>${cells}</tr>`;
+      }).join('');
+      document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalStation)}</span></td><td><span class="num">${ocMFFormat(totalRoad)}</span></td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml}`;
+    } else {
+      document.getElementById('oc15dMainFlowTableHead').innerHTML=`<tr><th>${ocMFColumnName()}</th><th>合计票</th><th>合计袋</th>${dateHeaders}</tr>`;
+      const totalCells=totalDates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
+      const rowHtml=rows.map(row=>{
+        const cells=row.dates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
+        return `<tr><td><span class="main-flow-name-static">${row.name}</span></td><td><span class="num">${ocMFFormat(row.tickets)}</span></td><td><span class="num">${ocMFFormat(row.bags)}</span></td>${cells}</tr>`;
+      }).join('');
+      document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml}`;
+    }
+
+    const tableWrap=document.getElementById('oc15dMainFlowTableWrap');
+    const chartWrap=document.getElementById('oc15dMainFlowChartWrap');
+    tableWrap.classList.toggle('off',ocMainFlowState.viewMode!=='table');
+    chartWrap.classList.toggle('on',ocMainFlowState.viewMode==='chart');
+    if (ocMainFlowState.viewMode==='chart') requestAnimationFrame(()=>{renderOcMainFlowChart(rows);oc15dMainFlowChart?.resize();});
+
+    let note='';
+    if (ocMainFlowState.perspective==='type') {
+      if (ocMainFlowState.type==='all') note='四种分拣类型互斥，“全部”按分拣类型汇总，每票只统计一次。';
+      if (ocMainFlowState.type==='hub') note='仅统计分拣类型为 HUB 的运单，并按目的中心汇总。';
+      if (ocMainFlowState.type==='station') note='仅统计分拣类型为站点的运单，并按目的站点汇总。';
+      if (ocMainFlowState.type==='road') note='仅统计分拣类型为路区的运单，并按目的区域汇总。';
+      if (ocMainFlowState.type==='channel') note='仅统计分拣类型为服务渠道的运单，并按服务渠道汇总。';
+    } else {
+      if (ocMainFlowState.type==='all') note='“全部”展示 HUB、站点、服务渠道三个组织视角；合计按分拣类型去重，每票只统计一次。';
+      if (ocMainFlowState.type==='hub') note='HUB 维度统计分拣至各目的中心的运单。';
+      if (ocMainFlowState.type==='station') note='站点维度合并站点分拣和路区分拣，并按目的站点汇总。';
+      if (ocMainFlowState.type==='channel') note='服务渠道维度按运单服务渠道统计，每票只计入一个渠道。';
+    }
+    document.getElementById('oc15dMainFlowNote').textContent=`${note} 当前模块仅展示汇总数据，不下钻到运单明细。`;
+  }
+
+  function exportOc15dMainFlowCsv() {
+    const table=document.getElementById('oc15dMainFlowTable');
+    if(!table)return;
+    const rows=Array.from(table.querySelectorAll('tr')).map(row=>Array.from(row.querySelectorAll('th,td')).map(cell=>cell.textContent.trim().replace(/\s+/g,' ')));
+    if(!rows.length)return;
+    const escapeCsv=value=>`"${String(value??'').replace(/"/g,'""')}"`;
+    const csv='\ufeff'+rows.map(row=>row.map(escapeCsv).join(',')).join('\r\n');
+    const perspective=ocMainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
+    const fileName=`已分拣-目的流向-${perspective}-${ocMFLabel()}-${oc15dSelectedRangeLabel().replace(/\s|→|\//g,'-')}.csv`;
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download=fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),0);
+    if(typeof showPrototypeToast==='function')showPrototypeToast(`已导出：${fileName}`);
+  }
+
+  function initOperationsCockpit15dCharts() {
+    if (!window.echarts) return;
+    if (!oc15dChartsReady) {
+      const hubChart=echarts.init(document.getElementById('oc15dHubChart'));
+      const machineChart=echarts.init(document.getElementById('oc15dMachineManualChart'));
+      oc15dCharts=[hubChart,machineChart];
+      oc15dChartsReady=true;
+    }
+    const days=oc15dVisibleDays();
+    const hub=oc15dSlice(oc15dHubTotals);
+    const manual=oc15dSlice(oc15dManualTotals);
+    const machine=hub.map((value,index)=>value-manual[index]);
+    const rate=machine.map((value,index)=>+(value/hub[index]*100).toFixed(2));
+    const commonAxis={axisLine:{lineStyle:{color:'#dcdfe6'}},axisTick:{show:false},axisLabel:{color:'#606266',fontSize:10},splitLine:{lineStyle:{color:'#ebeef5'}}};
+    oc15dCharts[0].setOption({animationDuration:450,color:['#258ff0','#ff7043'],tooltip:{trigger:'axis'},legend:{top:4,itemWidth:10,itemHeight:10,textStyle:{fontSize:10,color:'#606266'},data:['HUB分拣量','设备分拣率']},grid:oc15dBaseGrid(),xAxis:{type:'category',data:days,...commonAxis,splitLine:{show:false}},yAxis:[{type:'value',min:0,max:600000,interval:100000,...commonAxis,axisLabel:{color:'#606266',fontSize:10,formatter:value=>value.toLocaleString()}},{type:'value',min:0,max:120,interval:20,...commonAxis,splitLine:{show:false},axisLabel:{color:'#606266',fontSize:10,formatter:'{value}%'}}],series:[{name:'HUB分拣量',type:'bar',barWidth:16,data:hub,itemStyle:{color:'#258ff0'}},{name:'设备分拣率',type:'line',yAxisIndex:1,data:rate,symbol:'circle',symbolSize:4,lineStyle:{width:1.5,color:'#ff7043'},itemStyle:{color:'#ff7043'}}]},true);
+    oc15dCharts[1].setOption({animationDuration:450,tooltip:{trigger:'axis'},legend:{top:4,itemWidth:10,itemHeight:10,textStyle:{fontSize:10,color:'#606266'},data:['设备分拣量','人工分拣量','设备分拣率']},grid:oc15dBaseGrid(),xAxis:{type:'category',data:days,...commonAxis,splitLine:{show:false}},yAxis:[{type:'value',min:0,max:600000,interval:100000,...commonAxis,axisLabel:{color:'#606266',fontSize:10,formatter:value=>value.toLocaleString()}},{type:'value',min:0,max:120,interval:20,...commonAxis,splitLine:{show:false},axisLabel:{color:'#606266',fontSize:10,formatter:'{value}%'}}],series:[{name:'设备分拣量',type:'bar',stack:'total',barWidth:16,data:machine,itemStyle:{color:'#258ff0'}},{name:'人工分拣量',type:'bar',stack:'total',barWidth:16,data:manual,itemStyle:{color:'#ff7043'}},{name:'设备分拣率',type:'line',yAxisIndex:1,data:rate,symbol:'circle',symbolSize:4,lineStyle:{width:1.5,color:'#d9363e'},itemStyle:{color:'#d9363e'}}]},true);
+  }
+  function openOperationsCockpit15d(){const overlay=document.getElementById('operationsCockpit15dOverlay');if(!overlay)return;overlay.classList.add('on');overlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';updateOc15dDetailRows();requestAnimationFrame(()=>{initOperationsCockpit15dCharts();renderOcMainFlow();oc15dCharts.forEach(chart=>chart.resize());oc15dMainFlowChart?.resize();});}
+  function closeOperationsCockpit15d(){const overlay=document.getElementById('operationsCockpit15dOverlay');if(!overlay)return;overlay.classList.remove('on');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+
+  document.getElementById('operationsCockpit15dClose')?.addEventListener('click',closeOperationsCockpit15d);
+  document.getElementById('operationsCockpit15dQuery')?.addEventListener('click',()=>{if(!applyOc15dDateRange())return;initOperationsCockpit15dCharts();renderOcMainFlow();oc15dCharts.forEach(chart=>chart.resize());oc15dMainFlowChart?.resize();if(typeof showPrototypeToast==='function')showPrototypeToast(`已按 ${oc15dSelectedRangeLabel()} 刷新产能-分拣数据`);});
+  document.querySelectorAll('[data-oc15d-granularity]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-oc15d-granularity]').forEach(item=>item.classList.toggle('on',item===button));if(typeof showPrototypeToast==='function')showPrototypeToast(`统计粒度已切换为：${button.textContent.trim()}`);}));
+  document.querySelectorAll('#oc15dStartDate,#oc15dEndDate').forEach(input=>input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();document.getElementById('operationsCockpit15dQuery')?.click();}}));
+  document.getElementById('oc15dMainFlowPerspectiveTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-perspective]');if(!tab)return;ocMainFlowState.perspective=tab.dataset.ocMainFlowPerspective;ocMainFlowState.type='all';renderOcMainFlow();});
+  document.getElementById('oc15dMainFlowTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-type]');if(!tab)return;ocMainFlowState.type=tab.dataset.ocMainFlowType;renderOcMainFlow();});
+  document.getElementById('oc15dMainFlowTimeTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-time]');if(!tab)return;ocMainFlowState.timeMode='daily';renderOcMainFlow();});
+  document.getElementById('oc15dMainFlowViewTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-view]');if(!tab)return;ocMainFlowState.viewMode=tab.dataset.ocMainFlowView;renderOcMainFlow();});
+  document.getElementById('oc15dMainFlowExportBtn')?.addEventListener('click',exportOc15dMainFlowCsv);
+  document.getElementById('oc15dMainFlowCard')?.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[role="tab"]')){event.preventDefault();event.target.click();}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('operationsCockpit15dOverlay')?.classList.contains('on'))closeOperationsCockpit15d();});
+  window.addEventListener('resize',()=>{oc15dCharts.forEach(chart=>chart.resize());oc15dMainFlowChart?.resize();});
+
+  /* HUB分拣量 卡片：点击打开 产能-分拣 overlay */
+  document.querySelectorAll('#capacity .metric-card.drill-card .metric-title').forEach(titleEl => {
+    if (titleEl.textContent.trim() === 'HUB分拣量') {
+      const card = titleEl.closest('.metric-card');
+      card.addEventListener('click', openOperationsCockpit15d);
+      card.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openOperationsCockpit15d();
+        }
+      });
     }
   });
 </script>
