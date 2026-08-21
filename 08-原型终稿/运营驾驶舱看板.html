@@ -1194,10 +1194,16 @@
             <div class="drill-page-title">指标下钻</div>
           </div>
           <div class="drill-chart-wrap">
-            <h3 class="drill-chart-title" id="chartTitle">班次发货及时率</h3>
-            <div class="legend-row" id="chartLegend"></div>
+            <h3 class="drill-chart-title">班次发货及时率</h3>
+            <div class="legend-row" id="shipmentChartLegend"></div>
             <div class="chart-interaction-hint">悬停查看数据 · 点击图例显示/隐藏 · 点击日期筛选明细 · 双击图表清除筛选</div>
-            <div class="chart-box" id="chartBox"></div>
+            <div class="chart-box" id="shipmentChartBox"></div>
+          </div>
+          <div class="drill-chart-wrap">
+            <h3 class="drill-chart-title">跨班次发货及时率</h3>
+            <div class="legend-row" id="crossChartLegend"></div>
+            <div class="chart-interaction-hint">悬停查看数据 · 点击图例显示/隐藏 · 点击日期筛选明细 · 双击图表清除筛选</div>
+            <div class="chart-box" id="crossChartBox"></div>
           </div>
           <div class="detail-area">
             <div class="detail-header">
@@ -1380,6 +1386,8 @@
 
   const crossShould = [...onTimeShould];
   const crossTimely = [430100,650214,571065,531181,512899,430211,253689,448596,668874,587162,518902,488955,385766,250528,474082,685554,601700,521678,540285,402233,274114,428347,689977,612000,521901,498201,451933,290661,497094,746128,107906];
+  const crossLate = crossShould.map((v, i) => Math.max(v - crossTimely[i], 0));
+  const crossRate = crossShould.map((v, i) => +(crossTimely[i] / v * 100).toFixed(2));
 
   const detailConfigs = {
     shipmentOnTime: {
@@ -1415,7 +1423,8 @@
       },
       renderChart() {
         renderComboChart({
-          container: document.getElementById('chartBox'),
+          container: document.getElementById('shipmentChartBox'),
+          detailKey: 'shipmentOnTime',
           labels,
           barSeries: [
             { name: '班次应发件量', data: onTimeShould, color: '#2f87e7', format: 'count' },
@@ -1434,27 +1443,34 @@
       legend: [
         { label: '班次应发件量', type: 'bar', color: '#2f87e7' },
         { label: '跨班次及时发件量', type: 'bar', color: '#ff7d41' },
+        { label: '跨班次不及时发件量', type: 'bar', color: '#d7303f' },
+        { label: '跨班次发货及时率', type: 'line', color: '#e7298a' },
         { label: '目标', type: 'line', color: '#d4a617' }
       ],
-      tableColumns: ['维度', '日期', '班次应发件量', '跨班次及时发件量', '目标'],
+      tableColumns: ['维度', '日期', '班次应发件量', '跨班次及时发件量', '跨班次不及时发件量', '跨班次发货及时率', '目标'],
       buildRows() {
         return labels.map((date, i) => ({
           '维度': '日',
           '日期': date,
           '班次应发件量': crossShould[i],
           '跨班次及时发件量': crossTimely[i],
+          '跨班次不及时发件量': crossLate[i],
+          '跨班次发货及时率': crossRate[i] + '%',
           '目标': '86.00%'
         })).reverse();
       },
       renderChart() {
         renderComboChart({
-          container: document.getElementById('chartBox'),
+          container: document.getElementById('crossChartBox'),
+          detailKey: 'crossShift',
           labels,
           barSeries: [
             { name: '班次应发件量', data: crossShould, color: '#2f87e7', format: 'count' },
-            { name: '跨班次及时发件量', data: crossTimely, color: '#ff7d41', format: 'count' }
+            { name: '跨班次及时发件量', data: crossTimely, color: '#ff7d41', format: 'count' },
+            { name: '跨班次不及时发件量', data: crossLate, color: '#d7303f', format: 'count' }
           ],
           lineSeries: [
+            { name: '跨班次发货及时率', data: crossRate, color: '#e7298a', format: 'percent' },
             { name: '目标', data: targetRate, color: '#d4a617', format: 'percent' }
           ]
         });
@@ -1465,7 +1481,7 @@
   let currentDetailKey = 'shipmentOnTime';
   const activeSeriesByDetail = {
     shipmentOnTime: new Set(['班次应发件量', '班次发货及时量', '班次发货不及时量', '目标', 'CNO.H']),
-    crossShift: new Set(['班次应发件量', '跨班次及时发件量', '目标'])
+    crossShift: new Set(['班次应发件量', '跨班次及时发件量', '跨班次不及时发件量', '跨班次发货及时率', '目标'])
   };
   const selectedDateByDetail = {
     shipmentOnTime: null,
@@ -1491,13 +1507,13 @@
   function getInteractiveSeriesNames(detailKey) {
     return detailKey === 'shipmentOnTime'
       ? new Set(['班次应发件量', '班次发货及时量', '班次发货不及时量', '目标', 'CNO.H'])
-      : new Set(['班次应发件量', '跨班次及时发件量', '目标']);
+      : new Set(['班次应发件量', '跨班次及时发件量', '跨班次不及时发件量', '跨班次发货及时率', '目标']);
   }
 
-  function createLegend(items) {
-    const legend = document.getElementById('chartLegend');
-    const interactiveNames = getInteractiveSeriesNames(currentDetailKey);
-    const activeNames = activeSeriesByDetail[currentDetailKey];
+  function createLegend(items, detailKey, legendId) {
+    const legend = document.getElementById(legendId);
+    const interactiveNames = getInteractiveSeriesNames(detailKey);
+    const activeNames = activeSeriesByDetail[detailKey];
     legend.innerHTML = items.map(item => {
       const swatchClass = item.type === 'line' ? 'legend-swatch line' : item.type === 'dot' ? 'legend-swatch dot' : 'legend-swatch';
       const style = item.type === 'bar'
@@ -1513,20 +1529,20 @@
     legend.querySelectorAll('.legend-toggle').forEach(button => {
       button.addEventListener('click', () => {
         const name = button.dataset.seriesName;
-        const activeSet = activeSeriesByDetail[currentDetailKey];
+        const activeSet = activeSeriesByDetail[detailKey];
         if (activeSet.has(name)) {
           if (activeSet.size === 1) return;
           activeSet.delete(name);
         } else {
           activeSet.add(name);
         }
-        setActiveDetail(currentDetailKey);
+        renderAllCharts();
       });
     });
   }
 
-  function getSelectedIndex() {
-    const selectedLabel = selectedDateByDetail[currentDetailKey];
+  function getSelectedIndex(detailKey) {
+    const selectedLabel = selectedDateByDetail[detailKey];
     return selectedLabel ? labels.indexOf(selectedLabel) : -1;
   }
 
@@ -1605,18 +1621,20 @@
       const index = resolveIndex(event);
       if (index < 0) return;
       const label = chartMeta.labels[index];
-      selectedDateByDetail[currentDetailKey] = selectedDateByDetail[currentDetailKey] === label ? null : label;
-      setActiveDetail(currentDetailKey);
+      const detailKey = chartMeta.detailKey;
+      selectedDateByDetail[detailKey] = selectedDateByDetail[detailKey] === label ? null : label;
+      setActiveDetail(detailKey);
     });
     container.addEventListener('dblclick', event => {
       event.preventDefault();
-      selectedDateByDetail[currentDetailKey] = null;
-      setActiveDetail(currentDetailKey);
+      const detailKey = chartMeta.detailKey;
+      selectedDateByDetail[detailKey] = null;
+      setActiveDetail(detailKey);
     });
   }
 
-  function renderComboChart({ container, labels, barSeries, lineSeries }) {
-    const activeSet = activeSeriesByDetail[currentDetailKey];
+  function renderComboChart({ container, labels, barSeries, lineSeries, detailKey }) {
+    const activeSet = activeSeriesByDetail[detailKey];
     const visibleBars = barSeries.filter(series => activeSet.has(series.name));
     const visibleLines = lineSeries.filter(series => activeSet.has(series.name));
     const visibleSeries = [...visibleBars, ...visibleLines];
@@ -1637,8 +1655,8 @@
     const barWidth = visibleBars.length ? barGroupWidth / visibleBars.length : 0;
     const barScale = value => margin.top + plotH - (value / yMax) * plotH;
     const pctScale = value => margin.top + plotH - (value / 100) * plotH;
-    const selectedIndex = getSelectedIndex();
-    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${detailConfigs[currentDetailKey].title}交互图表">`;
+    const selectedIndex = getSelectedIndex(detailKey);
+    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${detailConfigs[detailKey].title}交互图表">`;
 
     if (selectedIndex >= 0) {
       svg += `<rect x="${margin.left + selectedIndex * xStep}" y="${margin.top}" width="${xStep}" height="${plotH}" fill="#ff4b16" opacity=".08"></rect>`;
@@ -1691,12 +1709,13 @@
       marginLeft: margin.left,
       xStep,
       labels,
-      series: visibleSeries
+      series: visibleSeries,
+      detailKey
     });
   }
 
-  function renderBarChart({ container, labels, series }) {
-    const activeSet = activeSeriesByDetail[currentDetailKey];
+  function renderBarChart({ container, labels, series, detailKey }) {
+    const activeSet = activeSeriesByDetail[detailKey];
     const visibleSeries = series.filter(item => activeSet.has(item.name));
     if (!visibleSeries.length) {
       container.innerHTML = '<div class="chart-empty-state">请点击图例，至少启用一个数据系列</div>';
@@ -1714,8 +1733,8 @@
     const groupWidth = Math.min(38, xStep * .68);
     const barWidth = groupWidth / visibleSeries.length;
     const scaleY = value => margin.top + plotH - (value / yMax) * plotH;
-    const selectedIndex = getSelectedIndex();
-    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${detailConfigs[currentDetailKey].title}交互图表">`;
+    const selectedIndex = getSelectedIndex(detailKey);
+    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${detailConfigs[detailKey].title}交互图表">`;
 
     if (selectedIndex >= 0) {
       svg += `<rect x="${margin.left + selectedIndex * xStep}" y="${margin.top}" width="${xStep}" height="${plotH}" fill="#ff4b16" opacity=".08"></rect>`;
@@ -1751,7 +1770,8 @@
       marginLeft: margin.left,
       xStep,
       labels,
-      series: visibleSeries
+      series: visibleSeries,
+      detailKey
     });
   }
 
@@ -1763,7 +1783,7 @@
     const rowHtml = visibleRows.map(row => {
       return `<tr>${columns.map(col => {
         const value = row[col];
-        const cls = detailKey === 'shipmentOnTime' && col === '班次发货不及时量' ? 'text-red' : '';
+        const cls = (detailKey === 'shipmentOnTime' && col === '班次发货不及时量') || (detailKey === 'crossShift' && col === '跨班次不及时发件量') ? 'text-red' : '';
         return `<td class="${cls}">${typeof value === 'number' ? formatNumber(value) : value}</td>`;
       }).join('')}</tr>`;
     }).join('');
@@ -1782,12 +1802,17 @@
     }
   }
 
+  function renderAllCharts() {
+    createLegend(detailConfigs.shipmentOnTime.legend, 'shipmentOnTime', 'shipmentChartLegend');
+    detailConfigs.shipmentOnTime.renderChart();
+    createLegend(detailConfigs.crossShift.legend, 'crossShift', 'crossChartLegend');
+    detailConfigs.crossShift.renderChart();
+  }
+
   function setActiveDetail(key) {
     currentDetailKey = key;
     const config = detailConfigs[key];
-    document.getElementById('chartTitle').textContent = config.title;
-    createLegend(config.legend);
-    config.renderChart();
+    renderAllCharts();
     renderTable(config.tableColumns, config.buildRows(), key, selectedDateByDetail[key]);
     document.querySelectorAll('#detailTabs .detail-tab').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.detail === key);
