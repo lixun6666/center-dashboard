@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>现场作业数据主动监控与推送方案</title>
+  <style>
+    :root{
+      --ink:#172033;
+      --muted:#6f7b8d;
+      --line:#e5eaf0;
+      --soft:#f4f6f9;
+      --brand:#f15a24;
+      --brand-soft:#fff2eb;
+      --blue:#246bfd;
+      --blue-soft:#edf4ff;
+      --amber:#c97800;
+      --amber-soft:#fff7e8;
+      --green:#16803a;
+      --green-soft:#edf9f1;
+      --red:#cf2a2a;
+      --red-soft:#fff0ef;
+      --shadow:0 12px 32px rgba(31,45,61,.08);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:#eef1f5;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.55}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 38px;height:64px;background:#061a2d;color:#fff;box-shadow:0 4px 16px rgba(1,19,35,.16)}
+    .brand{display:flex;align-items:center;gap:14px;white-space:nowrap}
+    .brand-mark{color:#ff6b32;font-size:22px;font-weight:850;letter-spacing:1.8px}
+    .brand-title{padding-left:14px;border-left:1px solid rgba(255,255,255,.22);font-size:14px;font-weight:650}
+    .nav{display:flex;align-items:center;gap:6px;overflow:auto}
+    .nav a{padding:8px 12px;border-radius:8px;color:#c8d2df;font-size:12px;white-space:nowrap}
+    .nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+    .page{width:min(1440px,calc(100% - 40px));margin:24px auto 52px}
+    .hero{position:relative;overflow:hidden;padding:34px 38px;border-radius:18px;background:linear-gradient(135deg,#071f35 0%,#123c5e 65%,#1b4f70 100%);color:#fff;box-shadow:var(--shadow)}
+    .hero:after{content:"";position:absolute;right:-120px;top:-180px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(255,122,64,.34),rgba(255,122,64,0) 68%)}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;color:#ffb89b;font-size:12px;font-weight:750;letter-spacing:.6px}
+    .eyebrow:before{content:"";width:24px;height:3px;border-radius:4px;background:#ff6b32}
+    h1{position:relative;z-index:1;margin:0;font-size:32px;line-height:1.22;letter-spacing:-.5px}
+    .hero-sub{position:relative;z-index:1;margin:10px 0 25px;color:#cbd8e4;font-size:15px}
+    .change-map{position:relative;z-index:1;display:grid;grid-template-columns:1fr 48px 1fr;gap:12px;align-items:center}
+    .flow-card{padding:18px;border:1px solid rgba(255,255,255,.14);border-radius:13px;background:rgba(255,255,255,.07);backdrop-filter:blur(4px)}
+    .flow-card.old{opacity:.75}
+    .flow-label{margin-bottom:10px;color:#9fb0c2;font-size:11px;font-weight:700}
+    .flow-steps{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:650}
+    .flow-steps i{color:#7990a7;font-style:normal}
+    .flow-card.new{border-color:rgba(255,122,64,.45);background:rgba(241,90,36,.13)}
+    .flow-card.new .flow-label{color:#ffb89b}
+    .change-arrow{text-align:center;color:#ff8c61;font-size:24px;font-weight:800}
+    .hero-conclusion{position:relative;z-index:1;margin-top:20px;padding:13px 15px;border-left:4px solid #ff6b32;border-radius:0 9px 9px 0;background:rgba(0,0,0,.15);color:#f3f7fa;font-size:13px}
+
+    .section{scroll-margin-top:80px;margin-top:18px;padding:25px 27px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 6px 20px rgba(31,45,61,.045)}
+    .section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:19px}
+    .section-index{color:var(--brand);font:750 12px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.5px}
+    h2{margin:3px 0 0;font-size:21px;line-height:1.3}
+    .section-note{max-width:620px;margin:2px 0 0;color:var(--muted);font-size:12px;text-align:right}
+    .conclusion{margin-top:18px;padding:12px 15px;border-radius:9px;background:#f8fafc;color:#3f4b5e;font-size:13px;font-weight:650;text-align:center}
+    .conclusion b{color:var(--brand)}
+
+    .value-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .value-card{min-height:155px;padding:17px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#fff,#fbfcfd)}
+    .value-icon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;margin-bottom:13px;border-radius:10px;background:var(--blue-soft);font-size:18px}
+    .value-card:nth-child(2) .value-icon{background:var(--red-soft)}
+    .value-card:nth-child(3) .value-icon{background:var(--amber-soft)}
+    .value-card:nth-child(4) .value-icon{background:var(--green-soft)}
+    .value-card h3{margin:0 0 5px;font-size:15px}
+    .value-card p{margin:0;color:var(--muted);font-size:12px}
+    .scene-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .tag{padding:3px 8px;border-radius:999px;background:var(--soft);color:#536174;font-size:10.5px;font-weight:650}
+
+    .role-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .role{padding:17px;border:1px solid var(--line);border-radius:12px}
+    .role h3{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;font-size:14px}
+    .role h3 span{padding:3px 7px;border-radius:999px;background:var(--brand-soft);color:var(--brand);font-size:10px}
+    .role p{margin:6px 0;color:var(--muted);font-size:12px}
+    .role strong{color:#344054}
+
+    .trigger-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .trigger{position:relative;padding:18px 17px 17px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:12px;background:#fff}
+    .trigger:nth-child(2){border-top-color:var(--red)}
+    .trigger:nth-child(3){border-top-color:var(--green)}
+    .trigger:nth-child(4){border-top-color:var(--amber)}
+    .trigger-type{color:var(--muted);font-size:10.5px;font-weight:750;letter-spacing:.4px}
+    .trigger h3{margin:6px 0 9px;font-size:15px}
+    .trigger p{margin:5px 0;color:var(--muted);font-size:12px}
+    .trigger .rule{margin-top:12px;padding:9px;border-radius:8px;background:var(--soft);color:#3f4b5e;font-size:11px;font-weight:650}
+
+    .message-principle{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:18px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    .message-step{position:relative;padding:17px;text-align:center;background:#fff}
+    .message-step:not(:last-child){border-right:1px solid var(--line)}
+    .message-step:not(:last-child):after{content:"›";position:absolute;right:-8px;top:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:16px;height:24px;transform:translateY(-50%);background:#fff;color:var(--brand);font-size:20px}
+    .message-step b{display:block;margin-bottom:4px;font-size:13px}
+    .message-step span{color:var(--muted);font-size:11px}
+    .sample-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr);gap:16px;align-items:start}
+    .push-card{overflow:hidden;border:1px solid #dce3ea;border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+    .push-head{padding:17px 19px;background:linear-gradient(135deg,#163f5e,#0b2942);color:#fff}
+    .push-head-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .push-title{font-size:17px;font-weight:760}
+    .push-badge{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.14);color:#ffcfbb;font-size:10.5px}
+    .push-time{margin-top:6px;color:#b9c8d6;font-size:11px}
+    .focus-strip{display:flex;align-items:flex-start;gap:10px;margin:14px 17px 0;padding:12px;border:1px solid #f2d4a6;border-radius:10px;background:var(--amber-soft)}
+    .focus-strip .symbol{font-size:17px}
+    .focus-strip b{display:block;color:#925e08;font-size:12px}
+    .focus-strip span{color:#8c6b36;font-size:11px}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 17px}
+    .metric{padding:10px;border-radius:9px;background:#f6f8fb}
+    .metric label{display:block;color:var(--muted);font-size:10px}
+    .metric strong{display:block;margin-top:3px;font:760 20px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .metric small{color:var(--muted);font-size:9.5px}
+    .push-block{padding:0 17px 14px}
+    .push-block h4{margin:0 0 8px;font-size:12px}
+    .bar-row{display:grid;grid-template-columns:44px 1fr 70px;gap:9px;align-items:center;margin:7px 0;color:#536174;font-size:10.5px}
+    .bar{height:8px;border-radius:999px;background:#edf0f4;overflow:hidden}
+    .bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff8a58,#f15a24)}
+    .bar-row strong{text-align:right;color:#344054;font:650 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .action-box{margin:0 17px 14px;padding:11px 12px;border-radius:9px;background:var(--blue-soft);color:#3a5a8a;font-size:11px}
+    .action-box b{color:#1e4e9a}
+    .push-actions{display:flex;gap:8px;padding:13px 17px;border-top:1px solid var(--line);background:#fbfcfd}
+    .fake-btn{flex:1;padding:9px;border:1px solid #dbe2e9;border-radius:8px;background:#fff;color:#445166;font-size:11px;font-weight:700;text-align:center}
+    .fake-btn.primary{border-color:var(--brand);background:var(--brand);color:#fff}
+
+    .side-stack{display:grid;gap:12px}
+    .alert-card{padding:17px;border:1px solid #efc4c1;border-radius:12px;background:var(--red-soft)}
+    .alert-card h3{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;color:#9f1f1f;font-size:14px}
+    .alert-level{padding:3px 7px;border-radius:999px;background:#cf2a2a;color:#fff;font-size:9.5px}
+    .alert-card p{margin:10px 0;color:#7c4646;font-size:11.5px}
+    .alert-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:11px 0}
+    .alert-facts div{padding:9px;border-radius:8px;background:rgba(255,255,255,.7)}
+    .alert-facts span{display:block;color:#9f7070;font-size:9.5px}
+    .alert-facts strong{font-size:14px}
+    .alert-action{padding:10px;border-radius:8px;background:#fff;color:#6d3e3e;font-size:11px}
+    .alert-action b{color:#9f1f1f}
+    .risk-card{padding:17px;border:1px solid #f0d09f;border-radius:12px;background:#fffbf2}
+    .risk-card h3{margin:0 0 9px;color:#7b5009;font-size:14px}
+    .risk-card p{margin:6px 0;color:#7a6543;font-size:11.5px}
+    .equation{margin:10px 0;padding:10px;border-radius:8px;background:#fff;color:#6b4b18;font:700 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .risk-card .recommend{color:#a05d00;font-weight:700}
+
+    .scenario-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 18px}
+    .scenario-chip{padding:10px 8px;border:1px solid var(--line);border-radius:9px;background:#f8fafc;text-align:center}
+    .scenario-chip b{display:block;font-size:11.5px}
+    .scenario-chip span{display:block;margin-top:2px;color:var(--muted);font-size:9.5px}
+    .scenario-chip.current{border-color:#f0b79d;background:var(--brand-soft)}
+    .all-samples-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:25px 0 12px;padding-top:22px;border-top:1px solid var(--line)}
+    .all-samples-head h3{margin:0;font-size:17px}
+    .all-samples-head p{margin:3px 0 0;color:var(--muted);font-size:11px}
+    .sample-legend{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+    .sample-legend span{padding:4px 8px;border-radius:999px;background:#f4f6f9;color:#637084;font-size:9.5px}
+    .full-push-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .scenario-card{--scene:#246bfd;--scene-soft:#edf4ff;display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:0 7px 20px rgba(31,45,61,.05)}
+    .scenario-card.red{--scene:#cf2a2a;--scene-soft:#fff0ef}
+    .scenario-card.green{--scene:#16803a;--scene-soft:#edf9f1}
+    .scenario-card.amber{--scene:#b86b00;--scene-soft:#fff7e8}
+    .scenario-card.purple{--scene:#7652c8;--scene-soft:#f4efff}
+    .scenario-card.wide{grid-column:1/-1}
+    .scenario-card-head{padding:15px 16px 12px;border-top:3px solid var(--scene);background:linear-gradient(180deg,var(--scene-soft),#fff)}
+    .scenario-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .scenario-title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:760}
+    .scenario-no{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:7px;background:var(--scene);color:#fff;font:750 10px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .scenario-type{padding:3px 7px;border-radius:999px;background:#fff;color:var(--scene);font-size:9.5px;font-weight:750;box-shadow:0 1px 4px rgba(31,45,61,.08)}
+    .scenario-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:9.5px}
+    .scenario-meta span{padding-right:7px;border-right:1px solid #dce3ea}
+    .scenario-meta span:last-child{border-right:0}
+    .scenario-body{display:flex;flex:1;flex-direction:column;padding:14px 16px 15px}
+    .scenario-summary{margin-bottom:12px;padding:10px 11px;border-left:3px solid var(--scene);border-radius:0 8px 8px 0;background:var(--scene-soft);color:#435069;font-size:11px}
+    .scenario-summary b{color:var(--scene)}
+    .scene-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:12px}
+    .scene-metrics.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .scene-metric{padding:9px;border-radius:8px;background:#f6f8fb}
+    .scene-metric label{display:block;color:var(--muted);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .scene-metric strong{display:block;margin-top:2px;font:750 15px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .scene-metric small{color:var(--muted);font-size:8.5px}
+    .shift-data-groups{display:grid;grid-template-columns:.9fr 1.1fr;gap:8px;margin-bottom:8px}
+    .shift-data-group{padding:9px;border:1px solid #e3e7ed;border-radius:8px;background:#fafbfd}.shift-data-group h5{margin:0 0 7px;color:#505b6b;font-size:9.5px}.shift-data-group .scene-metrics{margin:0}.shift-data-group.complete .scene-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.shift-data-group.backlog .scene-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.shift-data-group .scene-metric{background:#fff}
+    .shift-forecast{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;padding:10px 12px;border:1px solid #d9cff4;border-radius:8px;background:#f7f3ff}.shift-forecast span{display:block;color:#776a96;font-size:8.5px}.shift-forecast strong{display:block;margin-top:2px;color:#7652c8;font:760 17px ui-monospace,SFMono-Regular,Menlo,monospace}.shift-forecast small{color:#8b80a5;font-size:8px}.shift-forecast p{margin:0;color:#746b86;font-size:9px}
+    .shift-data-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.shift-data-note{padding:10px 11px;border:1px solid #e0e5ec;border-radius:8px;background:#f8f9fb}.shift-data-note b{display:block;margin-bottom:4px;color:#3e4857;font-size:9.5px}.shift-data-note p{margin:0;color:#687385;font-size:9px;line-height:1.55}
+    .vehicle-split-note{margin-bottom:10px;padding:8px 10px;border-radius:7px;background:#f4f7fb;color:#647083;font-size:9.5px}.vehicle-split-note b{color:#35445b}
+    .vehicle-lanes{display:grid;grid-template-columns:1fr;gap:10px}
+    .vehicle-lane{padding:11px;border:1px solid #e1e5eb;border-radius:9px;background:#fff}
+    .vehicle-lane-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .vehicle-lane-head b{display:block;color:#303a49;font-size:11.5px}.vehicle-lane-head small{display:block;margin-top:2px;color:#8791a0;font-size:8px}
+    .vehicle-status{padding:4px 7px;border-radius:999px;background:#fff0ef;color:#bd3434;font-size:8px;font-weight:750;white-space:nowrap}.vehicle-status.neutral{background:#edf4ff;color:#246bfd}
+    .vehicle-task{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;margin-bottom:8px;padding:7px 8px;border:1px solid #dfe4eb;border-radius:6px;background:#f7f8fa}
+    .vehicle-task div{min-width:0;padding-right:6px;border-right:1px solid #e0e4ea}.vehicle-task div:last-child{padding-right:0;border-right:0}
+    .vehicle-task span{display:block;color:#8993a2;font-size:7.5px}.vehicle-task b{display:block;overflow:hidden;margin-top:2px;color:#2f3948;font:750 8.5px ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis;white-space:nowrap}
+    .vehicle-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:9px}
+    .vehicle-step{position:relative;min-height:58px;padding:7px;border:1px solid #e4e8ee;border-radius:7px;background:#fafbfd}
+    .vehicle-step:not(:last-child):after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:#9ca6b3;font-weight:800}
+    .vehicle-step b{display:block;color:#4b5666;font-size:8.5px}.vehicle-step span{display:block;margin-top:3px;color:#7f8998;font-size:8px;line-height:1.35}
+    .vehicle-step.done{border-color:#b9dfc5;background:#f1fbf4}.vehicle-step.done b{color:#237842}
+    .vehicle-step.alert{border-color:#efc4c1;background:#fff5f4}.vehicle-step.alert b{color:#bd3434}
+    .vehicle-step.pending{border-style:dashed;color:#8c96a4}
+    .vehicle-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:9px}
+    .vehicle-fact{padding:7px;border-radius:6px;background:#f6f8fb}.vehicle-fact span{display:block;color:#8791a0;font-size:7.5px}.vehicle-fact b{display:block;margin-top:2px;color:#3e4857;font:750 10px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .vehicle-lane-action{padding:8px;border-radius:7px;background:#f6f8fb;color:#586476;font-size:8.5px;line-height:1.55}.vehicle-lane-action b{color:#344054}
+    .vehicle-inbound-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:9px}
+    .vehicle-outbound-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:9px}
+    .vehicle-inbound-stat{padding:9px 10px;border-radius:7px;background:#f5f7fa}.vehicle-inbound-stat span{display:block;color:#7f8998;font-size:8px}.vehicle-inbound-stat b{display:block;margin-top:2px;color:#354052;font:750 14px ui-monospace,SFMono-Regular,Menlo,monospace}.vehicle-inbound-stat small{color:#8b95a4;font-size:7.5px}
+    .vehicle-inbound-stat.warning{background:#fff7ed}.vehicle-inbound-stat.warning b{color:#bd651f}.vehicle-inbound-stat.done{background:#f1fbf4}.vehicle-inbound-stat.done b{color:#237842}.vehicle-inbound-stat.alert{background:#fff0ef}.vehicle-inbound-stat.alert b{color:#bd3434}
+    .vehicle-bucket-wrap,.vehicle-detail-wrap{overflow-x:auto;margin-bottom:9px;border:1px solid #e1e5eb;border-radius:7px}
+    .vehicle-bucket-matrix{min-width:720px}
+    .vehicle-bucket-row{display:grid;grid-template-columns:115px repeat(6,minmax(78px,1fr));border-bottom:1px solid #e7eaf0}.vehicle-bucket-row:last-child{border-bottom:0}
+    .vehicle-bucket-row>span,.vehicle-bucket-row>div{padding:7px 6px;border-right:1px solid #e7eaf0;text-align:center}.vehicle-bucket-row>*:last-child{border-right:0}
+    .vehicle-bucket-row.header{background:#f3f5f8;color:#788394;font-size:8px;font-weight:700}.vehicle-bucket-row>span{display:flex;align-items:center;justify-content:flex-start;background:#fafbfd;color:#4c5768;font-size:8.5px;font-weight:700;text-align:left}
+    .vehicle-bucket-row div b{display:block;color:#344054;font:750 11px ui-monospace,SFMono-Regular,Menlo,monospace}.vehicle-bucket-row div small{display:block;color:#919aa7;font-size:7px}
+    .vehicle-detail-table{width:100%;min-width:820px;border-collapse:collapse;table-layout:fixed;color:#4d5869;font-size:8px}.vehicle-detail-table th,.vehicle-detail-table td{padding:7px 6px;border-right:1px solid #e7eaf0;border-bottom:1px solid #e7eaf0;text-align:left}.vehicle-detail-table th:last-child,.vehicle-detail-table td:last-child{border-right:0}.vehicle-detail-table tr:last-child td{border-bottom:0}.vehicle-detail-table th{background:#f3f5f8;color:#788394}.vehicle-detail-table td:first-child{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;color:#354052}
+    .vehicle-stage{display:inline-block;padding:3px 6px;border-radius:999px;background:#edf4ff;color:#246bfd;font-size:7px;font-weight:750}.vehicle-stage.waiting{background:#fff3e8;color:#b75a18}.vehicle-stage.done{background:#edf9f1;color:#237842}
+    .scene-block-title{margin:0 0 7px;color:#445166;font-size:10.5px;font-weight:750}
+    .scene-rows{margin-bottom:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+    .scene-row{display:grid;grid-template-columns:minmax(90px,1.1fr) repeat(2,minmax(70px,.8fr));gap:8px;padding:7px 9px;color:#536174;font-size:9.5px}
+    .scene-row:nth-child(odd){background:#fafbfd}
+    .scene-row.header{background:#f1f4f7;color:#7a8596;font-weight:700}
+    .scene-row b{color:#344054;font-weight:700}
+    .scene-row.four{grid-template-columns:minmax(110px,1.2fr) repeat(3,minmax(65px,.7fr))}
+    .scene-action{margin-top:auto;padding:10px;border-radius:8px;background:#f6f8fb;color:#536174;font-size:10px}
+    .scene-action b{color:#344054}
+    .scene-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+    .scene-footer span{color:var(--muted);font-size:9px}
+    .scene-footer .mini-btn{padding:6px 9px;border-radius:7px;background:var(--scene);color:#fff;font-size:9.5px;font-weight:700;white-space:nowrap}
+    .shift-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+    .handover-list{display:grid;gap:7px}
+    .handover-item{display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:8px;background:#f6f8fb;color:#536174;font-size:9.5px}
+    .handover-item i{display:flex;align-items:center;justify-content:center;flex:0 0 18px;height:18px;border-radius:50%;background:var(--scene);color:#fff;font-size:8px;font-style:normal}
+
+    /* 分拣小时播报：沿用现有飞书分拣集包消息的纵向信息结构 */
+    .sort-broadcast-card{grid-column:1/-1;width:100%;margin:0 auto;overflow:hidden;border:1px solid #dfe3ea;border-radius:10px;background:#fff;box-shadow:0 8px 24px rgba(31,45,61,.06)}
+    .sort-broadcast-head{padding:14px 17px 13px;background:linear-gradient(135deg,#f5f5ff 0%,#eef0ff 100%);color:#5966ef}
+    .sort-broadcast-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .sort-broadcast-title{font-size:16px;font-weight:800}
+    .sort-broadcast-badge{padding:3px 8px;border:1px solid #cfd4ff;border-radius:999px;background:#fff;color:#5966ef;font-size:9.5px;font-weight:750}
+    .sort-broadcast-time{display:flex;gap:14px;flex-wrap:wrap;margin-top:5px;font-size:10.5px;font-weight:650}
+    .sort-broadcast-audience{margin-top:5px;color:#7e88c8;font-size:9.5px}
+    .sort-broadcast-body{padding:12px 14px 14px}
+    .sort-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:8px}
+    .sort-overview-item{min-width:0;padding:10px 11px;border-radius:8px;background:#f5f6f8}
+    .sort-overview-item label{display:block;color:#4d535d;font-size:10.5px}
+    .sort-overview-value{display:block;margin-top:2px;color:#252a33;font:760 15px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .sort-overview-item small{display:block;margin-top:2px;color:#858c98;font-size:8.5px}
+    .sort-overview-note{margin:-1px 0 9px;color:#8a919d;font-size:8.5px}
+    .sort-summary-pair{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:11px;border-radius:8px;background:#f5f6f8}
+    .sort-summary-card{padding:10px 11px}
+    .sort-summary-card+ .sort-summary-card{border-left:1px solid #e3e6ea}
+    .sort-summary-card h4{margin:0 0 4px;color:#4c535e;font-size:11px;font-weight:700}
+    .sort-stat-line{display:flex;gap:12px;flex-wrap:wrap;color:#4b525d;font-size:10.5px;line-height:1.65}
+    .sort-stat-line b{font:750 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .sort-stat-line .orange{color:#f36d2f}.sort-stat-line .green{color:#299256}.sort-stat-line .purple{color:#7d5df4}.sort-stat-line .blue{color:#5368ed}
+    .sort-message-section{padding:12px 0;border-top:1px solid #eceef2}
+    .sort-message-section:first-of-type{border-top:0}
+    .sort-section-title{margin:0 0 10px;color:#303640;font-size:12px;font-weight:800}
+    .sort-subtitle{display:flex;align-items:center;justify-content:space-between;margin:8px 0 6px;color:#414853;font-size:10.5px;font-weight:750}
+    .sort-subtitle span{color:#969da8;font-size:8.5px;font-weight:500}
+    .sort-table-wrap{overflow-x:auto;border:1px solid #e1e4e9;border-radius:7px}
+    .sort-data-table{width:100%;border-collapse:collapse;table-layout:fixed;color:#414852;font-size:9.5px}
+    .sort-data-table th,.sort-data-table td{padding:7px 8px;border-right:1px solid #e7e9ed;border-bottom:1px solid #e7e9ed;text-align:left;white-space:nowrap}
+    .sort-data-table th:last-child,.sort-data-table td:last-child{border-right:0}
+    .sort-data-table tr:last-child td{border-bottom:0}
+    .sort-data-table th{background:#fbfbfc;color:#323842;font-weight:750}
+    .sort-data-table td:nth-child(n+2){font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .sort-pager{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:6px 9px;border-top:1px solid #e7e9ed;color:#555d68;font-size:9px}
+    .sort-pager button{display:inline-flex;align-items:center;justify-content:center;width:24px;height:22px;padding:0;border:1px solid #d9dee7;border-radius:5px;background:#fff;color:#536174;font-size:13px;cursor:pointer}
+    .sort-pager button:hover:not(:disabled){border-color:#6172ff;color:#5265ee}
+    .sort-pager button:disabled{background:#f5f6f8;color:#b7bdc7;cursor:not-allowed}
+    .sort-page-status{min-width:34px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center}
+    .sort-sheet{position:relative;overflow:hidden;border:1px solid #dfe3ea;border-radius:8px;background:#fff}
+    .sort-sheet>input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+    .sort-sheet-panel{display:none;overflow-x:visible}
+    #sort-sheet-trunk:checked~.sort-sheet-panels .trunk-panel,#sort-sheet-branch:checked~.sort-sheet-panels .branch-panel{display:block}
+    .sort-sheet-table{width:100%;min-width:0;table-layout:fixed;font-size:8.7px}
+    .sort-sheet-table th:first-child{width:12%}
+    .sort-sheet-table th:not(:first-child){width:11%}
+    .sort-sheet-table th,.sort-sheet-table td{padding:6px 5px}
+    .sort-sheet-table td{vertical-align:top}
+    .sort-sheet-value{display:block;color:#343a44;font:750 9.2px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .sort-sheet-table td small{display:block;margin-top:2px;color:#8a919d;font:400 7.4px -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
+    .sort-sheet-table .pending{color:#f36d2f}
+    .sort-sheet-tabs{display:flex;align-items:flex-end;gap:3px;padding:7px 8px 0;border-top:1px solid #e2e5ea;background:#f4f5f7}
+    .sort-sheet-tabs label{min-width:128px;padding:7px 12px;border:1px solid #dfe3e8;border-bottom:0;border-radius:6px 6px 0 0;background:#e9ecf1;color:#626a76;font-size:9.5px;font-weight:700;text-align:center;cursor:pointer}
+    #sort-sheet-trunk:checked~.sort-sheet-tabs label[for="sort-sheet-trunk"],#sort-sheet-branch:checked~.sort-sheet-tabs label[for="sort-sheet-branch"]{background:#fff;color:#5265ee;box-shadow:inset 0 2px 0 #6172ff}
+    .sort-sheet-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 7px;color:#8a919d;font-size:8.5px}
+    .sort-sheet-caption b{color:#4b5360;font-size:10px}
+    .station-analysis{overflow:hidden;border:1px solid #e1e5eb;border-radius:8px;background:#fff}
+    .station-filter{padding:9px 10px;border-bottom:1px solid #e7eaf0;background:#f8f9fb}
+    .station-filter label{display:block;margin-bottom:4px;color:#667185;font-size:8.5px}
+    .station-filter select{width:180px;padding:7px 9px;border:1px solid #dce1e8;border-radius:4px;background:#fff;color:#5f6876;font-size:9.5px}
+    .station-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:9px 10px}
+    .station-kpi{padding:9px 10px;border:1px solid #e1e6ed;border-radius:5px;background:#fff}
+    .station-kpi.primary{border-color:#ffd0ad;background:#fff5ed}
+    .station-kpi label{display:block;color:#718096;font-size:8.5px}
+    .station-kpi strong{display:block;margin-top:3px;color:#222936;font:760 15px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .station-kpi.primary label,.station-kpi.primary strong{color:#ff5a1f}
+    .station-kpi small{display:block;margin-top:2px;color:#9aa2ae;font-size:7.5px}
+    .station-table-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 10px 8px}
+    .station-table-head h5{margin:0;color:#303744;font-size:10.5px}
+    .station-tools{display:flex;align-items:center;gap:9px;color:#778194;font-size:8.5px}
+    .station-legend{display:flex;gap:9px}.station-legend i{display:inline-block;width:6px;height:6px;margin-right:3px;border-radius:50%;background:#637084}.station-legend span:last-child i{background:#e36532}
+    .station-view{display:flex;border:1px solid #dce1e8;border-radius:4px;overflow:hidden}.station-view span{padding:4px 8px;background:#f5f7fa}.station-view .active{background:#fff;color:#ff5a1f;font-weight:700}
+    .station-export{padding:5px 9px;border-radius:4px;background:#f5a000;color:#fff;font-weight:700}
+    .station-table-wrap{overflow-x:auto;border-top:1px solid #e5e8ed}
+    .station-table{width:100%;min-width:1140px;border-collapse:collapse;table-layout:fixed;color:#485160;font-size:8px}
+    .station-table th,.station-table td{padding:5px 4px;border-right:1px solid #e7eaf0;border-bottom:1px solid #e7eaf0;text-align:center}
+    .station-table th{background:#f5f7fa;color:#667185;font-weight:700}
+    .station-table th:first-child{width:170px}.station-table th:nth-child(2){width:74px}
+    .station-table td:first-child{text-align:left;padding-left:12px;white-space:nowrap}
+    .station-table td strong{display:block;color:#4d5664;font:700 9px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .station-table td small{display:block;margin-top:1px;color:#e05f32;font-size:7px;font-weight:700}
+    .station-table tr:last-child td{border-bottom:0}.station-table th:last-child,.station-table td:last-child{border-right:0}
+    .station-current-mode>.station-filter,.station-current-mode>.station-kpis,.station-current-mode>.station-table-head,.station-current-mode>.station-table-wrap{display:none}
+    .station-current-head{display:grid;grid-template-columns:minmax(185px,.34fr) minmax(0,1fr);gap:10px;padding:11px 12px;border-bottom:1px solid #e6e9ee;background:#f7f8fa}
+    .station-current-total,.station-mini-trend{border:1px solid #e3e7ed;border-radius:7px;background:#fff}
+    .station-current-total{display:flex;flex-direction:column;justify-content:center;padding:12px 14px}
+    .station-current-total>span{display:block;color:#748094;font-size:9px}
+    .station-current-total>strong{display:block;margin-top:2px;color:#ff5a1f;font:800 22px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .station-current-total>small{color:#9aa2ae;font-size:8px}
+    .station-current-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+    .station-current-meta b{padding:4px 6px;border-radius:4px;background:#f4f6fa;color:#626d7d;font-size:7.5px;font-weight:650}
+    .station-mini-trend{min-width:0;padding:9px 11px 7px}
+    .station-mini-trend-head{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#8b94a2;font-size:8px}
+    .station-mini-trend-head b{color:#3f4856;font-size:9.5px}
+    .station-mini-trend svg{display:block;width:100%;height:82px;margin-top:2px}
+    .station-mini-trend-labels{display:grid;grid-template-columns:repeat(9,1fr);margin-top:-2px;color:#8993a1;font-size:6.5px;line-height:1.15;text-align:center}
+    .station-mini-trend-labels span{white-space:nowrap}.station-mini-trend-labels small{display:block;color:#a1a8b3;font-size:6px}
+    .station-current-section{padding:12px 14px}
+    .station-current-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;color:#3e4653;font-size:10.5px;font-weight:750}
+    .station-current-title small{display:block;margin-top:2px;color:#8b94a2;font-size:7.5px;font-weight:500}
+    .station-chart-legend{display:flex;align-items:center;gap:10px;color:#737d8d;font-size:7.5px;font-weight:550}
+    .station-chart-legend span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+    .station-chart-legend i{display:inline-block;width:12px;height:5px;border-radius:2px;background:#6172ff}
+    .station-chart-legend i.line{position:relative;height:2px;border-radius:0;background:#f06b3c}.station-chart-legend i.line:after{content:"";position:absolute;left:4px;top:-2px;width:5px;height:5px;border:1px solid #f06b3c;border-radius:50%;background:#fff}
+    .station-bar-scroll{overflow-x:auto;padding-bottom:2px}
+    .station-bar-chart{position:relative;display:grid;grid-template-columns:repeat(16,minmax(38px,1fr));gap:7px;align-items:end;min-width:768px;height:175px;padding:9px 9px 3px;border:1px solid #e7eaf0;border-radius:7px;background:repeating-linear-gradient(to bottom,#fff 0,#fff 37px,#eef1f5 38px)}
+    .station-bar-item{position:relative;z-index:1;display:grid;grid-template-rows:19px 1fr 19px;align-items:end;height:100%;text-align:center}
+    .station-bar-item>b{align-self:start;color:#414a59;font:750 8px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .station-bar-track{display:flex;align-items:flex-end;justify-content:center;height:125px;border-bottom:1px solid #dfe4eb}
+    .station-bar-track i{display:block;width:min(24px,68%);min-height:2px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#7584ff,#5668eb)}
+    .station-bar-item.low .station-bar-track i{background:linear-gradient(180deg,#ff9a70,#f36d36)}
+    .station-bar-item.empty .station-bar-track i{min-height:0;background:#cdd3dd}
+    .station-bar-item label{align-self:end;overflow:hidden;color:#737d8d;font-size:7.5px;line-height:17px;text-overflow:ellipsis;white-space:nowrap}
+    .station-rate-line{position:absolute;left:9px;right:9px;top:28px;z-index:3;width:calc(100% - 18px);height:125px;overflow:visible;pointer-events:none}
+    .sort-backlog{display:grid;gap:7px}
+    .sort-backlog-row{padding:8px 10px;border-radius:7px;background:#fafbfc;color:#4c535e;font-size:10px;line-height:1.65}
+    .sort-backlog-row b{display:inline-block;min-width:62px;color:#343a44}
+    .sort-backlog-row strong{color:#f36d2f;font:750 10.5px ui-monospace,SFMono-Regular,Menlo,monospace}
+    .sort-device-note{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}
+    .sort-device-note div{padding:8px;border-radius:7px;background:#f7f8fa}
+    .sort-device-note span{display:block;color:#8a919d;font-size:8.5px}
+    .sort-device-note b{display:block;margin-top:2px;color:#414852;font-size:10px}
+    .sort-action-box{margin-top:2px;padding:10px 11px;border-radius:7px;background:#f3f6ff;color:#55617b;font-size:10px}
+    .sort-action-box b{color:#4f61df}
+    .sort-broadcast-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px;padding-top:11px;border-top:1px solid #eceef2}
+    .sort-broadcast-actions>span{color:#858d98;font-size:9px}
+    .sort-button-group{display:flex;gap:8px}
+    .sort-button{min-width:106px;padding:7px 13px;border:1px solid #6172ff;border-radius:6px;background:#fff;color:#5265ee;font-size:9.5px;font-weight:700;text-align:center}
+
+    .loop{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;align-items:stretch}
+    .loop-step{position:relative;display:flex;flex-direction:column;justify-content:center;min-height:88px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;text-align:center}
+    .loop-step:not(:last-child):after{content:"→";position:absolute;right:-13px;top:50%;z-index:2;transform:translateY(-50%);color:var(--brand);font-weight:800}
+    .loop-step b{font-size:12px}
+    .loop-step span{margin-top:4px;color:var(--muted);font-size:9.5px}
+    .loop-step.highlight{border-color:#efb99f;background:var(--brand-soft)}
+    .loop-step.done{border-color:#b7dfc2;background:var(--green-soft)}
+
+    .result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .result-card{padding:16px;border:1px solid var(--line);border-radius:11px}
+    .result-card b{display:block;margin-bottom:7px;font-size:13px}
+    .result-card span{color:var(--muted);font-size:11.5px}
+    .pending-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:16px}
+    .pending{padding:13px;border-radius:10px;background:#f6f8fb}
+    .pending i{display:flex;align-items:center;justify-content:center;width:24px;height:24px;margin-bottom:8px;border-radius:50%;background:#e5eaf0;color:#536174;font-size:10px;font-style:normal;font-weight:750}
+    .pending b{display:block;font-size:11.5px}
+    .pending span{color:var(--muted);font-size:10px}
+    .footer{margin:19px 0 0;padding:20px;border-radius:14px;background:#172033;color:#fff;text-align:center}
+    .footer strong{display:block;font-size:17px}
+    .footer span{display:block;margin-top:6px;color:#aeb9c8;font-size:11.5px}
+
+    @media(max-width:1100px){
+      .value-grid,.role-grid,.trigger-grid{grid-template-columns:repeat(2,1fr)}
+      .sample-layout{grid-template-columns:1fr}
+      .scenario-strip{grid-template-columns:repeat(3,1fr)}
+      .full-push-grid{grid-template-columns:1fr}.scenario-card.wide{grid-column:auto}
+      .loop{grid-template-columns:repeat(4,1fr)}
+      .loop-step:nth-child(4):after{display:none}
+      .pending-grid{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(max-width:720px){
+      .topbar{height:auto;padding:13px 18px;align-items:flex-start;flex-direction:column}
+      .brand-title{display:none}.nav{width:100%}
+      .page{width:min(100% - 20px,1440px);margin-top:10px}
+      .hero,.section{padding:20px}
+      h1{font-size:25px}
+      .change-map{grid-template-columns:1fr}.change-arrow{transform:rotate(90deg)}
+      .value-grid,.role-grid,.trigger-grid,.result-grid{grid-template-columns:1fr}
+      .section-head{flex-direction:column}.section-note{text-align:left}
+      .message-principle{grid-template-columns:1fr}
+      .message-step:not(:last-child){border-right:0;border-bottom:1px solid var(--line)}
+      .message-step:not(:last-child):after{display:none}
+      .metric-grid{grid-template-columns:repeat(2,1fr)}
+      .scenario-strip{grid-template-columns:repeat(2,1fr)}
+      .scene-metrics,.scene-metrics.five{grid-template-columns:repeat(2,1fr)}
+      .shift-data-groups{grid-template-columns:1fr}.shift-data-group.complete .scene-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.shift-data-group.backlog .scene-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.shift-forecast{align-items:flex-start;flex-direction:column}.shift-data-notes{grid-template-columns:1fr}
+      .vehicle-task{grid-template-columns:1fr}.vehicle-task div{padding:0 0 5px;border-right:0;border-bottom:1px solid #e0e4ea}.vehicle-task div:last-child{padding-bottom:0;border-bottom:0}
+      .vehicle-inbound-summary{grid-template-columns:1fr}
+      .vehicle-outbound-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .all-samples-head{align-items:flex-start;flex-direction:column}.sample-legend{justify-content:flex-start}
+      .shift-layout{grid-template-columns:1fr}
+      .scene-row,.scene-row.four{grid-template-columns:1.2fr repeat(2,.8fr)}
+      .scene-row.four span:nth-child(4){display:none}
+      .sort-broadcast-card{width:100%}
+      .sort-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .sort-summary-pair{grid-template-columns:1fr}
+      .sort-summary-card+ .sort-summary-card{border-top:1px solid #e3e6ea;border-left:0}
+      .sort-device-note{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .station-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .station-table-head{align-items:flex-start;flex-direction:column}
+      .station-current-head{grid-template-columns:1fr}
+      .station-current-title{align-items:flex-start;flex-direction:column}
+      .station-bar-chart{grid-template-columns:repeat(16,42px);min-width:778px}
+      .sort-broadcast-actions{align-items:stretch;flex-direction:column}
+      .sort-button-group{display:grid;grid-template-columns:1fr 1fr}.sort-button{min-width:0}
+      .sort-sheet-panel{overflow-x:auto}
+      .sort-sheet-table{min-width:920px}
+      .loop{grid-template-columns:repeat(2,1fr)}
+      .loop-step:nth-child(even):after{display:none}.loop-step:nth-child(4):after{display:none}
+      .pending-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">GOFO</span><span class="brand-title">现场作业数据主动监控与推送方案</span></div>
+    <nav class="nav" aria-label="页面导航">
+      <a href="#value">业务价值</a>
+      <a href="#audience">接收对象</a>
+      <a href="#trigger">触发机制</a>
+      <a href="#sample">推送示例</a>
+      <a href="#loop">异常闭环</a>
+      <a href="#measure">效果衡量</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">方案目标</div>
+      <h1>从“人找数据”到“数据找人”</h1>
+      <p class="hero-sub">不是增加一种消息渠道，而是让问题更早被发现、更快被处理，并持续跟踪到关闭。</p>
+      <div class="change-map">
+        <div class="flow-card old">
+          <div class="flow-label">当前方式</div>
+          <div class="flow-steps"><span>人发现问题</span><i>→</i><span>查系统 / 盯大屏</span><i>→</i><span>判断</span><i>→</i><span>处理</span></div>
+        </div>
+        <div class="change-arrow">→</div>
+        <div class="flow-card new">
+          <div class="flow-label">目标方式</div>
+          <div class="flow-steps"><span>业务数据</span><i>→</i><span>系统识别</span><i>→</i><span>推送责任人</span><i>→</i><span>处置闭环</span></div>
+        </div>
+      </div>
+      <div class="hero-conclusion">核心判断：只有看到数据后，业务能够直接判断或采取动作的数据，才值得主动推送。</div>
+    </section>
+
+    <section class="section" id="value">
+      <div class="section-head">
+        <div><div class="section-index">01 / WHY &amp; WHAT</div><h2>4类推送产品，覆盖7项业务需求</h2></div>
+        <p class="section-note">按照相同接收人和触发时间合并消息，避免每个业务指标单独形成一条推送。</p>
+      </div>
+      <div class="value-grid">
+        <article class="value-card"><div class="value-icon">◉</div><h3>分拣小时播报</h3><p>一条消息并列展示时分拣、已分拣、应分拣、待分拣、待签出、货量预测和预计到车。</p><div class="scene-tags"><span class="tag">分拣</span><span class="tag">应分拣</span><span class="tag">待分拣</span><span class="tag">待签出</span><span class="tag">货量预测</span><span class="tag">预计到车</span></div></article>
+        <article class="value-card"><div class="value-icon">!</div><h3>车辆到发作业提醒</h3><p>整合车辆预计到达、等待卸车、已到已卸、发车准备和离场状态，作业超时主动预警。</p><div class="scene-tags"><span class="tag">预计到达</span><span class="tag">等待卸车</span><span class="tag">已到已卸</span><span class="tag">发车准备</span><span class="tag">未离场</span></div></article>
+        <article class="value-card"><div class="value-icon">⌁</div><h3>中心班次小结</h3><p>汇总本班作业结果、重点风险、质量指标、遗留事项和下一班货量。</p><div class="scene-tags"><span class="tag">管理复盘</span><span class="tag">交接</span></div></article>
+        <article class="value-card"><div class="value-icon">✓</div><h3>异常区班次小结</h3><p>反映异常区本班接收、处理、当前待办、时效风险和班次交接。</p><div class="scene-tags"><span class="tag">异常区作业</span><span class="tag">时效</span></div></article>
+      </div>
+      <div class="conclusion"><b>收敛结果：</b>每小时只保留1条分拣播报，其余按条件或班次节点触发。</div>
+    </section>
+
+    <section class="section" id="audience">
+      <div class="section-head">
+        <div><div class="section-index">02 / WHO</div><h2>谁能处理，就推给谁</h2></div>
+        <p class="section-note">接收对象不是订阅名单，而是责任链路。消息需要与业务动作对应。</p>
+      </div>
+      <div class="role-grid">
+        <article class="role"><h3>分拣组 / 调度组 <span>小时作业</span></h3><p><strong>接收：</strong>分拣小时播报；调度组可只接收待签出和运输影响版本</p><p><strong>动作：</strong>调人、调设备、消化待办、保障后续发运</p></article>
+        <article class="role"><h3>卸车组 / 装车组 / 调度组 <span>车辆到发</span></h3><p><strong>接收：</strong>车辆到发作业提醒；按到达、卸车、发车准备和离场节点定向触达</p><p><strong>动作：</strong>准备卸车、消化待办、完成签出装车并调整运输计划</p></article>
+        <article class="role"><h3>仓长 / 组长 <span>班次管理</span></h3><p><strong>接收：</strong>中心班次作业小结</p><p><strong>动作：</strong>复盘目标、风险、质量和跨班次遗留</p></article>
+        <article class="role"><h3>异常组 <span>异常区作业</span></h3><p><strong>接收：</strong>异常区班次作业小结</p><p><strong>动作：</strong>处理待办、关注时效并完成班次交接</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="trigger">
+      <div class="section-head">
+        <div><div class="section-index">03 / WHEN</div><h2>不同数据，采用不同触发机制</h2></div>
+        <p class="section-note">统一“每小时推一次”会让正常信息和异常信息混在一起，最终造成消息疲劳。</p>
+      </div>
+      <div class="trigger-grid">
+        <article class="trigger"><div class="trigger-type">定时播报</div><h3>分拣小时播报</h3><p>合并时分拣、已分拣、应分拣、待分拣、待签出、货量预测、预计到车和分拣机作业数据。</p><div class="rule">每小时一次<br>上一完整小时 + 操作日累计 + 当前快照</div></article>
+        <article class="trigger"><div class="trigger-type">节点 + 条件</div><h3>车辆到发作业提醒</h3><p>预计到达和等待卸车按时间区间汇总；发车前按节点提醒，到点未发及未离场按异常条件触发。</p><div class="rule">状态汇总 → 节点提醒 → 异常识别 → 未恢复升级 → 状态恢复后关闭</div></article>
+        <article class="trigger"><div class="trigger-type">班次节点</div><h3>中心班次小结</h3><p>集中呈现全流程作业结果、重点风险和下一班次安排。</p><div class="rule">班次结束后发送<br>本班累计 + 班末遗留</div></article>
+        <article class="trigger"><div class="trigger-type">班次节点</div><h3>异常区班次小结</h3><p>集中呈现异常区处理结果、当前待办和时效情况。</p><div class="rule">班次结束后发送<br>本班作业 + 当前在库快照</div></article>
+      </div>
+      <div class="conclusion"><b>触发原则：</b>小时播报看分拣，车辆提醒覆盖到达与发运节点，异常条件负责升级风险，班次小结负责复盘和交接。</div>
+    </section>
+
+    <section class="section" id="sampleLegacy" hidden aria-hidden="true">
+      <div class="section-head">
+        <div><div class="section-index">04 / MESSAGE</div><h2>6类业务场景完整推送示例</h2></div>
+        <p class="section-note">以下数值用于表达消息结构，不作为正式阈值；群消息给结论和动作，完整对象明细进入看板查看。</p>
+      </div>
+      <div class="message-principle">
+        <div class="message-step"><b>先说结论</b><span>当前是否值得关注</span></div>
+        <div class="message-step"><b>再给核心数字</b><span>本小时、累计、待办</span></div>
+        <div class="message-step"><b>明确动作</b><span>谁需要做什么</span></div>
+        <div class="message-step"><b>提供下钻</b><span>看板查看完整明细</span></div>
+      </div>
+      <div class="scenario-strip" aria-label="六类推送场景">
+        <div class="scenario-chip current"><b>01 集包</b><span>每小时状态播报</span></div>
+        <div class="scenario-chip"><b>02 待签出</b><span>超时异常提醒</span></div>
+        <div class="scenario-chip"><b>03 分拣机</b><span>产能状态播报</span></div>
+        <div class="scenario-chip"><b>04 车辆</b><span>延迟发车提醒</span></div>
+        <div class="scenario-chip"><b>05 货量预测</b><span>固定预测+预警</span></div>
+        <div class="scenario-chip"><b>06 班次小结</b><span>班次结束复盘</span></div>
+      </div>
+
+      <div class="sample-layout">
+        <article class="push-card">
+          <header class="push-head">
+            <div class="push-head-top"><div class="push-title">CNO.H 分拣小时播报</div><div class="push-badge">定时播报</div></div>
+            <div class="push-time">操作日 08-19 17:00～08-20 17:00 PT　·　本小时 00:00～01:00　·　更新 01:26</div>
+          </header>
+          <div class="focus-strip"><span class="symbol">●</span><div><b>重点关注：当前待集包主要集中在支线</b><span>支线待集包36,338票，占当前待集包82.8%。是否达到异常等级，由正式阈值判断。</span></div></div>
+          <div class="metric-grid">
+            <div class="metric"><label>本小时集包</label><strong>26,903</strong><small>票</small></div>
+            <div class="metric"><label>操作日已集包</label><strong>398,630</strong><small>票</small></div>
+            <div class="metric"><label>当前待集包</label><strong>43,901</strong><small>票</small></div>
+            <div class="metric"><label>截单前待到达</label><strong>0</strong><small>辆 / 0票</small></div>
+          </div>
+          <div class="push-block">
+            <h4>当前待集包 · 重点流向</h4>
+            <div class="bar-row"><span>CNO01</span><div class="bar"><i style="width:100%"></i></div><strong>10,918票</strong></div>
+            <div class="bar-row"><span>PHX01</span><div class="bar"><i style="width:93.5%"></i></div><strong>10,213票</strong></div>
+            <div class="bar-row"><span>LAS01</span><div class="bar"><i style="width:64.2%"></i></div><strong>7,009票</strong></div>
+          </div>
+          <div class="action-box"><b>现场建议：</b>分拣组关注支线资源配置；完整干支线目的组织及全部5辆待到达车辆进入看板查看。</div>
+          <div class="push-actions"><div class="fake-btn primary">查看分拣看板</div><div class="fake-btn">待集包明细</div><div class="fake-btn">待到达车辆</div></div>
+        </article>
+
+        <div class="side-stack">
+          <article class="alert-card">
+            <h3>支线待集包异常提醒 <span class="alert-level">条件触发</span></h3>
+            <p>当“预计消化时长”超过预警线时，单独发送异常消息；不与普通小时播报混在一起。</p>
+            <div class="alert-facts"><div><span>当前待集包</span><strong>36,338票</strong></div><div><span>预计消化时长</span><strong>X.X小时</strong></div></div>
+            <div class="alert-action"><b>处理要求：</b>请分拣组在X分钟内确认人员和设备安排；持续未处理则提醒调度组并升级仓长。</div>
+          </article>
+          <article class="risk-card">
+            <h3>上线前必须解决：集包口径不一致</h3>
+            <p>当前示例中，同一“时集包”出现两个不同总量：</p>
+            <div class="equation">干线 25,823 + 支线 1,080 = 26,903</div>
+            <div class="equation">分拣机 15,022 + 人工 15,751 = 30,773</div>
+            <p>“已集包”也存在398,630与419,098两个总量。</p>
+            <p class="recommend">建议：统一运单基础集合；两种维度都必须回归同一总量，不能归类的展示“未识别”。</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="all-samples-head" id="allPushSamples">
+        <div><h3>其余5类推送示例</h3><p>每条消息均包含：统计范围、接收对象、结论、核心数据、重点对象、处置要求和下钻入口。</p></div>
+        <div class="sample-legend"><span>示例数据</span><span>X = 待配置阈值</span><span>不直接作为考核依据</span></div>
+      </div>
+
+      <div class="full-push-grid">
+        <article class="scenario-card red">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">02</span>CNO.H 待签出超时提醒</div><span class="scenario-type">条件触发</span></div>
+            <div class="scenario-meta"><span>接收：分拣组、调度组</span><span>更新：01:26 PT</span><span>异常编号：OUT-0820-01</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>异常结论：</b>当前128票待签出，其中36票等待时长已超过X分钟，最长等待78分钟，需要现场确认。</div>
+            <div class="scene-metrics">
+              <div class="scene-metric"><label>当前待签出</label><strong>128</strong><small>票</small></div>
+              <div class="scene-metric"><label>超过X分钟</label><strong>36</strong><small>票</small></div>
+              <div class="scene-metric"><label>涉及流向</label><strong>8</strong><small>个</small></div>
+              <div class="scene-metric"><label>最长等待</label><strong>78</strong><small>分钟</small></div>
+            </div>
+            <div class="scene-block-title">优先处理对象</div>
+            <div class="scene-rows">
+              <div class="scene-row header"><span>袋号 / 流向</span><span>待签出票数</span><span>等待时长</span></div>
+              <div class="scene-row"><b>RET08200031 / PHX01</b><span>16票</span><span>78分钟</span></div>
+              <div class="scene-row"><b>RET08200028 / LAS01</b><span>12票</span><span>61分钟</span></div>
+              <div class="scene-row"><b>RET08200019 / CNO01</b><span>8票</span><span>47分钟</span></div>
+            </div>
+            <div class="scene-action"><b>处理要求：</b>分拣组在X分钟内确认货物和系统状态；调度组同步判断是否影响后续运输。超过处理时限仍未恢复，升级仓长。</div>
+            <div class="scene-footer"><span>确认后状态：已知晓 → 处理中 → 已恢复</span><span class="mini-btn">确认处理 / 查看明细</span></div>
+          </div>
+        </article>
+
+        <article class="scenario-card green">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">03</span>CNO.H 分拣机小时播报</div><span class="scenario-type">定时播报</span></div>
+            <div class="scenario-meta"><span>接收：分拣组</span><span>统计：00:00～01:00 PT</span><span>每小时一次</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>状态结论：</b>本小时启用12个供件台，2个供件台产能低于预警线，需检查设备状态和人员配置。</div>
+            <div class="scene-metrics">
+              <div class="scene-metric"><label>本小时供件</label><strong>15,022</strong><small>票</small></div>
+              <div class="scene-metric"><label>启用供件台</label><strong>12/14</strong><small>个</small></div>
+              <div class="scene-metric"><label>平均台产能</label><strong>1,252</strong><small>票/小时</small></div>
+              <div class="scene-metric"><label>异常供件台</label><strong>2</strong><small>个</small></div>
+            </div>
+            <div class="scene-block-title">供件台产能重点</div>
+            <div class="scene-rows">
+              <div class="scene-row header"><span>供件台</span><span>小时供件量</span><span>当前状态</span></div>
+              <div class="scene-row"><b>P03</b><span>1,568票</span><span>正常</span></div>
+              <div class="scene-row"><b>P11</b><span>1,420票</span><span>正常</span></div>
+              <div class="scene-row"><b>P07</b><span>362票</span><span style="color:#cf2a2a">低于预警线</span></div>
+            </div>
+            <div class="scene-action"><b>处理要求：</b>分拣组检查P07、P09设备运行和人员到岗情况；完整供件台排行、停机时长及异常原因进入看板查看。</div>
+            <div class="scene-footer"><span>异常判断需剔除计划停机、换线等不可比时段</span><span class="mini-btn">查看供件台分析</span></div>
+          </div>
+        </article>
+
+        <article class="scenario-card red">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">04</span>CNO.H 车辆延迟发车提醒</div><span class="scenario-type">条件触发</span></div>
+            <div class="scenario-meta"><span>接收：装车组</span><span>抄送：调度组</span><span>更新：01:26 PT</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>异常结论：</b>2辆车超过计划发车时间X分钟仍未驶出围栏，预计影响18,426票货物。</div>
+            <div class="scene-metrics">
+              <div class="scene-metric"><label>延迟车辆</label><strong>2</strong><small>辆</small></div>
+              <div class="scene-metric"><label>最长延迟</label><strong>47</strong><small>分钟</small></div>
+              <div class="scene-metric"><label>影响货量</label><strong>18,426</strong><small>票</small></div>
+              <div class="scene-metric"><label>待确认原因</label><strong>2</strong><small>项</small></div>
+            </div>
+            <div class="scene-block-title">延迟车辆</div>
+            <div class="scene-rows">
+              <div class="scene-row four header"><span>运输任务</span><span>线路</span><span>计划发车</span><span>当前状态</span></div>
+              <div class="scene-row four"><b>MT2026082000245</b><span>CNO.H→PHX01</span><span>00:30</span><span>待驶出</span></div>
+              <div class="scene-row four"><b>MT2026082000251</b><span>CNO.H→LAS01</span><span>00:50</span><span>装车中</span></div>
+            </div>
+            <div class="scene-action"><b>处理要求：</b>装车组确认装车完成状态、车辆状态和未驶出原因；如果涉及运输衔接，调度组同步调整后续计划。</div>
+            <div class="scene-footer"><span>恢复条件：车辆实际驶出围栏，或任务已按规则取消</span><span class="mini-btn">确认原因 / 查看车辆</span></div>
+          </div>
+        </article>
+
+        <article class="scenario-card amber">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">05</span>CNO.H 未来货量预测</div><span class="scenario-type">固定预测 + 预警</span></div>
+            <div class="scenario-meta"><span>接收：分拣组</span><span>预测生成：01:30 PT</span><span>预测范围：未来4小时</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>预测结论：</b>未来2小时预计到货28,400票，高于当前可用处理能力约4,400票，需提前评估人员和供件台安排。</div>
+            <div class="scene-metrics">
+              <div class="scene-metric"><label>未来2h预测</label><strong>28,400</strong><small>票</small></div>
+              <div class="scene-metric"><label>可用处理能力</label><strong>24,000</strong><small>票</small></div>
+              <div class="scene-metric"><label>预测缺口</label><strong>+4,400</strong><small>票</small></div>
+              <div class="scene-metric"><label>预测峰值</label><strong>03:00</strong><small>时间段</small></div>
+            </div>
+            <div class="scene-block-title">预计到货分时</div>
+            <div class="scene-rows">
+              <div class="scene-row header"><span>时间段</span><span>预测到货量</span><span>能力差额</span></div>
+              <div class="scene-row"><b>02:00～03:00</b><span>12,800票</span><span>+800票</span></div>
+              <div class="scene-row"><b>03:00～04:00</b><span>15,600票</span><span>+3,600票</span></div>
+              <div class="scene-row"><b>04:00～05:00</b><span>9,200票</span><span>-2,800票</span></div>
+            </div>
+            <div class="scene-action"><b>处理建议：</b>分拣组结合当前待集包、预计到达车辆和人员到岗情况，评估是否需要增加供件台、调整人员或提前消化存量。</div>
+            <div class="scene-footer"><span>需同时展示预测准确率和数据更新时间</span><span class="mini-btn">查看预测与车辆明细</span></div>
+          </div>
+        </article>
+
+        <article class="scenario-card purple wide">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">06</span>CNO.H 班次作业小结</div><span class="scenario-type">班次结束触发</span></div>
+            <div class="scenario-meta"><span>接收：仓长、组长</span><span>班次：08-19 17:00～08-20 05:00 PT</span><span>生成：05:10 PT</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>班次结论：</b>本班已入库412,360票、已分拣398,630票、已签出298,204票；班末仍有已到未卸、应分拣、待签出、待分拣和历史留仓需要下一班持续处理。</div>
+            <div class="shift-data-groups">
+              <div class="shift-data-group complete">
+                <h5>本班完成</h5>
+                <div class="scene-metrics">
+                  <div class="scene-metric"><label>已入库</label><strong>412,360</strong><small>票</small></div>
+                  <div class="scene-metric"><label>已分拣</label><strong>398,630</strong><small>票</small></div>
+                  <div class="scene-metric"><label>已签出</label><strong>298,204</strong><small>票</small></div>
+                </div>
+              </div>
+              <div class="shift-data-group backlog">
+                <h5>班末待办</h5>
+                <div class="scene-metrics">
+                  <div class="scene-metric"><label>已到未卸</label><strong>24,680</strong><small>票</small></div>
+                  <div class="scene-metric"><label>应分拣</label><strong>285,600</strong><small>截单前 · 票</small></div>
+                  <div class="scene-metric"><label>待签出</label><strong>77,600</strong><small>票</small></div>
+                  <div class="scene-metric"><label>待分拣</label><strong>426,900</strong><small>全部待分拣 · 票</small></div>
+                  <div class="scene-metric"><label>历史留仓</label><strong>18,420</strong><small>票</small></div>
+                </div>
+              </div>
+            </div>
+            <div class="shift-forecast"><div><span>下一班预测</span><strong>126,000</strong><small>票 · 下一班预计到量</small></div><p>用于下一班提前安排人员、设备、月台及运输资源。</p></div>
+            <div class="scene-block-title">当前数据说明</div>
+            <div class="shift-data-notes">
+              <div class="shift-data-note"><b>考核数据</b><p>当前考核口径由BI产出。BI无法在班次结束后即时输出结果，且已有独立推送，因此班次小结不重复推送考核结果。</p></div>
+              <div class="shift-data-note"><b>人效数据</b><p>业务关注班次人效，但上岗人数及系统外分拣量（如G2G等）尚未完整纳入系统，当前无法形成准确的人效结果。</p></div>
+            </div>
+            <div class="scene-action"><b>管理动作：</b>优先处理已到未卸、截单前应分拣、待签出和历史留仓，结合待分拣总量及下一班预测安排人员、设备、月台和运输资源。</div>
+            <div class="scene-footer"><span>完整内容：本班完成、班末待办、下一班预测及当前数据说明</span><span class="mini-btn">查看班次复盘</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="sample">
+      <div class="section-head">
+        <div><div class="section-index">04 / MESSAGE</div><h2>收敛后的4类推送示例</h2></div>
+        <p class="section-note">示例数值只用于表达消息结构；X代表待配置阈值，正式推送以操作日和班次口径为准。</p>
+      </div>
+      <div class="message-principle">
+        <div class="message-step"><b>1条小时播报</b><span>合并8项分拣数据</span></div>
+        <div class="message-step"><b>1类车辆到发提醒</b><span>节点通知 + 条件预警</span></div>
+        <div class="message-step"><b>2条班次小结</b><span>中心管理 + 异常区作业</span></div>
+        <div class="message-step"><b>明细统一下钻</b><span>文件按需导出</span></div>
+      </div>
+
+      <div class="full-push-grid">
+        <article class="sort-broadcast-card">
+          <header class="sort-broadcast-head">
+            <div class="sort-broadcast-title-row">
+              <div class="sort-broadcast-title">CNO.H 分拣播报</div>
+              <div class="sort-broadcast-badge">每小时1条</div>
+            </div>
+            <div class="sort-broadcast-time"><span>08-19 17:00～08-20 17:00 PT</span><span>更新时间：2026-08-20 01:26</span></div>
+            <div class="sort-broadcast-audience">接收：分拣组　·　调度组接收待签出精简版</div>
+          </header>
+
+          <div class="sort-broadcast-body">
+            <div class="sort-overview">
+              <div class="sort-overview-item"><label>应分拣</label><strong class="sort-overview-value">285,600</strong><small>截单前 · 干线231,400 / 支线54,200票</small></div>
+              <div class="sort-overview-item"><label>待签出</label><strong class="sort-overview-value">77,600</strong><small>干线65,200 / 支线12,400票</small></div>
+              <div class="sort-overview-item"><label>货量预测</label><strong class="sort-overview-value">126,000</strong><small>未来到量 · 干线86,000 / 支线40,000票</small></div>
+              <div class="sort-overview-item"><label>预计到车</label><strong class="sort-overview-value">48,750</strong><small>干线35,810 / 支线12,940票</small></div>
+              <div class="sort-overview-item"><label>待分拣</label><strong class="sort-overview-value">426,900</strong><small>全部待分拣 · 干线350,200 / 支线76,700票</small></div>
+            </div>
+            <div class="sort-overview-note">待分拣为当前全部未完成分拣货量；应分拣为其中截单前必须完成的货量，因此应分拣不大于待分拣。其余作业量按各自口径统计。</div>
+
+            <div class="sort-summary-pair">
+              <div class="sort-summary-card">
+                <h4>时分拣</h4>
+                <div class="sort-stat-line"><span>干线 <b class="green">25,823</b></span><span>支线 <b class="green">1,080</b></span></div>
+                <div class="sort-stat-line"><span>分拣机 <b class="purple">15,022</b></span><span>人工 <b class="orange">15,751</b></span></div>
+                <div class="sort-stat-line"><span>占比 48.82% / 51.18%</span></div>
+              </div>
+              <div class="sort-summary-card">
+                <h4>已分拣</h4>
+                <div class="sort-stat-line"><span>干线 <b class="blue">322,693</b></span><span>支线 <b class="blue">75,937</b></span></div>
+                <div class="sort-stat-line"><span>分拣机 <b class="purple">113,112</b></span><span>人工 <b class="orange">305,986</b></span></div>
+                <div class="sort-stat-line"><span>占比 26.99% / 73.01%</span></div>
+              </div>
+              <div class="sort-summary-card">
+                <h4>已签出</h4>
+                <div class="sort-stat-line"><span>干线 <b class="blue">227,488</b></span><span>支线 <b class="blue">70,716</b></span></div>
+                <div class="sort-stat-line"><span>操作日累计 <b>298,204</b> 票</span></div>
+              </div>
+            </div>
+
+            <section class="sort-message-section">
+              <h4 class="sort-section-title">📊 目的组织分拣明细</h4>
+              <div class="sort-sheet-caption"><b>同一目的组织横向查看8项业务数据</b><span>本小时：00:00～01:00　·　操作日：08-19 17:00～08-20 17:00</span></div>
+              <div class="sort-sheet">
+                <input type="radio" name="sort-sheet" id="sort-sheet-trunk" checked>
+                <input type="radio" name="sort-sheet" id="sort-sheet-branch">
+
+                <div class="sort-sheet-panels">
+                  <div class="sort-sheet-panel trunk-panel">
+                    <table class="sort-data-table sort-sheet-table">
+                      <thead><tr><th>目的组织</th><th>本小时分拣</th><th>操作日已分拣</th><th>操作日已签出*</th><th>货量预测</th><th>预计到车</th><th>应分拣</th><th>待签出</th><th>待分拣</th></tr></thead>
+                      <tbody>
+                        <tr><td>LAX.H</td><td><b class="sort-sheet-value">2,948票</b><small>24袋 · 11.0%</small></td><td><b class="sort-sheet-value">43,965票</b><small>157袋 · 11.0%</small></td><td><b class="sort-sheet-value">39,820票</b><small>示意数据</small></td><td><b class="sort-sheet-value">12,800票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">3,386票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">39,270票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">4,145票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">46,200票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>EWR.H</td><td><b class="sort-sheet-value">2,805票</b><small>22袋 · 10.4%</small></td><td><b class="sort-sheet-value">40,787票</b><small>134袋 · 10.2%</small></td><td><b class="sort-sheet-value">36,415票</b><small>示意数据</small></td><td><b class="sort-sheet-value">11,600票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">2,519票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">36,720票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">3,900票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">43,200票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>ORD.H</td><td><b class="sort-sheet-value">2,362票</b><small>20袋 · 8.8%</small></td><td><b class="sort-sheet-value">33,007票</b><small>106袋 · 8.3%</small></td><td><b class="sort-sheet-value">29,118票</b><small>示意数据</small></td><td><b class="sort-sheet-value">9,850票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">2,141票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">30,260票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">3,312票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">35,600票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>DFW.H</td><td><b class="sort-sheet-value">2,269票</b><small>19袋 · 8.4%</small></td><td><b class="sort-sheet-value">28,834票</b><small>98袋 · 7.2%</small></td><td><b class="sort-sheet-value">25,670票</b><small>示意数据</small></td><td><b class="sort-sheet-value">8,920票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">1,585票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">27,030票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">2,880票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">31,800票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>MIA.H</td><td><b class="sort-sheet-value">2,104票</b><small>17袋 · 7.8%</small></td><td><b class="sort-sheet-value">25,524票</b><small>84袋 · 6.4%</small></td><td><b class="sort-sheet-value">20,885票</b><small>示意数据</small></td><td><b class="sort-sheet-value">7,460票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">1,391票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">24,140票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">2,545票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">28,400票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>DEN.H</td><td><b class="sort-sheet-value">1,940票</b><small>16袋 · 7.2%</small></td><td><b class="sort-sheet-value">20,340票</b><small>72袋 · 5.1%</small></td><td><b class="sort-sheet-value">18,050票</b><small>示意数据</small></td><td><b class="sort-sheet-value">6,880票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">143票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">19,040票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,850票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">22,400票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>MCO.H</td><td><b class="sort-sheet-value">1,765票</b><small>15袋 · 6.6%</small></td><td><b class="sort-sheet-value">18,460票</b><small>68袋 · 4.6%</small></td><td><b class="sort-sheet-value">16,320票</b><small>示意数据</small></td><td><b class="sort-sheet-value">5,940票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">1,019票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">17,085票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,640票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">20,100票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>IAH.H</td><td><b class="sort-sheet-value">1,648票</b><small>13袋 · 6.1%</small></td><td><b class="sort-sheet-value">17,280票</b><small>63袋 · 4.3%</small></td><td><b class="sort-sheet-value">15,110票</b><small>示意数据</small></td><td><b class="sort-sheet-value">5,350票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">905票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">16,150票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,530票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">19,000票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>CVG.H</td><td><b class="sort-sheet-value">1,485票</b><small>12袋 · 5.5%</small></td><td><b class="sort-sheet-value">15,420票</b><small>57袋 · 3.9%</small></td><td><b class="sort-sheet-value">13,860票</b><small>示意数据</small></td><td><b class="sort-sheet-value">4,760票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">454票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">14,535票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,290票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">17,100票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>CLT.H</td><td><b class="sort-sheet-value">1,298票</b><small>11袋 · 4.8%</small></td><td><b class="sort-sheet-value">13,970票</b><small>51袋 · 3.5%</small></td><td><b class="sort-sheet-value">12,240票</b><small>示意数据</small></td><td><b class="sort-sheet-value">4,200票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">947票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">13,430票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,115票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">15,800票</b><small>全部待分拣</small></td></tr>
+                      </tbody>
+                    </table>
+                    <div class="sort-pager" data-page-size="5"><span class="sort-page-status">1 / 2</span><button type="button" class="sort-page-prev" aria-label="上一页">‹</button><button type="button" class="sort-page-next" aria-label="下一页">›</button></div>
+                  </div>
+
+                  <div class="sort-sheet-panel branch-panel">
+                    <table class="sort-data-table sort-sheet-table">
+                      <thead><tr><th>目的组织</th><th>本小时分拣</th><th>操作日已分拣</th><th>操作日已签出*</th><th>货量预测</th><th>预计到车</th><th>应分拣</th><th>待签出</th><th>待分拣</th></tr></thead>
+                      <tbody>
+                        <tr><td>PHX01</td><td><b class="sort-sheet-value">288票</b><small>7袋 · 1.1%</small></td><td><b class="sort-sheet-value">26,156票</b><small>115袋 · 6.6%</small></td><td><b class="sort-sheet-value">22,480票</b><small>示意数据</small></td><td><b class="sort-sheet-value">9,680票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">3,047票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">24,000票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">2,300票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">32,000票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>CNO01</td><td><b class="sort-sheet-value">252票</b><small>6袋 · 0.9%</small></td><td><b class="sort-sheet-value">21,668票</b><small>115袋 · 5.4%</small></td><td><b class="sort-sheet-value">18,260票</b><small>示意数据</small></td><td><b class="sort-sheet-value">8,920票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">2,862票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">22,125票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,950票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">29,500票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>LAS01</td><td><b class="sort-sheet-value">306票</b><small>7袋 · 1.1%</small></td><td><b class="sort-sheet-value">14,539票</b><small>59袋 · 3.6%</small></td><td><b class="sort-sheet-value">12,806票</b><small>示意数据</small></td><td><b class="sort-sheet-value">8,450票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">1,757票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">15,000票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">1,330票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">20,000票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>ABQ01</td><td><b class="sort-sheet-value">95票</b><small>8袋 · 0.4%</small></td><td><b class="sort-sheet-value">2,810票</b><small>41袋 · 0.7%</small></td><td><b class="sort-sheet-value">2,150票</b><small>示意数据</small></td><td><b class="sort-sheet-value">3,100票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">669票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">4,875票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">480票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">6,500票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>TUC01</td><td><b class="sort-sheet-value">88票</b><small>5袋 · 0.3%</small></td><td><b class="sort-sheet-value">3,975票</b><small>49袋 · 1.0%</small></td><td><b class="sort-sheet-value">3,260票</b><small>示意数据</small></td><td><b class="sort-sheet-value">2,650票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">544票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">4,350票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">392票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">5,800票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>IFP01</td><td><b class="sort-sheet-value">82票</b><small>4袋 · 0.3%</small></td><td><b class="sort-sheet-value">3,500票</b><small>42袋 · 0.9%</small></td><td><b class="sort-sheet-value">2,910票</b><small>示意数据</small></td><td><b class="sort-sheet-value">1,980票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">297票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">3,600票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">340票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">4,800票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>PLM01</td><td><b class="sort-sheet-value">76票</b><small>4袋 · 0.3%</small></td><td><b class="sort-sheet-value">3,200票</b><small>39袋 · 0.8%</small></td><td><b class="sort-sheet-value">2,760票</b><small>示意数据</small></td><td><b class="sort-sheet-value">1,860票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">276票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">3,225票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">305票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">4,300票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>CGZ01</td><td><b class="sort-sheet-value">94票</b><small>13袋 · 0.3%</small></td><td><b class="sort-sheet-value">2,980票</b><small>37袋 · 0.7%</small></td><td><b class="sort-sheet-value">2,490票</b><small>示意数据</small></td><td><b class="sort-sheet-value">1,720票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">236票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">3,075票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">280票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">4,100票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>SAF01</td><td><b class="sort-sheet-value">65票</b><small>6袋 · 0.2%</small></td><td><b class="sort-sheet-value">2,240票</b><small>31袋 · 0.6%</small></td><td><b class="sort-sheet-value">1,890票</b><small>示意数据</small></td><td><b class="sort-sheet-value">1,130票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">158票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">2,400票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">220票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">3,200票</b><small>全部待分拣</small></td></tr>
+                        <tr><td>FMN01</td><td><b class="sort-sheet-value">95票</b><small>6袋 · 0.3%</small></td><td><b class="sort-sheet-value">1,960票</b><small>28袋 · 0.5%</small></td><td><b class="sort-sheet-value">1,710票</b><small>示意数据</small></td><td><b class="sort-sheet-value">910票</b><small>下一时段预测</small></td><td><b class="sort-sheet-value">62票</b><small>在途预计到车</small></td><td><b class="sort-sheet-value">2,100票</b><small>截单前</small></td><td><b class="sort-sheet-value pending">195票</b><small>当前快照</small></td><td><b class="sort-sheet-value pending">2,800票</b><small>全部待分拣</small></td></tr>
+                      </tbody>
+                    </table>
+                    <div class="sort-pager" data-page-size="5"><span class="sort-page-status">1 / 2</span><button type="button" class="sort-page-prev" aria-label="上一页">‹</button><button type="button" class="sort-page-next" aria-label="下一页">›</button></div>
+                  </div>
+                </div>
+
+                <div class="sort-sheet-tabs">
+                  <label for="sort-sheet-trunk">🚛 干线分拣明细</label>
+                  <label for="sort-sheet-branch">🚚 支线分拣明细</label>
+                </div>
+              </div>
+              <div class="sort-overview-note" style="margin-top:7px">* “操作日已签出”为当前建议口径，最终以业务确认结果为准；“应分拣”是“待分拣”中截单前必须完成的子集，其余数据按各自口径展示。</div>
+            </section>
+
+            <section class="sort-message-section">
+              <h4 class="sort-section-title">⚙️ 供件台分析</h4>
+              <div class="station-analysis station-current-mode">
+                <div class="station-current-head">
+                  <div class="station-current-total">
+                    <span>当前小时分拣总量</span><strong>15,022</strong><small>票 · 00:00～01:00 PT</small>
+                    <div class="station-current-meta"><b>供件台 16个</b><b>当前有量 15个</b><b>最高 1,687票</b></div>
+                  </div>
+                  <div class="station-mini-trend">
+                    <div class="station-mini-trend-head"><b>分拣总量趋势</b><span>操作日开始至当前 · 峰值 19,133票</span></div>
+                    <svg viewBox="0 0 600 104" preserveAspectRatio="none" role="img" aria-label="操作日分拣总量趋势图">
+                      <defs><linearGradient id="stationTrendMiniFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6172ff" stop-opacity=".22"/><stop offset="100%" stop-color="#6172ff" stop-opacity=".02"/></linearGradient></defs>
+                      <g stroke="#e7eaf0" stroke-width="1"><line x1="25" y1="24" x2="575" y2="24"/><line x1="25" y1="55" x2="575" y2="55"/><line x1="25" y1="86" x2="575" y2="86"/></g>
+                      <path d="M30 82 L97 76 L164 70 L231 58 L298 46 L365 16 L432 28 L499 37 L568 47 L568 86 L30 86 Z" fill="url(#stationTrendMiniFill)"/>
+                      <path d="M30 82 L97 76 L164 70 L231 58 L298 46 L365 16 L432 28 L499 37 L568 47" fill="none" stroke="#6172ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <g fill="#fff" stroke="#6172ff" stroke-width="2"><circle cx="30" cy="82" r="3"/><circle cx="97" cy="76" r="3"/><circle cx="164" cy="70" r="3"/><circle cx="231" cy="58" r="3"/><circle cx="298" cy="46" r="3"/><circle cx="365" cy="16" r="3"/><circle cx="432" cy="28" r="3"/><circle cx="499" cy="37" r="3"/><circle cx="568" cy="47" r="4"/></g>
+                      <g fill="#596273" font-size="8" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" text-anchor="middle"><text x="365" y="10">19,133</text><text x="568" y="39">15,022</text></g>
+                    </svg>
+                    <div class="station-mini-trend-labels"><span><small>08-19</small>17:00</span><span>18:00</span><span>19:00</span><span>20:00</span><span>21:00</span><span>22:00</span><span>23:00</span><span><small>08-20</small>00:00</span><span>01:00</span></div>
+                  </div>
+                </div>
+                <div class="station-current-section">
+                  <div class="station-current-title">
+                    <div><b>小时供件台分拣量（票）</b><small>2026-08-20 00:00～01:00 PT · DFW交叉带分拣机</small></div>
+                    <div class="station-chart-legend"><span><i></i>分拣量</span><span><i class="line"></i>拒识率</span></div>
+                  </div>
+                  <div class="station-bar-scroll">
+                    <div class="station-bar-chart">
+                      <div class="station-bar-item low" title="DFW交叉带分拣机-0"><b>2</b><span class="station-bar-track"><i style="height:1%"></i></span><label>0</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-1"><b>1,687</b><span class="station-bar-track"><i style="height:100%"></i></span><label>1</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-2"><b>1,513</b><span class="station-bar-track"><i style="height:89.7%"></i></span><label>2</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-3"><b>1,576</b><span class="station-bar-track"><i style="height:93.4%"></i></span><label>3</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-4"><b>1,650</b><span class="station-bar-track"><i style="height:97.8%"></i></span><label>4</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-5"><b>1,134</b><span class="station-bar-track"><i style="height:67.2%"></i></span><label>5</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-6"><b>1,159</b><span class="station-bar-track"><i style="height:68.7%"></i></span><label>6</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-7"><b>980</b><span class="station-bar-track"><i style="height:58.1%"></i></span><label>7</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-8"><b>920</b><span class="station-bar-track"><i style="height:54.5%"></i></span><label>8</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-9"><b>860</b><span class="station-bar-track"><i style="height:51%"></i></span><label>9</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-10"><b>790</b><span class="station-bar-track"><i style="height:46.8%"></i></span><label>10</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-11"><b>740</b><span class="station-bar-track"><i style="height:43.9%"></i></span><label>11</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-12"><b>720</b><span class="station-bar-track"><i style="height:42.7%"></i></span><label>12</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-13"><b>680</b><span class="station-bar-track"><i style="height:40.3%"></i></span><label>13</label></div>
+                      <div class="station-bar-item" title="DFW交叉带分拣机-14"><b>611</b><span class="station-bar-track"><i style="height:36.2%"></i></span><label>14</label></div>
+                      <div class="station-bar-item empty" title="DFW交叉带分拣机-15"><b>0</b><span class="station-bar-track"><i style="height:0"></i></span><label>15</label></div>
+                      <svg class="station-rate-line" viewBox="0 0 768 125" preserveAspectRatio="none" role="img" aria-label="各供件台拒识率折线图">
+                        <polyline points="24,10 72,111 120,112 168,112 216,111 264,112 312,113 360,110 408,111 456,112 504,111 552,110 600,112 648,111 696,113" fill="none" stroke="#f06b3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <g fill="#fff" stroke="#f06b3c" stroke-width="1.5"><circle cx="24" cy="10" r="3.5"/><circle cx="72" cy="111" r="3"/><circle cx="120" cy="112" r="3"/><circle cx="168" cy="112" r="3"/><circle cx="216" cy="111" r="3"/><circle cx="264" cy="112" r="3"/><circle cx="312" cy="113" r="3"/><circle cx="360" cy="110" r="3"/><circle cx="408" cy="111" r="3"/><circle cx="456" cy="112" r="3"/><circle cx="504" cy="111" r="3"/><circle cx="552" cy="110" r="3"/><circle cx="600" cy="112" r="3"/><circle cx="648" cy="111" r="3"/><circle cx="696" cy="113" r="3"/></g>
+                        <g fill="#d95e33" font-size="8.5" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" text-anchor="middle"><text x="24" y="25">100%</text><text x="72" y="101">6.58%</text><text x="120" y="102">5.42%</text><text x="168" y="102">5.33%</text><text x="216" y="101">6.58%</text><text x="264" y="102">5.82%</text><text x="312" y="103">4.23%</text><text x="360" y="100">7.36%</text><text x="408" y="101">6.14%</text><text x="456" y="102">5.76%</text><text x="504" y="101">6.92%</text><text x="552" y="100">7.11%</text><text x="600" y="102">5.28%</text><text x="648" y="101">6.47%</text><text x="696" y="103">4.86%</text><text x="744" y="103">--</text></g>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="station-filter"><label for="sorter-filter">分拣机</label><select id="sorter-filter"><option>全部</option><option>DFW交叉带分拣机</option></select></div>
+                <div class="station-kpis">
+                  <div class="station-kpi primary"><label>分拣机分拣量</label><strong>313,549</strong><small>票</small></div>
+                  <div class="station-kpi"><label>拒识率</label><strong>5.56%</strong><small>拒识量17,444件</small></div>
+                  <div class="station-kpi"><label>供件台数量</label><strong>15</strong><small>个</small></div>
+                  <div class="station-kpi"><label>当前小时供件量</label><strong>2</strong><small>件</small></div>
+                  <div class="station-kpi"><label>峰值小时分拣量</label><strong>19,133</strong><small>票 · 01:00</small></div>
+                </div>
+                <div class="station-table-head">
+                  <h5>供件台产量</h5>
+                  <div class="station-tools"><div class="station-legend"><span><i></i>分拣量</span><span><i></i>拒识率</span></div><div class="station-view"><span class="active">表格</span><span>图表</span></div><span class="station-export">导出</span></div>
+                </div>
+                <div class="station-table-wrap">
+                  <table class="station-table">
+                    <thead><tr><th>供件台</th><th>汇总</th><th>08:00</th><th>09:00</th><th>10:00</th><th>11:00</th><th>12:00</th><th>13:00</th><th>14:00</th><th>15:00</th><th>16:00</th><th>17:00</th><th>18:00</th></tr></thead>
+                    <tbody>
+                      <tr><td>DFW交叉带分拣机-0</td><td><strong>463</strong><small>89.85%</small></td><td><strong>6</strong><small>83.33%</small></td><td><strong>23</strong><small>95.65%</small></td><td><strong>22</strong><small>95.45%</small></td><td><strong>23</strong><small>91.30%</small></td><td><strong>21</strong><small>85.71%</small></td><td><strong>62</strong><small>85.48%</small></td><td><strong>30</strong><small>90.00%</small></td><td><strong>41</strong><small>92.68%</small></td><td><strong>47</strong><small>89.36%</small></td><td><strong>26</strong><small>92.31%</small></td><td><strong>2</strong><small>100.00%</small></td></tr>
+                      <tr><td>DFW交叉带分拣机-1</td><td><strong>26,084</strong><small>7.12%</small></td><td><strong>1,228</strong><small>6.60%</small></td><td><strong>1,486</strong><small>7.67%</small></td><td><strong>1,293</strong><small>10.29%</small></td><td><strong>1,325</strong><small>9.13%</small></td><td><strong>1,195</strong><small>5.69%</small></td><td><strong>868</strong><small>6.80%</small></td><td><strong>1,067</strong><small>5.90%</small></td><td><strong>1,011</strong><small>7.12%</small></td><td><strong>1,024</strong><small>6.93%</small></td><td><strong>1,690</strong><small>12.01%</small></td><td><strong>1,687</strong><small>6.58%</small></td></tr>
+                      <tr><td>DFW交叉带分拣机-2</td><td><strong>22,983</strong><small>6.80%</small></td><td><strong>1,383</strong><small>7.16%</small></td><td><strong>1,358</strong><small>6.33%</small></td><td><strong>1,267</strong><small>7.10%</small></td><td><strong>1,179</strong><small>9.41%</small></td><td><strong>0</strong><small>0.00%</small></td><td><strong>0</strong><small>0.00%</small></td><td><strong>878</strong><small>6.15%</small></td><td><strong>1,260</strong><small>7.38%</small></td><td><strong>1,080</strong><small>7.50%</small></td><td><strong>1,655</strong><small>12.21%</small></td><td><strong>1,513</strong><small>5.42%</small></td></tr>
+                      <tr><td>DFW交叉带分拣机-3</td><td><strong>24,954</strong><small>6.17%</small></td><td><strong>1,032</strong><small>5.14%</small></td><td><strong>1,147</strong><small>7.32%</small></td><td><strong>1,002</strong><small>9.68%</small></td><td><strong>1,187</strong><small>10.11%</small></td><td><strong>1,258</strong><small>5.56%</small></td><td><strong>1,294</strong><small>9.81%</small></td><td><strong>988</strong><small>5.06%</small></td><td><strong>817</strong><small>7.22%</small></td><td><strong>846</strong><small>6.86%</small></td><td><strong>1,672</strong><small>11.36%</small></td><td><strong>1,576</strong><small>5.33%</small></td></tr>
+                      <tr><td>DFW交叉带分拣机-4</td><td><strong>26,156</strong><small>7.00%</small></td><td><strong>1,349</strong><small>4.89%</small></td><td><strong>1,379</strong><small>10.59%</small></td><td><strong>1,418</strong><small>10.30%</small></td><td><strong>1,505</strong><small>7.44%</small></td><td><strong>1,465</strong><small>6.36%</small></td><td><strong>1,375</strong><small>7.27%</small></td><td><strong>1,203</strong><small>5.49%</small></td><td><strong>1,192</strong><small>6.04%</small></td><td><strong>1,095</strong><small>10.05%</small></td><td><strong>1,618</strong><small>12.36%</small></td><td><strong>1,650</strong><small>6.58%</small></td></tr>
+                      <tr><td>DFW交叉带分拣机-5</td><td><strong>21,550</strong><small>6.34%</small></td><td><strong>1,004</strong><small>7.47%</small></td><td><strong>1,159</strong><small>6.21%</small></td><td><strong>1,239</strong><small>8.23%</small></td><td><strong>1,390</strong><small>8.06%</small></td><td><strong>1,254</strong><small>5.50%</small></td><td><strong>1,131</strong><small>4.95%</small></td><td><strong>1,046</strong><small>5.26%</small></td><td><strong>1,182</strong><small>5.81%</small></td><td><strong>1,180</strong><small>5.59%</small></td><td><strong>1,166</strong><small>13.04%</small></td><td><strong>1,134</strong><small>5.82%</small></td></tr>
+                      <tr><td>DFW交叉带分拣机-6</td><td><strong>22,549</strong><small>4.83%</small></td><td><strong>1,130</strong><small>2.98%</small></td><td><strong>1,531</strong><small>7.79%</small></td><td><strong>1,436</strong><small>6.12%</small></td><td><strong>1,533</strong><small>6.00%</small></td><td><strong>1,302</strong><small>3.23%</small></td><td><strong>917</strong><small>8.72%</small></td><td><strong>1,140</strong><small>3.16%</small></td><td><strong>1,195</strong><small>2.93%</small></td><td><strong>1,067</strong><small>5.61%</small></td><td><strong>1,069</strong><small>6.92%</small></td><td><strong>1,159</strong><small>4.23%</small></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <div class="sort-action-box"><b>分析提示：</b>当前小时分拣总量15,022票，较操作日峰值下降；供件台0当前仅2票且拒识率100%，供件台15当前无分拣量，需结合设备状态、人员安排或供件分配确认原因。</div>
+            <div class="sort-broadcast-actions">
+              <span>点击按钮进入看板查看完整目的组织、车辆及供件台数据</span>
+              <div class="sort-button-group"><div class="sort-button">移动端（双层）</div><div class="sort-button">Web端</div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="scenario-card wide">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">02</span>CNO.H 车辆到发作业提醒</div><span class="scenario-type">节点 + 条件</span></div>
+            <div class="scenario-meta"><span>接收：卸车组、分拣组、装车组、调度组</span><span>更新：01:26 PT</span><span>判断依据：运输计划 + 作业状态 + 电子围栏</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="vehicle-split-note"><b>定位规则：</b>每个状态和异常都必须展示运输任务ID、车辆编号及线路/发货班次。进港信息统一汇总，出港发车单独判断。</div>
+            <div class="vehicle-lanes">
+              <section class="vehicle-lane">
+                <div class="vehicle-lane-head"><div><b>🚚 进港车辆总览</b><small>车辆预计到达、等待卸车、已到已卸统一汇总</small></div><span class="vehicle-status neutral">状态整合</span></div>
+                <div class="vehicle-inbound-summary">
+                  <div class="vehicle-inbound-stat"><span>车辆预计到达</span><b>15</b><small>个运输任务</small></div>
+                  <div class="vehicle-inbound-stat warning"><span>等待卸车</span><b>5</b><small>个运输任务</small></div>
+                  <div class="vehicle-inbound-stat done"><span>已到已卸</span><b>8</b><small>操作日累计任务</small></div>
+                </div>
+                <div class="vehicle-bucket-wrap">
+                  <div class="vehicle-bucket-matrix">
+                    <div class="vehicle-bucket-row header"><span>状态 / 时间</span><div>30分钟内</div><div>30分钟～1小时</div><div>1～2小时</div><div>2～3小时</div><div>3～4小时</div><div>大于4小时</div></div>
+                    <div class="vehicle-bucket-row"><span>车辆预计到达</span><div><b>2</b><small>任务</small></div><div><b>3</b><small>任务</small></div><div><b>4</b><small>任务</small></div><div><b>2</b><small>任务</small></div><div><b>1</b><small>任务</small></div><div><b>3</b><small>任务</small></div></div>
+                    <div class="vehicle-bucket-row"><span>等待卸车</span><div><b>2</b><small>任务</small></div><div><b>1</b><small>任务</small></div><div><b>1</b><small>任务</small></div><div><b>0</b><small>任务</small></div><div><b>1</b><small>任务</small></div><div><b>0</b><small>任务</small></div></div>
+                  </div>
+                </div>
+                <div class="scene-block-title">进港任务明细 <span style="color:#8a94a3;font-size:8px;font-weight:500">预计到达按剩余时间分档；等待卸车按已等待时长分档</span></div>
+                <div class="vehicle-detail-wrap">
+                  <table class="vehicle-detail-table">
+                    <thead><tr><th>运输任务 / 车辆</th><th>线路</th><th>当前状态</th><th>时间区间</th><th>关键时间</th><th>货量</th></tr></thead>
+                    <tbody>
+                      <tr><td>MT2026082000231<br>CNO-IN-031</td><td>EWR.H → CNO.H</td><td><span class="vehicle-stage">预计到达</span></td><td>30分钟内</td><td>ETA 01:50</td><td>11,791票</td></tr>
+                      <tr><td>MT2026082000169<br>CNO-IN-169</td><td>LAX.H → CNO.H</td><td><span class="vehicle-stage">预计到达</span></td><td>1～2小时</td><td>ETA 02:48</td><td>9,250票</td></tr>
+                      <tr><td>MT2026081900448<br>CNO-IN-448</td><td>ORD.H → CNO.H</td><td><span class="vehicle-stage">预计到达</span></td><td>大于4小时</td><td>ETA 18:06</td><td>7,888票</td></tr>
+                      <tr><td>MT2026082000219<br>CNO-IN-219</td><td>DFW.H → CNO.H</td><td><span class="vehicle-stage waiting">等待卸车</span></td><td>30分钟～1小时</td><td>00:44到达</td><td>14,500票</td></tr>
+                      <tr><td>MT2026082000207<br>CNO-IN-207</td><td>MIA.H → CNO.H</td><td><span class="vehicle-stage waiting">等待卸车</span></td><td>3～4小时</td><td>22:14到达</td><td>10,860票</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="vehicle-lane-action"><b>使用方式：</b>卸车组先看等待卸车的长时任务，分拣组根据未来30分钟至4小时的预计到达任务提前安排月台、人员和设备。</div>
+              </section>
+
+              <section class="vehicle-lane">
+                <div class="vehicle-lane-head"><div><b>🚛 出港发车总览</b><small>计划发车、待靠台、待发车、已发车、待驶出电子围栏</small></div><span class="vehicle-status neutral">状态整合</span></div>
+                <div class="vehicle-outbound-summary">
+                  <div class="vehicle-inbound-stat"><span>计划发车</span><b>12</b><small>个运输任务</small></div>
+                  <div class="vehicle-inbound-stat warning"><span>待靠台</span><b>3</b><small>个运输任务</small></div>
+                  <div class="vehicle-inbound-stat warning"><span>待发车</span><b>2</b><small>个运输任务</small></div>
+                  <div class="vehicle-inbound-stat done"><span>已发车</span><b>18</b><small>操作日累计任务</small></div>
+                  <div class="vehicle-inbound-stat alert"><span>待驶出电子围栏</span><b>2</b><small>个运输任务</small></div>
+                </div>
+                <div class="scene-block-title">出港重点任务明细 <span style="color:#8a94a3;font-size:8px;font-weight:500">仅展示计划发车和待驶出电子围栏</span></div>
+                <div class="vehicle-detail-wrap">
+                  <table class="vehicle-detail-table">
+                    <thead><tr><th>运输任务 / 车辆</th><th>发货班次 / 线路</th><th>当前状态</th><th>计划发车</th><th>剩余 / 超时时间</th><th>作业货量</th></tr></thead>
+                    <tbody>
+                      <tr><td>MT2026082000258<br>CNO-OUT-258</td><td>SFO-0200 · CNO.H → SFO</td><td><span class="vehicle-stage">计划发车</span></td><td>02:00 PT</td><td>剩余34分钟</td><td>已分拣18,600 / 待签出3,200票</td></tr>
+                      <tr><td>MT2026082000262<br>CNO-OUT-262</td><td>PHX-0230 · CNO.H → PHX01</td><td><span class="vehicle-stage">计划发车</span></td><td>02:30 PT</td><td>剩余64分钟</td><td>已分拣12,500 / 待签出1,480票</td></tr>
+                      <tr><td>MT2026082000245<br>CNO-OUT-245</td><td>SFO-0100 · CNO.H → SFO</td><td><span class="vehicle-stage waiting">待驶出电子围栏</span></td><td>01:00 PT</td><td>超时26分钟</td><td>已签出15,400票</td></tr>
+                      <tr><td>MT2026082000251<br>CNO-OUT-251</td><td>LAS-0050 · CNO.H → LAS01</td><td><span class="vehicle-stage waiting">待驶出电子围栏</span></td><td>00:50 PT</td><td>超时36分钟</td><td>已签出11,680票</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="vehicle-lane-action"><b>使用方式：</b>调度组优先查看临近发车任务，装车组重点处理待驶出电子围栏车辆；待靠台、待发车和已发车仅保留汇总数量。</div>
+              </section>
+            </div>
+            <div class="scene-footer"><span>任务ID用于定位系统作业，车辆编号用于现场找车；消息展示重点任务，完整清单进入看板查看</span><span class="mini-btn">查看全部进出港任务</span></div>
+          </div>
+        </article>
+
+        <article class="scenario-card purple wide">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">03</span>CNO.H 中心班次作业小结</div><span class="scenario-type">班次结束</span></div>
+            <div class="scenario-meta"><span>接收：仓长、组长</span><span>班次：17:00～05:00 PT</span><span>生成：05:10 PT</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>班次结论：</b>本班已入库412,360票、已分拣398,630票、已签出298,204票；班末仍有已到未卸、应分拣、待签出、待分拣和历史留仓需要下一班持续处理。</div>
+            <div class="shift-data-groups">
+              <div class="shift-data-group complete">
+                <h5>本班完成</h5>
+                <div class="scene-metrics">
+                  <div class="scene-metric"><label>已入库</label><strong>412,360</strong><small>票</small></div>
+                  <div class="scene-metric"><label>已分拣</label><strong>398,630</strong><small>票</small></div>
+                  <div class="scene-metric"><label>已签出</label><strong>298,204</strong><small>票</small></div>
+                </div>
+              </div>
+              <div class="shift-data-group backlog">
+                <h5>班末待办</h5>
+                <div class="scene-metrics">
+                  <div class="scene-metric"><label>已到未卸</label><strong>24,680</strong><small>票</small></div>
+                  <div class="scene-metric"><label>应分拣</label><strong>285,600</strong><small>截单前 · 票</small></div>
+                  <div class="scene-metric"><label>待签出</label><strong>77,600</strong><small>票</small></div>
+                  <div class="scene-metric"><label>待分拣</label><strong>426,900</strong><small>全部待分拣 · 票</small></div>
+                  <div class="scene-metric"><label>历史留仓</label><strong>18,420</strong><small>票</small></div>
+                </div>
+              </div>
+            </div>
+            <div class="shift-forecast"><div><span>下一班预测</span><strong>126,000</strong><small>票 · 下一班预计到量</small></div><p>用于下一班提前安排人员、设备、月台及运输资源。</p></div>
+            <div class="scene-block-title">当前数据说明</div>
+            <div class="shift-data-notes">
+              <div class="shift-data-note"><b>考核数据</b><p>当前考核口径由BI产出。BI无法在班次结束后即时输出结果，且已有独立推送，因此班次小结不重复推送考核结果。</p></div>
+              <div class="shift-data-note"><b>人效数据</b><p>业务关注班次人效，但上岗人数及系统外分拣量（如G2G等）尚未完整纳入系统，当前无法形成准确的人效结果。</p></div>
+            </div>
+            <div class="scene-action"><b>管理动作：</b>优先处理已到未卸、截单前应分拣、待签出和历史留仓，结合待分拣总量及下一班预测安排人员、设备、月台和运输资源。</div>
+            <div class="scene-footer"><span>本班完成、班末待办和下一班预测采用不同统计时点，正式推送需明确口径</span><span class="mini-btn">查看班次复盘</span></div>
+          </div>
+        </article>
+
+        <article class="scenario-card amber wide">
+          <header class="scenario-card-head">
+            <div class="scenario-title-row"><div class="scenario-title"><span class="scenario-no">04</span>LAX.H 异常区班次作业小结</div><span class="scenario-type">班次结束</span></div>
+            <div class="scenario-meta"><span>接收：异常组</span><span>严重超时同步：仓长/组长</span><span>统计：本班作业 + 当前在库快照</span></div>
+          </header>
+          <div class="scenario-body">
+            <div class="scenario-summary"><b>作业结论：</b>本班完成接收1,426票、退件集包1,138票；当前主要待办集中在上架待处理和下架&amp;异常待处理，存在15票已超时。</div>
+            <div class="scene-metrics">
+              <div class="scene-metric"><label>本班接收量</label><strong>1,426</strong><small>票</small></div>
+              <div class="scene-metric"><label>退件集包量</label><strong>1,138</strong><small>票</small></div>
+              <div class="scene-metric"><label>上架 / 下架</label><strong>428 / 396</strong><small>票</small></div>
+              <div class="scene-metric"><label>下架及时率</label><strong>94.6%</strong><small>班次结果</small></div>
+            </div>
+            <div class="shift-layout">
+              <div>
+                <div class="scene-block-title">当前待办</div>
+                <div class="scene-rows">
+                  <div class="scene-row header"><span>待办阶段</span><span>当前数量</span><span>主要构成</span></div>
+                  <div class="scene-row"><b>待交接</b><span>1,217票</span><span>待接收</span></div>
+                  <div class="scene-row"><b>异常待处理</b><span>156票</span><span>人工判断 / 问题件</span></div>
+                  <div class="scene-row"><b>上架待处理</b><span>5,640票</span><span>客服指令 / 待下架</span></div>
+                  <div class="scene-row"><b>下架&amp;异常待处理</b><span>3,811票</span><span>重派 / 打印</span></div>
+                  <div class="scene-row"><b>退件监控</b><span>277票</span><span>待退件集包</span></div>
+                </div>
+              </div>
+              <div>
+                <div class="scene-block-title">时效与班次交接</div>
+                <div class="scene-rows">
+                  <div class="scene-row header"><span>时效项</span><span>当前数量</span><span>处理要求</span></div>
+                  <div class="scene-row"><b>即将超时</b><span>36票</span><span>下班前优先处理</span></div>
+                  <div class="scene-row"><b>已经超时</b><span>15票</span><span>确认责任与原因</span></div>
+                  <div class="scene-row"><b>超过48H</b><span>3票</span><span>升级跟进</span></div>
+                  <div class="scene-row"><b>最长在库</b><span>X小时</span><span>进入交接清单</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="scene-action"><b>交接要求：</b>异常组明确已超时、超过48小时和未完成待办的责任人及下一步动作；班次小结只汇总结果，完整运单和处理指令进入异常区看板。</div>
+            <div class="scene-footer"><span>这里的“异常区”是独立作业区域，不等同于通用风险提醒</span><span class="mini-btn">查看异常区看板</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="loop">
+      <div class="section-head">
+        <div><div class="section-index">05 / CLOSED LOOP</div><h2>消息发送不是结束，风险或待办关闭才是结束</h2></div>
+        <p class="section-note">条件提醒由风险状态驱动；班次小结中的遗留事项必须进入下一班交接。</p>
+      </div>
+      <div class="loop">
+        <div class="loop-step"><b>风险产生</b><span>业务状态变化</span></div>
+        <div class="loop-step"><b>系统识别</b><span>命中阈值与规则</span></div>
+        <div class="loop-step highlight"><b>首次提醒</b><span>结论、责任人、要求</span></div>
+        <div class="loop-step"><b>责任人确认</b><span>已知晓 / 处理中</span></div>
+        <div class="loop-step"><b>持续监控</b><span>判断是否改善</span></div>
+        <div class="loop-step highlight"><b>再次提醒 / 升级</b><span>超时或异常恶化</span></div>
+        <div class="loop-step done"><b>状态恢复</b><span>达到恢复规则</span></div>
+        <div class="loop-step done"><b>关闭与留痕</b><span>记录时长与结果</span></div>
+      </div>
+      <div class="conclusion"><b>重复提醒：</b>只在未确认、风险恶化、超过处理时限或状态恢复时再次发送。</div>
+    </section>
+
+    <section class="section" id="measure">
+      <div class="section-head">
+        <div><div class="section-index">06 / RESULT</div><h2>最终衡量“是否更早发现、更快处理”</h2></div>
+        <p class="section-note">不能用“每天发了多少条消息”衡量价值，消息数量甚至应该随着运营改善而下降。</p>
+      </div>
+      <div class="result-grid">
+        <article class="result-card"><b>风险发现效率</b><span>车辆滞留、待签出超时和产能风险从发生到首次识别的平均时长。</span></article>
+        <article class="result-card"><b>风险处理效率</b><span>首次提醒到责任人确认、状态恢复和风险关闭的平均时长。</span></article>
+        <article class="result-card"><b>现场运营改善</b><span>待签出时长、延迟发车数量、异常区超时待办和人工查系统次数是否下降。</span></article>
+      </div>
+      <div class="pending-grid">
+        <div class="pending"><i>1</i><b>风险阈值</b><span>多久、多少或多严重需要提醒</span></div>
+        <div class="pending"><i>2</i><b>重复提醒</b><span>持续多久再次触达</span></div>
+        <div class="pending"><i>3</i><b>升级机制</b><span>多久未处理升级给谁</span></div>
+        <div class="pending"><i>4</i><b>恢复规则</b><span>什么状态代表问题关闭</span></div>
+        <div class="pending"><i>5</i><b>数据口径</b><span>班次、预测、围栏、节假日及集包总量</span></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <strong>作业 → 监控 → 提醒 → 处置 → 恢复 → 复盘 → 改进</strong>
+      <span>通过4类推送产品覆盖7项业务需求，减少消息数量并保留处置闭环。</span>
+    </footer>
+  </main>
+  <script>
+    document.querySelectorAll('.sort-sheet-panel').forEach(function(panel){
+      var rows=Array.prototype.slice.call(panel.querySelectorAll('tbody tr'));
+      var pager=panel.querySelector('.sort-pager');
+      if(!pager||!rows.length){return;}
+      var pageSize=Number(pager.getAttribute('data-page-size'))||5;
+      var pageCount=Math.ceil(rows.length/pageSize);
+      var page=0;
+      var status=pager.querySelector('.sort-page-status');
+      var prev=pager.querySelector('.sort-page-prev');
+      var next=pager.querySelector('.sort-page-next');
+      function renderPage(){
+        rows.forEach(function(row,index){row.hidden=index<page*pageSize||index>=(page+1)*pageSize;});
+        status.textContent=(page+1)+' / '+pageCount;
+        prev.disabled=page===0;
+        next.disabled=page===pageCount-1;
+      }
+      prev.addEventListener('click',function(){if(page>0){page-=1;renderPage();}});
+      next.addEventListener('click',function(){if(page<pageCount-1){page+=1;renderPage();}});
+      renderPage();
+    });
+  </script>
+</body>
+</html>
