@@ -869,6 +869,39 @@
     .main-flow-name-btn:hover{text-decoration:underline}.main-flow-name-btn .arrow{font-size:16px;line-height:1;color:#f4875d}
     .main-flow-number-btn{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:12.5px}
     .main-flow-number-btn:hover{text-decoration:underline}
+    .main-flow-day-drill{padding:2px 5px;border:0;border-radius:4px;background:transparent;color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:700;cursor:pointer}
+    .main-flow-day-drill:hover{background:var(--accent-soft);text-decoration:underline;transform:none!important}
+    .main-flow-day-drill:focus-visible{outline:2px solid rgba(252,76,2,.28);outline-offset:1px}
+    .oc15d-hourly-modal-mask{display:none;position:fixed;inset:0;z-index:20060;align-items:center;justify-content:center;padding:4vh 3vw;background:rgba(31,41,55,.48)}
+    .oc15d-hourly-modal-mask.on{display:flex}
+    .oc15d-hourly-modal{display:flex;flex-direction:column;width:min(1500px,94vw);max-height:92vh;overflow:hidden;border-radius:8px;background:#fff;box-shadow:0 20px 60px rgba(15,23,42,.28)}
+    .oc15d-hourly-modal-head{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:64px;padding:10px 20px;border-bottom:1px solid #e8ebef;background:#fff}
+    .oc15d-hourly-modal-title{font-size:16px;font-weight:650;color:var(--text)}
+    .oc15d-hourly-modal-subtitle{margin-top:5px;color:var(--muted);font-size:11.5px}
+    .oc15d-hourly-modal-close{height:30px;padding:0 13px;border:1px solid #d8dde5;border-radius:4px;background:#fff;color:#606266;font-family:inherit;font-size:12px;cursor:pointer}
+    .oc15d-hourly-modal-close:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:none!important}
+    .oc15d-hourly-modal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid #edf0f4;background:#fafbfd}
+    .oc15d-hourly-filter{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .oc15d-hourly-filter-label{color:var(--muted);font-size:12px;font-weight:600}
+    .main-flow-datetime-control{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+    .main-flow-datetime-input{width:176px;height:30px;padding:0 8px;border:1px solid #d8dde5;border-radius:4px;background:#fff;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11.5px;outline:none}
+    .main-flow-datetime-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(252,76,2,.12)}
+    .main-flow-datetime-arrow{color:var(--faint)}
+    .main-flow-datetime-query{height:30px;padding:0 14px;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:#fff;font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer}
+    .main-flow-datetime-query:hover{background:#e9470d;transform:none!important}
+    .main-flow-operation-hint{color:var(--faint);font-size:11px}
+    .oc15d-hourly-modal-body{display:flex;flex:1;min-height:0;flex-direction:column;padding:16px 20px 18px}
+    .oc15d-hourly-table-wrap{flex:1;min-height:260px;max-height:62vh;overflow:auto;border:1px solid #e8ebef}
+    #oc15dMainFlowHourlyTable{min-width:2200px;table-layout:auto}
+    #oc15dMainFlowHourlyTable th,#oc15dMainFlowHourlyTable td{min-width:86px;white-space:nowrap;background:#fff}
+    #oc15dMainFlowHourlyTable th{position:sticky;top:0;z-index:4;background:#fafbfd}
+    #oc15dMainFlowHourlyTable th:nth-child(1),#oc15dMainFlowHourlyTable td:nth-child(1){position:sticky;left:0;z-index:3;min-width:160px;width:160px;background:#fff}
+    #oc15dMainFlowHourlyTable th:nth-child(2),#oc15dMainFlowHourlyTable td:nth-child(2){position:sticky;left:160px;z-index:3;min-width:112px;width:112px;background:#fff}
+    #oc15dMainFlowHourlyTable th:nth-child(3),#oc15dMainFlowHourlyTable td:nth-child(3){position:sticky;left:272px;z-index:3;min-width:100px;width:100px;background:#fff;box-shadow:4px 0 7px rgba(15,23,42,.06)}
+    #oc15dMainFlowHourlyTable th:nth-child(-n+3){z-index:6;background:#fafbfd}
+    #oc15dMainFlowHourlyTable tr.total td:nth-child(-n+3){background:#fff8f4}
+    .oc15d-hourly-modal-note{margin-top:10px;color:var(--muted);font-size:11.5px;line-height:1.55}
+    @media(max-width:1100px){.oc15d-hourly-modal-mask{padding:2vh 2vw}.oc15d-hourly-modal{width:96vw;max-height:96vh}.oc15d-hourly-modal-toolbar{align-items:flex-start}.main-flow-operation-hint{width:100%}}
     .main-flow-chart-wrap{display:none;height:330px;border:1px solid #edf0f4;border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#fff);padding:8px}
     .main-flow-chart-wrap.on{display:block}.main-flow-table-wrap.off{display:none}
     .main-flow-name-static{display:inline-flex;align-items:center;font-weight:600;color:var(--text);padding:4px 0}
@@ -4408,6 +4441,37 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
 </div>
 <div class="main-flow-note" id="oc15dMainFlowNote"></div>
 </section>
+<div aria-hidden="true" aria-labelledby="oc15dMainFlowHourlyTitle" aria-modal="true" class="oc15d-hourly-modal-mask" id="oc15dMainFlowHourlyModal" role="dialog">
+<section class="oc15d-hourly-modal">
+<header class="oc15d-hourly-modal-head">
+<div>
+<div class="oc15d-hourly-modal-title" id="oc15dMainFlowHourlyTitle">已分拣 · 目的流向 · 小时明细</div>
+<div class="oc15d-hourly-modal-subtitle" id="oc15dMainFlowHourlySubtitle"></div>
+</div>
+<button aria-label="关闭小时明细弹框" class="oc15d-hourly-modal-close" id="oc15dMainFlowHourlyClose" type="button">关闭</button>
+</header>
+<div class="oc15d-hourly-modal-toolbar">
+<div class="oc15d-hourly-filter">
+<span class="oc15d-hourly-filter-label">日期时间</span>
+<input aria-label="小时明细开始日期时间" class="main-flow-datetime-input" id="oc15dMainFlowStartDateTime" step="3600" type="datetime-local"/>
+<span aria-hidden="true" class="main-flow-datetime-arrow">→</span>
+<input aria-label="小时明细结束日期时间" class="main-flow-datetime-input" id="oc15dMainFlowEndDateTime" step="3600" type="datetime-local"/>
+<button class="main-flow-datetime-query" id="oc15dMainFlowDateTimeQuery" type="button">查询</button>
+<span class="main-flow-operation-hint" id="oc15dMainFlowOperationHint"></span>
+</div>
+<button aria-label="导出已分拣目的流向小时明细" class="section-export-btn" id="oc15dMainFlowHourlyExportBtn" type="button">导出</button>
+</div>
+<div class="oc15d-hourly-modal-body">
+<div class="oc15d-hourly-table-wrap">
+<table class="tbl" id="oc15dMainFlowHourlyTable">
+<thead id="oc15dMainFlowHourlyTableHead"></thead>
+<tbody id="oc15dMainFlowHourlyTableBody"></tbody>
+</table>
+</div>
+<div class="oc15d-hourly-modal-note" id="oc15dMainFlowHourlyNote"></div>
+</div>
+</section>
+</div>
 <section class="oc15d-card oc15d-detail">
 <div class="oc15d-detail-title">明细</div>
 <div class="oc15d-detail-tabs"><button class="oc15d-detail-tab" type="button">HUB分拣量</button></div>
@@ -6446,7 +6510,12 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
   }
   const oc15dHubTotals = [451900,482300,468500,462800,477106,475310,381960,411598,493084,496836,506767,514526,508345,461014,458230];
   const oc15dManualTotals = [39700,45800,41600,42100,40508,38366,44843,37793,42756,47460,67345,67888,72365,49398,49650];
-  const ocMainFlowState = { perspective:'type', type:'all', timeMode:'daily', viewMode:'table' };
+  const ocMainFlowState = { perspective:'type', type:'all', viewMode:'table' };
+  const ocMainFlowHourlyState = { selectedDateIndex:null, startHourSlot:0, endHourSlot:24 };
+  let ocMainFlowLastTrigger = null;
+  const ocMainFlowOperationStartHour = 6;
+  const ocMainFlowHourLabels = Array.from({length:24},(_,index)=>`${String((ocMainFlowOperationStartHour+index)%24).padStart(2,'0')}:00`);
+  const ocMainFlowHourProfile = [.018,.014,.012,.011,.013,.018,.027,.041,.056,.066,.074,.078,.081,.079,.072,.064,.057,.052,.047,.042,.036,.029,.022,.016];
   const ocMainFlowTypeLabels = { all:'全部', hub:'HUB分拣', station:'站点分拣', road:'路区分拣', channel:'服务渠道分拣' };
   const ocMainFlowOrgLabels = { all:'全部', hub:'HUB维度', station:'站点维度', channel:'服务渠道维度' };
   const ocMainFlowTypeTabs = [
@@ -6482,6 +6551,43 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
 
   const ocMFFormat = value => Number(value || 0).toLocaleString('en-US');
   const ocMFSum = values => values.reduce((sum,value)=>sum+Number(value||0),0);
+  function ocMFAddDays(key, days) {
+    const [year,month,day]=String(key).split('-').map(Number);
+    const date=new Date(Date.UTC(year,month-1,day+days));
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,'0')}-${String(date.getUTCDate()).padStart(2,'0')}`;
+  }
+  function ocMFOperationDayBounds(dateIndex=ocMainFlowHourlyState.selectedDateIndex) {
+    const dateKey=oc15dDateKeys[dateIndex];
+    if (!dateKey) return null;
+    const nextKey=ocMFAddDays(dateKey,1);
+    return {dateKey,nextKey,start:`${dateKey}T06:00`,end:`${nextKey}T06:00`};
+  }
+  function ocMFDateTimeForSlot(slot) {
+    const bounds=ocMFOperationDayBounds();
+    if (!bounds) return '';
+    const hourValue=ocMainFlowOperationStartHour+slot;
+    const key=hourValue<24?bounds.dateKey:bounds.nextKey;
+    return `${key}T${String(hourValue%24).padStart(2,'0')}:00`;
+  }
+  function ocMFFormatDateTime(value) {
+    const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+    return match?`${match[3]}/${match[2]}/${match[1]} ${match[4]}:${match[5]}`:value;
+  }
+  function ocMFSelectedTimeRangeLabel() {
+    return `${ocMFFormatDateTime(ocMFDateTimeForSlot(ocMainFlowHourlyState.startHourSlot))} → ${ocMFFormatDateTime(ocMFDateTimeForSlot(ocMainFlowHourlyState.endHourSlot))}`;
+  }
+  function ocMFVisibleHourLabels() {
+    return ocMainFlowHourLabels.slice(ocMainFlowHourlyState.startHourSlot,ocMainFlowHourlyState.endHourSlot);
+  }
+  function ocMFAllocateByHour(total, seed=0) {
+    const weights=ocMainFlowHourProfile.map((weight,index)=>weight*(1+((((index+seed*3)%7)-3)*.018)));
+    const weightTotal=ocMFSum(weights);
+    const exact=weights.map(weight=>Number(total||0)*weight/weightTotal);
+    const values=exact.map(Math.floor);
+    let remainder=Math.max(0,Math.round(Number(total||0))-ocMFSum(values));
+    exact.map((value,index)=>({index,fraction:value-Math.floor(value)})).sort((a,b)=>b.fraction-a.fraction).slice(0,remainder).forEach(item=>{values[item.index]+=1;});
+    return values;
+  }
   function ocMFDateValues(item, typeIndex, rowIndex) {
     return oc15dHubTotals.map((total,index) => {
       const wave = 1 + ((((index + typeIndex * 3 + rowIndex * 2) % 7) - 3) * .008);
@@ -6552,6 +6658,26 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
     };
   }
   function ocMFRows() { return ocMFRawRows().map(ocMFApplyVisibleRange); }
+  function ocMFHourlyRows() {
+    const dateIndex=ocMainFlowHourlyState.selectedDateIndex;
+    return ocMFRawRows().map((row,rowIndex)=>{
+      const dailyTickets=Number(row.dates?.[dateIndex]||0);
+      const fullTickets=Number(row.tickets||ocMFSum(row.dates||[]));
+      const fullHours=ocMFAllocateByHour(dailyTickets,rowIndex+dateIndex);
+      const dates=fullHours.slice(ocMainFlowHourlyState.startHourSlot,ocMainFlowHourlyState.endHourSlot);
+      const tickets=ocMFSum(dates);
+      const dailyRatio=fullTickets>0?dailyTickets/fullTickets:0;
+      const timeRatio=dailyTickets>0?tickets/dailyTickets:0;
+      return {
+        ...row,
+        dates,
+        tickets,
+        bags:Math.max(0,Math.round(Number(row.bags||0)*dailyRatio*timeRatio)),
+        stationTickets:Math.max(0,Math.round(Number(row.stationTickets||0)*dailyRatio*timeRatio)),
+        roadTickets:Math.max(0,Math.round(Number(row.roadTickets||0)*dailyRatio*timeRatio))
+      };
+    });
+  }
   function ocMFDisplayDates(values) {
     return values;
   }
@@ -6574,7 +6700,17 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
     document.getElementById('oc15dMainFlowTypeLabel').textContent=ocMainFlowState.perspective==='type'?'分拣类型':'组织维度';
     document.getElementById('oc15dMainFlowTabs').innerHTML=defs.map(item=>`<button type="button" class="main-flow-tab ${item.key===ocMainFlowState.type?'on':''}" data-oc-main-flow-type="${item.key}" role="tab" aria-selected="${item.key===ocMainFlowState.type?'true':'false'}">${item.label}</button>`).join('');
   }
-  function renderOcMainFlowChart(rows) {
+  function renderOcMainFlowHourlyFilter() {
+    const startInput=document.getElementById('oc15dMainFlowStartDateTime');
+    const endInput=document.getElementById('oc15dMainFlowEndDateTime');
+    const hint=document.getElementById('oc15dMainFlowOperationHint');
+    const bounds=ocMFOperationDayBounds();
+    if (!bounds||!startInput||!endInput||!hint) return;
+    startInput.min=bounds.start; startInput.max=bounds.end; startInput.value=ocMFDateTimeForSlot(ocMainFlowHourlyState.startHourSlot);
+    endInput.min=bounds.start; endInput.max=bounds.end; endInput.value=ocMFDateTimeForSlot(ocMainFlowHourlyState.endHourSlot);
+    hint.textContent=`操作日：${ocMFFormatDateTime(bounds.start)} → ${ocMFFormatDateTime(bounds.end)}`;
+  }
+  function renderOcMainFlowChart(rows, axisLabels) {
     const chartDom=document.getElementById('oc15dMainFlowChart');
     if (!chartDom || !window.echarts) return;
     if (!oc15dMainFlowChart) oc15dMainFlowChart=echarts.init(chartDom);
@@ -6588,7 +6724,7 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
       }},
       legend:{top:3,type:'scroll',itemWidth:18,itemHeight:3,textStyle:{fontSize:10,color:'#606266'}},
       grid:{left:48,right:20,top:48,bottom:34,containLabel:true},
-      xAxis:{type:'category',boundaryGap:false,data:oc15dVisibleDays(),axisLine:{lineStyle:{color:'#dcdfe6'}},axisTick:{show:false},axisLabel:{fontSize:10,color:'#606266'}},
+      xAxis:{type:'category',boundaryGap:false,data:axisLabels,axisLine:{lineStyle:{color:'#dcdfe6'}},axisTick:{show:false},axisLabel:{fontSize:10,color:'#606266'}},
       yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},axisLabel:{fontSize:10,color:'#606266',formatter:value=>Number(value).toLocaleString()},splitLine:{lineStyle:{color:'#ebeef5'}}},
       series:seriesRows.map(row=>({
         name:row.name,
@@ -6607,54 +6743,57 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
   function renderOcMainFlow() {
     renderOcMainFlowTabs();
     const rows=ocMFRows();
-    const visibleDays=oc15dVisibleDays();
-    const totalDates=visibleDays.map((_,index)=>rows.reduce((sum,row)=>sum+(row.dates?.[index]||0),0));
+    const columnLabels=oc15dVisibleDays();
+    const totalDates=columnLabels.map((_,index)=>rows.reduce((sum,row)=>sum+(row.dates?.[index]||0),0));
     const totalTickets=ocMFSum(totalDates);
     const totalBags=rows.reduce((sum,row)=>sum+(row.bags||0),0);
-    const modeLabel='按日';
 
     document.querySelectorAll('#oc15dMainFlowPerspectiveTabs [data-oc-main-flow-perspective]').forEach(tab=>{
       const on=tab.dataset.ocMainFlowPerspective===ocMainFlowState.perspective;
       tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
     });
     document.querySelectorAll('#oc15dMainFlowTimeTabs [data-oc-main-flow-time]').forEach(tab=>{
-      const on=tab.dataset.ocMainFlowTime===ocMainFlowState.timeMode;
-      tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
+      tab.classList.add('on'); tab.setAttribute('aria-selected','true');
     });
     document.querySelectorAll('#oc15dMainFlowViewTabs [data-oc-main-flow-view]').forEach(tab=>{
       const on=tab.dataset.ocMainFlowView===ocMainFlowState.viewMode;
       tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
     });
     const perspectiveLabel=ocMainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
-    document.getElementById('oc15dMainFlowBreadcrumb').innerHTML=`<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><b>${ocMFLabel()}</b><span class="sep">›</span><span>${modeLabel}</span><span class="sep">›</span><span>${oc15dSelectedRangeLabel()}</span>`;
+    document.getElementById('oc15dMainFlowBreadcrumb').innerHTML=`<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><b>${ocMFLabel()}</b><span class="sep">›</span><span>按日</span><span class="sep">›</span><span>${oc15dSelectedRangeLabel()}</span>`;
 
-    const dateHeaders=visibleDays.map(day=>`<th>${day}</th>`).join('');
+    const dateHeaders=columnLabels.map(label=>`<th>${label}</th>`).join('');
+    const canDrillDailyTotal=ocMainFlowState.type==='all';
+    const dailyTotalCells=canDrillDailyTotal?totalDates.map((count,index)=>{
+      const dateIndex=oc15dVisibleIndices[index];
+      const dateKey=oc15dDateKeys[dateIndex];
+      return `<td><button type="button" class="main-flow-day-drill" data-oc-main-flow-day-drill="${dateIndex}" aria-label="查看 ${oc15dFormatKey(dateKey)} 操作日小时数据" title="下钻查看该操作日小时数据">${ocMFFormat(count)}</button></td>`;
+    }).join(''):'';
+    const staticTotalCells=totalDates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
     const isStationDimension=ocMainFlowState.perspective==='org'&&ocMainFlowState.type==='station';
     if (isStationDimension) {
       document.getElementById('oc15dMainFlowTableHead').innerHTML=`<tr><th>${ocMFColumnName()}</th><th>站点分拣票</th><th>路区分拣票</th><th>合计票</th><th>合计袋</th>${dateHeaders}</tr>`;
       const totalStation=rows.reduce((sum,row)=>sum+(row.stationTickets||0),0);
       const totalRoad=rows.reduce((sum,row)=>sum+(row.roadTickets||0),0);
-      const totalCells=totalDates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
       const rowHtml=rows.map(row=>{
         const cells=row.dates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
         return `<tr><td><span class="main-flow-name-static">${row.name}</span></td><td><span class="num">${ocMFFormat(row.stationTickets||0)}</span></td><td><span class="num">${ocMFFormat(row.roadTickets||0)}</span></td><td><span class="num">${ocMFFormat(row.tickets)}</span></td><td><span class="num">${ocMFFormat(row.bags)}</span></td>${cells}</tr>`;
       }).join('');
-      document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalStation)}</span></td><td><span class="num">${ocMFFormat(totalRoad)}</span></td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml}`;
+      document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalStation)}</span></td><td><span class="num">${ocMFFormat(totalRoad)}</span></td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${staticTotalCells}</tr>${rowHtml}`;
     } else {
       document.getElementById('oc15dMainFlowTableHead').innerHTML=`<tr><th>${ocMFColumnName()}</th><th>合计票</th><th>合计袋</th>${dateHeaders}</tr>`;
-      const totalCells=totalDates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
       const rowHtml=rows.map(row=>{
         const cells=row.dates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
         return `<tr><td><span class="main-flow-name-static">${row.name}</span></td><td><span class="num">${ocMFFormat(row.tickets)}</span></td><td><span class="num">${ocMFFormat(row.bags)}</span></td>${cells}</tr>`;
       }).join('');
-      document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml}`;
+      document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${canDrillDailyTotal?dailyTotalCells:staticTotalCells}</tr>${rowHtml}`;
     }
 
     const tableWrap=document.getElementById('oc15dMainFlowTableWrap');
     const chartWrap=document.getElementById('oc15dMainFlowChartWrap');
     tableWrap.classList.toggle('off',ocMainFlowState.viewMode!=='table');
     chartWrap.classList.toggle('on',ocMainFlowState.viewMode==='chart');
-    if (ocMainFlowState.viewMode==='chart') requestAnimationFrame(()=>{renderOcMainFlowChart(rows);oc15dMainFlowChart?.resize();});
+    if (ocMainFlowState.viewMode==='chart') requestAnimationFrame(()=>{renderOcMainFlowChart(rows,columnLabels);oc15dMainFlowChart?.resize();});
 
     let note='';
     if (ocMainFlowState.perspective==='type') {
@@ -6669,7 +6808,81 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
       if (ocMainFlowState.type==='station') note='站点维度合并站点分拣和路区分拣，并按目的站点汇总。';
       if (ocMainFlowState.type==='channel') note='服务渠道维度按运单服务渠道统计，每票只计入一个渠道。';
     }
-    document.getElementById('oc15dMainFlowNote').textContent=`${note} 当前模块仅展示汇总数据，不下钻到运单明细。`;
+    const interactionNote=ocMainFlowState.type==='all'?'合计行中的橙色每日数量可在弹框中下钻查看小时明细。':'当前展示所选维度的按日汇总数据。';
+    document.getElementById('oc15dMainFlowNote').textContent=`${note} ${interactionNote}`;
+  }
+
+  function renderOcMainFlowHourlyModal() {
+    const bounds=ocMFOperationDayBounds();
+    if (!bounds) return;
+    const rows=ocMFHourlyRows();
+    const hourLabels=ocMFVisibleHourLabels();
+    const totalHours=hourLabels.map((_,index)=>rows.reduce((sum,row)=>sum+(row.dates?.[index]||0),0));
+    const totalTickets=ocMFSum(totalHours);
+    const totalBags=rows.reduce((sum,row)=>sum+(row.bags||0),0);
+    const perspectiveLabel=ocMainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
+    document.getElementById('oc15dMainFlowHourlySubtitle').textContent=`${perspectiveLabel} · 全部 · 操作日 ${oc15dFormatKey(bounds.dateKey)}`;
+    document.getElementById('oc15dMainFlowHourlyTableHead').innerHTML=`<tr><th>${ocMFColumnName()}</th><th>合计票</th><th>合计袋</th>${hourLabels.map(label=>`<th>${label}</th>`).join('')}</tr>`;
+    const totalCells=totalHours.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
+    const rowHtml=rows.map(row=>`<tr><td><span class="main-flow-name-static">${row.name}</span></td><td><span class="num">${ocMFFormat(row.tickets)}</span></td><td><span class="num">${ocMFFormat(row.bags)}</span></td>${row.dates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('')}</tr>`).join('');
+    document.getElementById('oc15dMainFlowHourlyTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml}`;
+    document.getElementById('oc15dMainFlowHourlyNote').textContent=`当前筛选：${ocMFSelectedTimeRangeLabel()}。小时数据按开始时间含、结束时间不含统计。`;
+    renderOcMainFlowHourlyFilter();
+  }
+  function openOcMainFlowHourly(dateIndex, trigger) {
+    if (!oc15dVisibleIndices.includes(dateIndex)||ocMainFlowState.type!=='all') return;
+    ocMainFlowLastTrigger=trigger||document.activeElement;
+    ocMainFlowHourlyState.selectedDateIndex=dateIndex;
+    ocMainFlowHourlyState.startHourSlot=0;
+    ocMainFlowHourlyState.endHourSlot=24;
+    const modal=document.getElementById('oc15dMainFlowHourlyModal');
+    modal.classList.add('on');
+    modal.setAttribute('aria-hidden','false');
+    renderOcMainFlowHourlyModal();
+    requestAnimationFrame(()=>document.getElementById('oc15dMainFlowHourlyClose')?.focus());
+  }
+  function closeOcMainFlowHourly() {
+    const modal=document.getElementById('oc15dMainFlowHourlyModal');
+    if (!modal?.classList.contains('on')) return;
+    modal.classList.remove('on');
+    modal.setAttribute('aria-hidden','true');
+    ocMainFlowHourlyState.selectedDateIndex=null;
+    const trigger=ocMainFlowLastTrigger;
+    ocMainFlowLastTrigger=null;
+    requestAnimationFrame(()=>trigger?.focus?.());
+  }
+  function applyOcMainFlowDateTimeRange() {
+    const startInput=document.getElementById('oc15dMainFlowStartDateTime');
+    const endInput=document.getElementById('oc15dMainFlowEndDateTime');
+    const bounds=ocMFOperationDayBounds();
+    if (!startInput||!endInput||!bounds) return false;
+    const start=startInput.value;
+    const end=endInput.value;
+    const validFormat=/^\d{4}-\d{2}-\d{2}T\d{2}:00$/;
+    if (!validFormat.test(start)||!validFormat.test(end)) {
+      if(typeof showPrototypeToast==='function')showPrototypeToast('日期时间需选择整点时间');
+      renderOcMainFlowHourlyFilter();
+      return false;
+    }
+    if (start<bounds.start||end>bounds.end||start>=end) {
+      if(typeof showPrototypeToast==='function')showPrototypeToast(`日期时间只能在当前操作日 ${ocMFFormatDateTime(bounds.start)} → ${ocMFFormatDateTime(bounds.end)} 内选择`);
+      renderOcMainFlowHourlyFilter();
+      return false;
+    }
+    const startMs=new Date(start).getTime();
+    const endMs=new Date(end).getTime();
+    const boundsStartMs=new Date(bounds.start).getTime();
+    const startSlot=Math.round((startMs-boundsStartMs)/3600000);
+    const endSlot=Math.round((endMs-boundsStartMs)/3600000);
+    if (!Number.isInteger(startSlot)||!Number.isInteger(endSlot)||startSlot<0||endSlot>24||startSlot>=endSlot) {
+      if(typeof showPrototypeToast==='function')showPrototypeToast('请在操作日范围内选择有效的整点时间');
+      renderOcMainFlowHourlyFilter();
+      return false;
+    }
+    ocMainFlowHourlyState.startHourSlot=startSlot;
+    ocMainFlowHourlyState.endHourSlot=endSlot;
+    renderOcMainFlowHourlyModal();
+    return true;
   }
 
   function exportOc15dMainFlowCsv() {
@@ -6681,6 +6894,26 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
     const csv='\ufeff'+rows.map(row=>row.map(escapeCsv).join(',')).join('\r\n');
     const perspective=ocMainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
     const fileName=`已分拣-目的流向-${perspective}-${ocMFLabel()}-${oc15dSelectedRangeLabel().replace(/\s|→|\//g,'-')}.csv`;
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download=fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),0);
+    if(typeof showPrototypeToast==='function')showPrototypeToast(`已导出：${fileName}`);
+  }
+  function exportOc15dMainFlowHourlyCsv() {
+    const table=document.getElementById('oc15dMainFlowHourlyTable');
+    if(!table)return;
+    const rows=Array.from(table.querySelectorAll('tr')).map(row=>Array.from(row.querySelectorAll('th,td')).map(cell=>cell.textContent.trim().replace(/\s+/g,' ')));
+    if(!rows.length)return;
+    const escapeCsv=value=>`"${String(value??'').replace(/"/g,'""')}"`;
+    const csv='\ufeff'+rows.map(row=>row.map(escapeCsv).join(',')).join('\r\n');
+    const perspective=ocMainFlowState.perspective==='type'?'按分拣类型':'按组织维度';
+    const fileName=`已分拣-目的流向-${perspective}-小时明细-${ocMFSelectedTimeRangeLabel().replace(/\s|→|\//g,'-')}.csv`;
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
@@ -6711,7 +6944,7 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
     oc15dCharts[1].setOption({animationDuration:450,tooltip:{trigger:'axis'},legend:{top:4,itemWidth:10,itemHeight:10,textStyle:{fontSize:10,color:'#606266'},data:['设备分拣量','人工分拣量','设备分拣率']},grid:oc15dBaseGrid(),xAxis:{type:'category',data:days,...commonAxis,splitLine:{show:false}},yAxis:[{type:'value',min:0,max:600000,interval:100000,...commonAxis,axisLabel:{color:'#606266',fontSize:10,formatter:value=>value.toLocaleString()}},{type:'value',min:0,max:120,interval:20,...commonAxis,splitLine:{show:false},axisLabel:{color:'#606266',fontSize:10,formatter:'{value}%'}}],series:[{name:'设备分拣量',type:'bar',stack:'total',barWidth:16,data:machine,itemStyle:{color:'#258ff0'}},{name:'人工分拣量',type:'bar',stack:'total',barWidth:16,data:manual,itemStyle:{color:'#ff7043'}},{name:'设备分拣率',type:'line',yAxisIndex:1,data:rate,symbol:'circle',symbolSize:4,lineStyle:{width:1.5,color:'#d9363e'},itemStyle:{color:'#d9363e'}}]},true);
   }
   function openOperationsCockpit15d(){const overlay=document.getElementById('operationsCockpit15dOverlay');if(!overlay)return;overlay.classList.add('on');overlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';updateOc15dDetailRows();requestAnimationFrame(()=>{initOperationsCockpit15dCharts();renderOcMainFlow();oc15dCharts.forEach(chart=>chart.resize());oc15dMainFlowChart?.resize();});}
-  function closeOperationsCockpit15d(){const overlay=document.getElementById('operationsCockpit15dOverlay');if(!overlay)return;overlay.classList.remove('on');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+  function closeOperationsCockpit15d(){const overlay=document.getElementById('operationsCockpit15dOverlay');if(!overlay)return;closeOcMainFlowHourly();overlay.classList.remove('on');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';}
 
   document.getElementById('operationsCockpit15dClose')?.addEventListener('click',closeOperationsCockpit15d);
   document.getElementById('operationsCockpit15dQuery')?.addEventListener('click',()=>{if(!applyOc15dDateRange())return;initOperationsCockpit15dCharts();renderOcMainFlow();oc15dCharts.forEach(chart=>chart.resize());oc15dMainFlowChart?.resize();if(typeof showPrototypeToast==='function')showPrototypeToast(`已按 ${oc15dSelectedRangeLabel()} 刷新产能-分拣数据`);});
@@ -6719,11 +6952,16 @@ body:has(.perf-overlay.on) .mobile-btn { display: none !important; }
   document.querySelectorAll('#oc15dStartDate,#oc15dEndDate').forEach(input=>input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();document.getElementById('operationsCockpit15dQuery')?.click();}}));
   document.getElementById('oc15dMainFlowPerspectiveTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-perspective]');if(!tab)return;ocMainFlowState.perspective=tab.dataset.ocMainFlowPerspective;ocMainFlowState.type='all';renderOcMainFlow();});
   document.getElementById('oc15dMainFlowTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-type]');if(!tab)return;ocMainFlowState.type=tab.dataset.ocMainFlowType;renderOcMainFlow();});
-  document.getElementById('oc15dMainFlowTimeTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-time]');if(!tab)return;ocMainFlowState.timeMode='daily';renderOcMainFlow();});
   document.getElementById('oc15dMainFlowViewTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-view]');if(!tab)return;ocMainFlowState.viewMode=tab.dataset.ocMainFlowView;renderOcMainFlow();});
+  document.getElementById('oc15dMainFlowTableBody')?.addEventListener('click',event=>{const button=event.target.closest('[data-oc-main-flow-day-drill]');if(!button)return;openOcMainFlowHourly(Number(button.dataset.ocMainFlowDayDrill),button);});
+  document.getElementById('oc15dMainFlowHourlyClose')?.addEventListener('click',closeOcMainFlowHourly);
+  document.getElementById('oc15dMainFlowHourlyModal')?.addEventListener('click',event=>{if(event.target===event.currentTarget)closeOcMainFlowHourly();});
+  document.getElementById('oc15dMainFlowDateTimeQuery')?.addEventListener('click',applyOcMainFlowDateTimeRange);
+  document.querySelectorAll('#oc15dMainFlowStartDateTime,#oc15dMainFlowEndDateTime').forEach(input=>input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();applyOcMainFlowDateTimeRange();}}));
   document.getElementById('oc15dMainFlowExportBtn')?.addEventListener('click',exportOc15dMainFlowCsv);
+  document.getElementById('oc15dMainFlowHourlyExportBtn')?.addEventListener('click',exportOc15dMainFlowHourlyCsv);
   document.getElementById('oc15dMainFlowCard')?.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[role="tab"]')){event.preventDefault();event.target.click();}});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('operationsCockpit15dOverlay')?.classList.contains('on'))closeOperationsCockpit15d();});
+  document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(document.getElementById('oc15dMainFlowHourlyModal')?.classList.contains('on')){closeOcMainFlowHourly();return;}if(document.getElementById('operationsCockpit15dOverlay')?.classList.contains('on'))closeOperationsCockpit15d();});
   window.addEventListener('resize',()=>{oc15dCharts.forEach(chart=>chart.resize());oc15dMainFlowChart?.resize();});
 
   /* HUB分拣量 卡片：点击打开 产能-分拣 overlay */
