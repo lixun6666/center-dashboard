@@ -5420,7 +5420,7 @@ setInterval(() => {
 .exception-monitor-name{padding-left:4px;color:#606266;font-size:12px;font-weight:650}.exception-monitor-label{padding-left:4px;margin-top:12px;color:#909399;font-size:10.5px}.exception-monitor-value{display:flex;align-items:baseline;gap:4px;padding-left:4px;margin-top:3px}.exception-monitor-value b{font-family:'IBM Plex Mono',monospace;font-size:25px;color:#172033}.exception-monitor-value span{color:#909399;font-size:10.5px}
 .exception-monitor-note{grid-column:1/-1;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border:1px solid #edf0f4;border-radius:10px;background:#f8fafc;color:#6e7a8a;font-size:11.5px;line-height:1.55}.exception-monitor-note b{color:#303133}
 
-.exception-drawer-mask{display:none;position:fixed;inset:0;z-index:125;align-items:stretch;justify-content:flex-end;background:rgba(15,23,42,.42);backdrop-filter:blur(3px)}.exception-drawer-mask.on{display:flex}
+.exception-drawer-mask{display:none;position:fixed;inset:89px 0 0;z-index:1200;align-items:stretch;justify-content:flex-end;background:rgba(15,23,42,.42);backdrop-filter:blur(3px)}.exception-drawer-mask.on{display:flex}
 .exception-drawer{width:min(1280px,96vw);height:100%;display:flex;flex-direction:column;background:#fff;box-shadow:-24px 0 70px rgba(15,23,42,.20);animation:exceptionDrawerIn .22s ease}
 @keyframes exceptionDrawerIn{from{transform:translateX(24px);opacity:.7}to{transform:translateX(0);opacity:1}}
 .exception-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid #e8edf3;background:linear-gradient(180deg,#fff,#fafbfd)}
@@ -5593,13 +5593,13 @@ setInterval(() => {
       return {key:'dailyReceive',title:'查看明细 · 当日接收量 · 运单数',filters:['运单号','客户','接收类型'],
         columns:['运单号','接收类型','退回转运中心时间','客户','邮编','运单最新状态'],minWidth:1120};
     }
+    if(name==='当日退件打印量'){
+      return {key:'dailyPrint',title:'查看明细 · 当日退件打印量 · 运单数',filters:['运单号','退件方式','客户'],
+        columns:['运单号','打印完成时间','退件方式','目的中心','客户','操作人'],minWidth:1120};
+    }
     if(name==='当日退件集包量'){
       return {key:'dailyBag',title:'查看明细 · 当日退件集包量 · 运单数',filters:['运单号','袋号','客户'],
         columns:['运单号','退件袋号','集包完成时间','目的中心','客户','操作人'],minWidth:1120};
-    }
-    if(name==='当日签收量'||name==='当日退件签收量'){
-      return {key:'dailyClose',title:'查看明细 · '+name+' · 运单数',filters:['运单号','客户'],
-        columns:['运单号','完结类型','完结时间','客户','邮编','运单最新状态'],minWidth:1080};
     }
     if(name==='当日上架量'||name==='当日下架量'){
       return {key:'dailyShelf',title:'查看明细 · '+name+' · 运单数',filters:['运单号','问题件类型','客户'],
@@ -5668,6 +5668,15 @@ setInterval(() => {
           zip,
           i%5===0?'待销毁':'已退回转运中心'
         ]);
+      }else if(config.key==='dailyPrint'){
+        rows.push([
+          waybill,
+          detailTime(i,7,4,28),
+          ['中心退','揽收司机退','自提'][i%3],
+          ['ATL.H','DFW.H','JFK.H','LAX.H'][i%4],
+          customers[i%customers.length],
+          ['Alex','Mia','Ryan','Lina'][i%4]
+        ]);
       }else if(config.key==='dailyBag'){
         rows.push([
           waybill,
@@ -5676,16 +5685,6 @@ setInterval(() => {
           ['ATL.H','DFW.H','JFK.H','LAX.H'][i%4],
           customers[i%customers.length],
           ['Alex','Mia','Ryan','Lina'][i%4]
-        ]);
-      }else if(config.key==='dailyClose'){
-        var closeType=name==='当日退件签收量'?'退件签收':'签收';
-        rows.push([
-          waybill,
-          closeType,
-          detailTime(i,8,12,28),
-          customers[i%customers.length],
-          zip,
-          closeType+'完成'
         ]);
       }else if(config.key==='dailyShelf'){
         var shelfType=name==='当日下架量'?'下架':'上架';
@@ -5964,7 +5963,7 @@ body:not(:has(#qa-panel.qa-open)):not(.qa-annotating) .qa-marker{display:none!im
 #exceptionDashboardPage .v4-live{display:inline-flex;align-items:center;gap:7px;margin-top:2px;color:#16a34a;font-size:11.5px;font-weight:650}
 #exceptionDashboardPage .v4-live:before{content:'';width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.12)}
 
-#exceptionDashboardPage .v4-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+#exceptionDashboardPage .v4-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 #exceptionDashboardPage .v4-kpi{--v4-kpi:#3b82f6;position:relative;min-width:0;min-height:122px;padding:14px 14px 12px;border:1px solid #e7ebf1;border-radius:11px;background:linear-gradient(180deg,#fff,#fafbfd);cursor:pointer;transition:.16s ease;overflow:hidden}
 #exceptionDashboardPage .v4-kpi:hover{transform:translateY(-2px);border-color:#ffd0bd;box-shadow:0 10px 25px rgba(31,45,61,.09)}
 #exceptionDashboardPage .v4-kpi:before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--v4-kpi)}
@@ -5999,7 +5998,7 @@ body:not(:has(#qa-panel.qa-open)):not(.qa-annotating) .qa-marker{display:none!im
 #exceptionDashboardPage .v4-stat em{padding:1px 5px;border-radius:999px;background:#fff1e6;color:#c2410c;font-style:normal;font-size:9px}
 #exceptionDashboardPage .v4-customer-foot{display:flex;justify-content:space-between;gap:10px;margin-top:3px;color:#909399;font-size:10.5px}
 
-@media(max-width:1500px){#exceptionDashboardPage .v4-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1180px){#exceptionDashboardPage .v4-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1180px){#exceptionDashboardPage .v4-analysis-grid{grid-template-columns:1fr}#exceptionDashboardPage .v4-filter-grid{grid-template-columns:140px 140px 1fr auto}}
 @media(max-width:900px){#exceptionDashboardPage .v4-filter-grid{grid-template-columns:1fr 1fr}#exceptionDashboardPage .v4-filter-grid .exception-filter-actions{grid-column:1/-1}#exceptionDashboardPage .v4-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#exceptionDashboardPage .v4-pending-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:560px){#exceptionDashboardPage .v4-filter-grid{grid-template-columns:1fr}#exceptionDashboardPage .v4-kpi-grid{grid-template-columns:1fr}#exceptionDashboardPage .v4-section{padding:14px}#exceptionDashboardPage .v4-section-head,#exceptionDashboardPage .v4-analysis-card-head{flex-direction:column}#exceptionDashboardPage .v4-risk-inline{justify-content:flex-start}#exceptionDashboardPage .v4-analysis-grid{grid-template-columns:1fr}#exceptionDashboardPage .v4-chart{height:270px}}
@@ -6028,21 +6027,18 @@ body:not(:has(#qa-panel.qa-open)):not(.qa-annotating) .qa-marker{display:none!im
   overview.setAttribute('aria-label','今日作业总览');
   overview.innerHTML=`
     <div class="v4-section-head">
-      <div><h2 class="v4-section-title">今日作业</h2><p class="v4-section-sub">回答今天接收多少、处理多少、完结多少 · 当前数据截至 14:00</p></div>
-      <span class="v4-live">退件集包实时更新</span>
+      <div><h2 class="v4-section-title">今日作业</h2><p class="v4-section-sub">回答今天接收多少、打印多少、集包多少 · 当前数据截至 14:00</p></div>
+      <span class="v4-live">退件打印、集包实时更新</span>
     </div>
     <div class="v4-kpi-grid">
       <article class="v4-kpi" tabindex="0" role="button" data-detail-name="当日接收量" data-detail-count="1426">
         <div class="v4-kpi-label"><span>当日接收量</span><span>日累计</span></div><div class="v4-kpi-value">1,426<small>票</small></div><div class="v4-kpi-note">退件 1,211 · 弃件 215</div>
       </article>
+      <article class="v4-kpi purple" tabindex="0" role="button" data-detail-name="当日退件打印量" data-detail-count="1286">
+        <div class="v4-kpi-label"><span>当日退件打印量</span><span>日累计</span></div><div class="v4-kpi-value">1,286<small>票</small></div><div class="v4-kpi-note">当前小时完成 162票</div>
+      </article>
       <article class="v4-kpi orange" tabindex="0" role="button" data-detail-name="当日退件集包量" data-detail-count="1138">
         <div class="v4-kpi-label"><span>当日退件集包量</span><span>实时</span></div><div class="v4-kpi-value">1,138<small>票</small></div><div class="v4-kpi-note">当前小时完成 145票</div>
-      </article>
-      <article class="v4-kpi green" tabindex="0" role="button" data-detail-name="当日签收量" data-detail-count="603">
-        <div class="v4-kpi-label"><span>当日签收量</span><span>日累计</span></div><div class="v4-kpi-value">603<small>票</small></div><div class="v4-kpi-note">最终状态独立统计</div>
-      </article>
-      <article class="v4-kpi purple" tabindex="0" role="button" data-detail-name="当日退件签收量" data-detail-count="339">
-        <div class="v4-kpi-label"><span>当日退件签收量</span><span>日累计</span></div><div class="v4-kpi-value">339<small>票</small></div><div class="v4-kpi-note">最终状态独立统计</div>
       </article>
       <article class="v4-kpi amber" tabindex="0" role="button" data-detail-name="当日上架量" data-detail-count="428">
         <div class="v4-kpi-label"><span>当日上架量</span><span>日累计</span></div><div class="v4-kpi-value">428<small>票</small></div><div class="v4-kpi-note">空包及问题件上架</div>
@@ -6100,28 +6096,28 @@ body:not(:has(#qa-panel.qa-open)):not(.qa-annotating) .qa-marker{display:none!im
   if(footer)footer.textContent='中心看板 · 异常区 V4.0（退件仓运营版）';
 
   var hourReceive=[35,28,25,22,18,35,85,105,128,148,170,180,165,155,127,0,0,0,0,0,0,0,0,0];
+  var hourPrint=[18,15,12,10,9,25,62,88,108,132,153,164,158,170,162,0,0,0,0,0,0,0,0,0];
   var hourBag=[12,10,8,7,6,18,52,78,96,118,138,148,142,160,145,0,0,0,0,0,0,0,0,0];
-  var hourClose=[8,7,6,5,5,12,36,58,74,92,112,128,132,141,126,0,0,0,0,0,0,0,0,0];
   var trendSets={
-    hour:{labels:Array.from({length:24},function(_,i){return String(i).padStart(2,'0')+':00'}),receive:hourReceive,bag:hourBag,close:hourClose,subtitle:'当日小时趋势 · 当前小时数据持续更新'},
-    day:{labels:['08/22','08/23','08/24','08/25','08/26','08/27','08/28'],receive:[1180,1265,1098,1384,1318,1492,1426],bag:[972,1048,948,1126,1079,1248,1138],close:[866,928,811,996,948,1081,942],subtitle:'近7个自然日趋势 · 每日00:00–24:00'},
-    month:{labels:['2026/03','2026/04','2026/05','2026/06','2026/07','2026/08'],receive:[28140,29680,27350,31820,35640,33790],bag:[24670,26140,23980,28160,31720,29680],close:[21980,23210,21640,24980,28260,26740],subtitle:'近6个月趋势 · 用于观察旺淡季变化'}
+    hour:{labels:Array.from({length:24},function(_,i){return String(i).padStart(2,'0')+':00'}),receive:hourReceive,print:hourPrint,bag:hourBag,subtitle:'当日小时趋势 · 当前小时数据持续更新'},
+    day:{labels:['08/22','08/23','08/24','08/25','08/26','08/27','08/28'],receive:[1180,1265,1098,1384,1318,1492,1426],print:[1085,1166,1052,1254,1196,1387,1286],bag:[972,1048,948,1126,1079,1248,1138],subtitle:'近7个自然日趋势 · 每日00:00–24:00'},
+    month:{labels:['2026/03','2026/04','2026/05','2026/06','2026/07','2026/08'],receive:[28140,29680,27350,31820,35640,33790],print:[26110,27630,25310,29940,33780,31620],bag:[24670,26140,23980,28160,31720,29680],subtitle:'近6个月趋势 · 用于观察旺淡季变化'}
   };
   var trendChart=null,customerChart=null;
   function trendOption(mode){
     var data=trendSets[mode]||trendSets.hour;
     return {
       animationDuration:320,
-      color:['#3b82f6','#fc4c02','#16a34a'],
+      color:['#3b82f6','#8b5cf6','#fc4c02'],
       tooltip:{trigger:'axis',backgroundColor:'rgba(23,32,51,.95)',borderWidth:0,textStyle:{color:'#fff'}},
-      legend:{top:4,right:10,itemWidth:12,itemHeight:8,textStyle:{color:'#606266',fontSize:11},data:['接收量','退件集包量','完结量']},
+      legend:{top:4,right:10,itemWidth:12,itemHeight:8,textStyle:{color:'#606266',fontSize:11},data:['接收量','退件打印量','退件集包量']},
       grid:{left:55,right:24,top:44,bottom:40},
       xAxis:{type:'category',data:data.labels,axisTick:{show:false},axisLine:{lineStyle:{color:'#dfe5ec'}},axisLabel:{color:'#66758a',fontSize:10,interval:mode==='hour'?2:0}},
       yAxis:{type:'value',name:'票',axisLabel:{color:'#909399',fontSize:10},splitLine:{lineStyle:{color:'#edf0f4'}},axisLine:{show:false}},
       series:[
         {name:'接收量',type:'bar',data:data.receive,barMaxWidth:16,itemStyle:{borderRadius:[3,3,0,0]}},
-        {name:'退件集包量',type:'bar',data:data.bag,barMaxWidth:16,itemStyle:{borderRadius:[3,3,0,0]}},
-        {name:'完结量',type:'line',data:data.close,symbol:'circle',symbolSize:5,smooth:true,lineStyle:{width:2}}
+        {name:'退件打印量',type:'bar',data:data.print,barMaxWidth:16,itemStyle:{borderRadius:[3,3,0,0]}},
+        {name:'退件集包量',type:'line',data:data.bag,symbol:'circle',symbolSize:5,smooth:true,lineStyle:{width:2}}
       ]
     };
   }
