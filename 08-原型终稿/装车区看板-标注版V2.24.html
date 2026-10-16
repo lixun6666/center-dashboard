@@ -2417,6 +2417,25 @@ main .signout-attention-grid > .panel{
 }
 </style>
 
+<style id="signout-card-filter-v224">
+body:has(.drawer-layer.on) .qa-toolbar{right:50%!important;bottom:4px!important;transform:translateX(50%);}
+.signout-overview-stack{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.signout-overview-stack .signout-overview-panel{margin:0!important;height:166px!important;min-height:166px!important;max-height:166px!important;}
+.expected-signout-panel .stock-home-card{cursor:pointer!important;}
+.expected-analysis .sa-aging-grid,.expected-analysis .sa-aging-heading{display:none;}
+.sa-summary-card.active,.sa-aging-card.active{background:#fff1e6;border-color:#dfe5ed;box-shadow:none;}
+.sa-aging-card.active .sa-aging-name,.sa-aging-card.active .sa-aging-value strong,.sa-summary-card.active .sa-summary-label{color:#fc4c02;}
+.sa-destination-grid.card-list-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;}
+.sa-destination-grid .card-list-item{position:relative;background:#fff;border:1px solid #e3e8ef;border-radius:8px;overflow:hidden;padding:12px;cursor:pointer;transition:box-shadow .15s;}
+.sa-destination-grid .card-list-item:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.sa-destination-grid .sa-destination-card:after{display:none;}
+.sa-destination-card.total{background:#f7f9fc;}
+.sa-destination-card .sa-count-link{font-size:24px;font-weight:750;}
+.sa-destination-card .sa-destination-sub .sa-count-link{font-size:14px;}
+.sa-destination-toolbar.sa-search-only{justify-content:space-between;}
+.sa-aging-reset{border:0;background:transparent;color:#fc4c02;font:inherit;font-size:12px;cursor:pointer;}
+.sa-summary-card:focus-visible,.sa-aging-card:focus-visible,.sa-destination-card:focus-visible{outline:2px solid #fc4c02;outline-offset:2px;}
+</style>
 </head>
 <body class="loading-dashboard" style="">
 <header class="gofo-header">
@@ -2501,6 +2520,29 @@ main .signout-attention-grid > .panel{
 </section>
 <section class="panel process-panel"><div class="pipeline process-six process-metric-pipeline clean-status-pipeline"><div class="chain-node process-node process-todock clean-status-card" data-drawer="todock"><div class="node-label status-card-title"><span>待靠台</span></div><div class="status-card-main"><strong class="num">1</strong><span class="status-card-main-unit">辆</span></div><div class="status-card-sub"><span class="status-sub-item"><span class="status-sub-label">路向</span><strong class="num">1</strong><span class="status-sub-unit">个</span></span></div></div><div class="chain-node process-node core pending-bag-node clean-status-card" data-drawer="progress-pending"><div class="node-label status-card-title"><span>待装车</span></div><div class="status-card-main"><strong class="num">1</strong><span class="status-card-main-unit">辆</span></div><div class="status-card-sub"><span class="status-sub-item"><span class="status-sub-label">路向</span><strong class="num">1</strong><span class="status-sub-unit">个</span></span></div></div><div class="chain-node process-node loading clean-status-card" data-drawer="progress-loading"><div class="node-label status-card-title"><span>装车中</span></div><div class="status-card-main"><strong class="num">3</strong><span class="status-card-main-unit">辆</span></div><div class="status-card-sub"><span class="status-sub-item"><span class="status-sub-label">路向</span><strong class="num">1</strong><span class="status-sub-unit">个</span></span><span class="status-sub-item"><span class="status-sub-label">袋数</span><strong class="num">116</strong><span class="status-sub-unit">袋</span></span></div></div><div class="chain-node process-node process-waiting clean-status-card" data-drawer="progress-towait"><div class="node-label status-card-title"><span>待发车</span></div><div class="status-card-main"><strong class="num">3</strong><span class="status-card-main-unit">辆</span></div><div class="status-card-sub"><span class="status-sub-item"><span class="status-sub-label">路向</span><strong class="num">3</strong><span class="status-sub-unit">个</span></span><span class="status-sub-item"><span class="status-sub-label">袋数</span><strong class="num">96</strong><span class="status-sub-unit">袋</span></span></div></div><div class="chain-node process-node done clean-status-card" data-drawer="progress-sent"><div class="node-label status-card-title"><span>已发车</span></div><div class="status-card-main"><strong class="num">50</strong><span class="status-card-main-unit">辆</span></div><div class="status-card-sub"><span class="status-sub-item"><span class="status-sub-label">路向</span><strong class="num">18</strong><span class="status-sub-unit">个</span></span><span class="status-sub-item"><span class="status-sub-label">袋数</span><strong class="num">1,616</strong><span class="status-sub-unit">袋</span></span></div></div><div class="chain-node process-node process-fenced focus-node clean-status-card" data-drawer="progress-fenced"><div class="node-label status-card-title"><span>待驶出电子围栏</span></div><div class="status-card-main"><strong class="num">2</strong><span class="status-card-main-unit">辆</span></div><div class="status-card-sub"><span class="status-sub-item"><span class="status-sub-label">路向</span><strong class="num">2</strong><span class="status-sub-unit">个</span></span><span class="status-sub-item"><span class="status-sub-label">袋数</span><strong class="num">77</strong><span class="status-sub-unit">袋</span></span></div></div></div></section>
 <div class="content-split signout-attention-grid">
+<div class="signout-overview-stack">
+<section class="panel signout-overview-panel expected-signout-panel">
+<div class="panel-head">
+<div class="panel-title"><div><h2 title="截至当前时点应完成签出的累计量；当前为原型示例数据">应签出</h2></div></div>
+</div>
+<div class="flow-grid stock-home-grid">
+<div class="aux-card stock-home-card" onclick="openDrawer('expectedsignout',{flow:'all'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" role="button" tabindex="0">
+<span class="al" style="display:block">全部</span>
+<div class="stock-primary"><span class="num dd">3,500</span><span class="stock-unit">袋</span></div>
+<div class="stock-secondary"><span class="num">120,000</span><span>票</span></div>
+</div>
+<div class="aux-card stock-home-card" onclick="openDrawer('expectedsignout',{flow:'trunk'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" role="button" tabindex="0">
+<span class="al" style="display:block">干线</span>
+<div class="stock-primary"><span class="num dd">2,600</span><span class="stock-unit">袋</span></div>
+<div class="stock-secondary"><span class="num">85,000</span><span>票</span></div>
+</div>
+<div class="aux-card stock-home-card" onclick="openDrawer('expectedsignout',{flow:'branch'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" role="button" tabindex="0">
+<span class="al" style="display:block">支线</span>
+<div class="stock-primary"><span class="num dd">900</span><span class="stock-unit">袋</span></div>
+<div class="stock-secondary"><span class="num">35,000</span><span>票</span></div>
+</div>
+</div>
+</section>
 <section class="panel signout-overview-panel">
 <div class="panel-head">
 <div class="panel-title"><div><h2>待签出</h2></div></div>
@@ -2523,6 +2565,7 @@ main .signout-attention-grid > .panel{
 </div>
 </div>
 </section>
+</div>
 <section class="panel alert-panel attention-panel">
 <div class="panel-head">
 <div class="panel-title alert"><div><h2>重点关注</h2></div></div>
@@ -3196,11 +3239,13 @@ content=filterBar([['目的地',selHtml('请选择')]])
 +statTable('目的地',[
 ['合计',0,0,0]
 ],{drillVeh:'veh-fenced',drillBag:'bag-detail',drillBill:'wb-detail'});
-} else if(type==='tosignout'){
+} else if(type==='tosignout'||type==='expectedsignout'){
+var expectedMode=type==='expectedsignout';
+var metricName=expectedMode?'应签出':'待签出';
 var stockFlow=(arg&&arg.flow)?arg.flow:'all';
 var stockScope=(arg&&arg.scope)?arg.scope:'all';
 var flowLabel={all:'全部',trunk:'干线',branch:'支线'}[stockFlow]||'全部';
-t='待签出 · 下钻分析';
+t=metricName+' · 下钻分析';
 layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel','signout-analysis-panel');
 
 var flowTotals={
@@ -3259,6 +3304,8 @@ destination:[
 }
 };
 
+var expectedTotals={all:{bags:3500,bills:120000},trunk:{bags:2600,bills:85000},branch:{bags:900,bills:35000}};
+// Expected totals and destination allocation are prototype examples, independent of waiting stock.
 function scaledItems(rows,targetBags,targetBills){
 var baseBags=rows.reduce(function(a,r){return a+r.bags;},0)||1;
 var baseBills=rows.reduce(function(a,r){return a+r.bills;},0)||1;
@@ -3272,6 +3319,14 @@ return {key:r.key,name:r.name,bags:bags,bills:bills,tone:r.tone};
 });
 }
 function dataFor(scope){
+if(expectedMode){
+var expected=expectedTotals[scope];
+var allDestinations=scopeData.all.destination.slice(1);
+var trunkRows=scaledItems(allDestinations,expectedTotals.trunk.bags,expectedTotals.trunk.bills);
+var branchRows=scaledItems(allDestinations,expectedTotals.branch.bags,expectedTotals.branch.bills);
+var expectedDestinations=scope==='trunk'?trunkRows:scope==='branch'?branchRows:trunkRows.map(function(row,i){return {key:row.key,name:row.name,bags:row.bags+branchRows[i].bags,bills:row.bills+branchRows[i].bills};});
+return {totals:expected,aging:[],destination:expectedDestinations};
+}
 var totals=flowTotals[stockFlow][scope];
 var base=scopeData[scope];
 return {
@@ -3284,39 +3339,38 @@ var allTotals=flowTotals[stockFlow].all;
 var todayTotals=flowTotals[stockFlow].today;
 var historyTotals=flowTotals[stockFlow].history;
 
-content='<div class="signout-analysis">'
+content='<div class="signout-analysis'+(expectedMode?' expected-analysis':'')+'">'
 +'<div class="sa-summary-grid">'
 +'<div class="sa-summary-card" data-sa-scope="all"><div class="sa-summary-label">全部</div><div class="sa-summary-value"><strong class="num">'+fmt(allTotals.bags)+'</strong><span>袋</span></div><div class="sa-summary-sub"><span class="num">'+fmt(allTotals.bills)+'</span> 票</div></div>'
 +'<div class="sa-summary-card" data-sa-scope="today"><div class="sa-summary-label">今日已入库-待签出</div><div class="sa-summary-value"><strong class="num">'+fmt(todayTotals.bags)+'</strong><span>袋</span></div><div class="sa-summary-sub"><span class="num">'+fmt(todayTotals.bills)+'</span> 票</div></div>'
 +'<div class="sa-summary-card" data-sa-scope="history"><div class="sa-summary-label">历史留仓-待签出</div><div class="sa-summary-value"><strong class="num">'+fmt(historyTotals.bags)+'</strong><span>袋</span></div><div class="sa-summary-sub"><span class="num">'+fmt(historyTotals.bills)+'</span> 票</div></div>'
 +'</div>'
 
-+'<div class="sa-section-head"><div class="sa-section-title">库存时长分布</div></div>'
++'<div class="sa-section-head sa-aging-heading"><div class="sa-section-title">库存时长分布</div><button type="button" class="sa-aging-reset" id="sa-aging-reset">全部时长</button></div>'
 +'<div class="sa-aging-grid" id="sa-aging-grid"></div>'
 
 +'<div class="sa-section-head"><div class="sa-section-title">目的组织</div><button class="sa-export" type="button" id="sa-export-btn">⇩ 导出</button></div>'
-+'<div class="sa-destination-panel">'+'<div class="sa-destination-toolbar sa-search-only">'+'<input class="sa-destination-search" id="sa-destination-search" placeholder="搜索目的组织" />'+'</div>'+'<div class="sa-destination-table-wrap">'+'<table class="sa-destination-table"><thead><tr>'+'<th>目的组织</th><th><button class="sa-sort-btn" type="button" data-sort="bags">袋数 ↓</button></th><th>运单数</th>'+'</tr></thead><tbody id="sa-destination-list"></tbody></table>'+'<div class="sa-destination-empty" id="sa-destination-empty">未找到匹配的目的组织</div>'+'</div>'+'<div class="sa-destination-pagination">'+'<div class="sa-page-size">每页 <select id="sa-page-size"><option value="5" selected>5</option><option value="10">10</option><option value="20">20</option></select> 条</div>'+'<div class="sa-page-controls"><button type="button" id="sa-page-prev">‹</button><span class="sa-page-info" id="sa-page-info">1 / 1</span><button type="button" id="sa-page-next">›</button></div>'+'</div>'+'</div>'
++'<div class="sa-destination-panel"><div class="sa-destination-toolbar sa-search-only"><button class="sa-sort-btn" type="button" data-sort="bags">袋数 ↓</button><input class="sa-destination-search" id="sa-destination-search" placeholder="搜索目的组织" /></div><div class="sa-destination-grid card-list-grid" id="sa-destination-list"></div><div class="sa-destination-empty" id="sa-destination-empty">未找到匹配的目的组织</div></div>'
+
 
 +'</div>';
 
+if(expectedMode){
+content=content.replace(/<div class="sa-summary-grid">[\s\S]*?<\/div><div class="sa-section-head sa-aging-heading">/, '<div class="sa-summary-grid">'+['all','trunk','branch'].map(function(flow){var value=expectedTotals[flow];return '<div class="sa-summary-card" data-sa-scope="'+flow+'"><div class="sa-summary-label">'+{all:'全部',trunk:'干线',branch:'支线'}[flow]+'</div><div class="sa-summary-value"><strong class="num">'+fmt(value.bags)+'</strong><span>袋</span></div><div class="sa-summary-sub"><span class="num">'+fmt(value.bills)+'</span> 票</div></div>';}).join('')+'</div><div class="sa-section-head sa-aging-heading">');
+}
 afterRender=function(){
-var currentScope=stockScope;
+var currentScope=expectedMode?stockFlow:stockScope;
+var currentAging="全部";
 var scopeLabels={all:'全部',today:'今日已入库-待签出',history:'历史留仓-待签出'};
 var agingGrid=bodyEl.querySelector('#sa-aging-grid');
 var destinationList=bodyEl.querySelector('#sa-destination-list');
 var destinationSearch=bodyEl.querySelector('#sa-destination-search');
 var destinationEmpty=bodyEl.querySelector('#sa-destination-empty');
-var destinationPageSizeEl=bodyEl.querySelector('#sa-page-size');
-var destinationPrev=bodyEl.querySelector('#sa-page-prev');
-var destinationNext=bodyEl.querySelector('#sa-page-next');
-var destinationPageInfo=bodyEl.querySelector('#sa-page-info');
 var destinationSortDesc=true;
-var destinationPage=1;
-var destinationPageSize=5;
 var currentDestinationRows=[];
 
 function agingHtml(row){
-return '<div class="sa-aging-card '+row.tone+'" data-aging="'+row.key+'">'
+return '<div class="sa-aging-card '+row.tone+(currentAging===row.key?' active':'')+'" role="button" tabindex="0" aria-pressed="'+(currentAging===row.key)+'" data-aging="'+row.key+'">'
 +'<div class="sa-aging-name">'+row.name+'</div>'
 +'<div class="sa-aging-value"><strong class="num">'+fmt(row.bags)+'</strong><span>袋</span></div>'
 +'<div class="sa-aging-sub"><span class="num">'+fmt(row.bills)+'</span> 票</div>'
@@ -3324,20 +3378,19 @@ return '<div class="sa-aging-card '+row.tone+'" data-aging="'+row.key+'">'
 }
 function destinationHtml(row,index,total){
 var isTotal=row.key==='请选择';
-return '<tr class="sa-destination-row'+(isTotal?' total':'')+'">'
-+'<td title="'+row.name+'">'+row.name+'</td>'
-+'<td><button class="sa-count-link sa-bag-link num" type="button" data-bag-destination="'+row.key+'" title="查看袋号明细">'+fmt(row.bags)+'</button></td>'
-+'<td><button class="sa-count-link sa-waybill-link num" type="button" data-waybill-destination="'+row.key+'" title="查看运单明细">'+fmt(row.bills)+'</button></td>'
-+'</tr>';
+return '<div class="sa-destination-card card-list-item'+(isTotal?' total':'')+'" role="button" tabindex="0" data-open-destination="'+row.key+'">'
++'<div class="sa-destination-name">'+row.name+'</div>'
++'<div class="sa-destination-value"><button class="sa-count-link sa-bag-link num" type="button" data-bag-destination="'+row.key+'" title="查看袋号明细">'+fmt(row.bags)+'</button><span>袋</span></div>'
++'<div class="sa-destination-sub"><button class="sa-count-link sa-waybill-link num" type="button" data-waybill-destination="'+row.key+'" title="查看运单明细">'+fmt(row.bills)+'</button> 票</div></div>';
 }
 function openBagByAging(key){
 kbOpenDrawer('tosignout-bag',{scope:currentScope,flow:stockFlow,aging:key,destination:'请选择'});
 }
 function openBagByDestination(key){
-kbOpenDrawer('tosignout-bag',{scope:currentScope,flow:stockFlow,aging:'全部',destination:key});
+kbOpenDrawer(expectedMode?'expectedsignout-detail':'tosignout-bag',{scope:currentScope,flow:expectedMode?currentScope:stockFlow,aging:currentAging,destination:key,unit:'bag',totals:currentDestinationRows});
 }
 function openWaybillByDestination(key){
-kbOpenDrawer('tosignout-wb',{scope:currentScope,flow:stockFlow,aging:'全部',destination:key,bag:''});
+kbOpenDrawer(expectedMode?'expectedsignout-detail':'tosignout-wb',{scope:currentScope,flow:expectedMode?currentScope:stockFlow,aging:currentAging,destination:key,bag:'',unit:'bill',totals:currentDestinationRows});
 }
 function renderDestinationRows(rows,total){
 var keyword=(destinationSearch&&destinationSearch.value?destinationSearch.value:'').trim().toLowerCase();
@@ -3349,19 +3402,16 @@ return !keyword||row.name.toLowerCase().indexOf(keyword)>-1||row.key.toLowerCase
 organizationRows.sort(function(a,b){
 return destinationSortDesc?(b.bags-a.bags):(a.bags-b.bags);
 });
-var totalPages=Math.max(1,Math.ceil(organizationRows.length/destinationPageSize));
-if(destinationPage>totalPages) destinationPage=totalPages;
-if(destinationPage<1) destinationPage=1;
-var start=(destinationPage-1)*destinationPageSize;
-var pageRows=organizationRows.slice(start,start+destinationPageSize);
-var displayRows=(summaryRow?[summaryRow]:[]).concat(pageRows);
+if(keyword){summaryRow=organizationRows.reduce(function(a,r){a.bags+=r.bags;a.bills+=r.bills;return a;},{key:'请选择',name:'合计',bags:0,bills:0});}
+var displayRows=(summaryRow?[summaryRow]:[]).concat(organizationRows);
 destinationList.innerHTML=displayRows.map(function(row,index){
 return destinationHtml(row,index,total);
 }).join('');
 destinationEmpty.style.display=organizationRows.length?'none':'block';
-destinationPageInfo.textContent=destinationPage+' / '+totalPages;
-destinationPrev.disabled=destinationPage<=1;
-destinationNext.disabled=destinationPage>=totalPages;
+destinationList.querySelectorAll('[data-open-destination]').forEach(function(card){
+card.addEventListener('click',function(){openBagByDestination(this.getAttribute('data-open-destination'));});
+card.addEventListener('keydown',function(e){if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();card.click();}});
+});
 destinationList.querySelectorAll('[data-bag-destination]').forEach(function(link){
 link.addEventListener('click',function(e){
 e.stopPropagation();
@@ -3376,26 +3426,34 @@ openWaybillByDestination(this.getAttribute('data-waybill-destination'));
 });
 }
 function render(scope){
+if(currentScope!==scope) currentAging='全部';
 currentScope=scope;
-destinationPage=1;
 var data=dataFor(scope);
 bodyEl.querySelectorAll('[data-sa-scope]').forEach(function(card){
 card.classList.toggle('active',card.getAttribute('data-sa-scope')===scope);
+card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-pressed',card.getAttribute('data-sa-scope')===scope);
 });
 agingGrid.innerHTML=data.aging.map(agingHtml).join('');
-var destinationRows=[{key:'请选择',name:'合计',bags:data.totals.bags,bills:data.totals.bills}].concat(data.destination);
+var selectedAging=data.aging.filter(function(row){return row.key===currentAging;})[0];
+var selectedTotals=selectedAging||data.totals;
+// Prototype data: distribute selected aging totals across mock destination rows.
+var destinations=selectedAging?scaledItems(data.destination,selectedTotals.bags,selectedTotals.bills):data.destination;
+var destinationRows=[{key:'请选择',name:'合计',bags:selectedTotals.bags,bills:selectedTotals.bills}].concat(destinations);
+bodyEl.querySelector('#sa-aging-reset').setAttribute('aria-pressed',currentAging==='全部');
 currentDestinationRows=destinationRows;
 renderDestinationRows(currentDestinationRows,data.totals);
 agingGrid.querySelectorAll('[data-aging]').forEach(function(card){
-card.addEventListener('click',function(){openBagByAging(this.getAttribute('data-aging'));});
+card.addEventListener('click',function(){var key=this.getAttribute('data-aging');currentAging=currentAging===key?'全部':key;render(currentScope);});
+card.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}});
 });
 }
 bodyEl.querySelectorAll('[data-sa-scope]').forEach(function(card){
 card.addEventListener('click',function(){render(this.getAttribute('data-sa-scope'));});
+card.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}});
 });
+bodyEl.querySelector('#sa-aging-reset').addEventListener('click',function(){currentAging='全部';render(currentScope);});
 if(destinationSearch){
 destinationSearch.addEventListener('input',function(){
-destinationPage=1;
 var data=dataFor(currentScope);
 renderDestinationRows(currentDestinationRows,data.totals);
 });
@@ -3404,42 +3462,29 @@ var sortBtn=bodyEl.querySelector('[data-sort="bags"]');
 if(sortBtn){
 sortBtn.addEventListener('click',function(){
 destinationSortDesc=!destinationSortDesc;
-destinationPage=1;
 this.textContent='袋数 '+(destinationSortDesc?'↓':'↑');
-var data=dataFor(currentScope);
-renderDestinationRows(currentDestinationRows,data.totals);
-});
-}
-if(destinationPageSizeEl){
-destinationPageSizeEl.addEventListener('change',function(){
-destinationPageSize=parseInt(this.value,10)||5;
-destinationPage=1;
-var data=dataFor(currentScope);
-renderDestinationRows(currentDestinationRows,data.totals);
-});
-}
-if(destinationPrev){
-destinationPrev.addEventListener('click',function(){
-if(destinationPage<=1) return;
-destinationPage-=1;
-var data=dataFor(currentScope);
-renderDestinationRows(currentDestinationRows,data.totals);
-});
-}
-if(destinationNext){
-destinationNext.addEventListener('click',function(){
-destinationPage+=1;
 var data=dataFor(currentScope);
 renderDestinationRows(currentDestinationRows,data.totals);
 });
 }
 var exportBtn=bodyEl.querySelector('#sa-export-btn');
 if(exportBtn) exportBtn.addEventListener('click',function(){
-this.textContent='✓ 已导出';
-setTimeout(function(){exportBtn.textContent='⇩ 导出';},1200);
+var keyword=(destinationSearch.value||'').trim().toLowerCase();
+var rows=currentDestinationRows.filter(function(row){return row.key!=='请选择'&&(!keyword||row.name.toLowerCase().indexOf(keyword)>-1||row.key.toLowerCase().indexOf(keyword)>-1);});
+rows.sort(function(a,b){return destinationSortDesc?b.bags-a.bags:a.bags-b.bags;});
+var sum=rows.reduce(function(a,r){a.bags+=r.bags;a.bills+=r.bills;return a;},{bags:0,bills:0});
+var csv=(expectedMode?'\ufeff统计口径,运输类型,时长,目的组织,袋数,运单数\r\n':'\ufeff库存来源,运输类型,库存时长,目的组织,袋数,运单数\r\n')+[{name:'合计',bags:sum.bags,bills:sum.bills}].concat(rows).map(function(r){return [expectedMode?'截至当前应完成签出':scopeLabels[currentScope],expectedMode?{all:'全部',trunk:'干线',branch:'支线'}[currentScope]:flowLabel,expectedMode?'':currentAging,r.name,r.bags,r.bills].join(',');}).join('\r\n');
+var url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+var a=document.createElement('a');a.href=url;a.download=metricName+'目的组织.csv';a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
 });
 render(currentScope);
 };
+} else if(type==='expectedsignout-detail'){
+var expectedArgs=arg||{};
+var expectedRows=(expectedArgs.totals||[]).filter(function(row){return row.key!=='请选择'&&(expectedArgs.destination==='请选择'||row.key===expectedArgs.destination);});
+var expectedIsBag=expectedArgs.unit==='bag';
+t='应签出 · '+(expectedIsBag?'袋数':'票数')+'明细';
+content='<div class="drawer-sub">截至当前时点应完成签出的累计量 · '+({all:'全部',trunk:'干线',branch:'支线'}[expectedArgs.flow]||'全部')+'</div><div class="scroll"><table><thead><tr><th>目的组织</th><th>应签出'+(expectedIsBag?'袋数':'票数')+'</th></tr></thead><tbody>'+expectedRows.map(function(row){return '<tr><td>'+row.name+'</td><td class="num">'+fmt(expectedIsBag?row.bags:row.bills)+'</td></tr>';}).join('')+'<tr class="tot"><td>合计</td><td class="num">'+fmt(expectedRows.reduce(function(sum,row){return sum+(expectedIsBag?row.bags:row.bills);},0))+'</td></tr></tbody></table></div>';
 } else if(type==='tosignout-bag'){
 t='查看明细-待签出-袋号';
 layerEl.querySelector('.drawer-panel').classList.add('loading-detail-panel');
@@ -4133,6 +4178,8 @@ var layer=document.getElementById('qa-marker-layer');
 layer.innerHTML='';
 var currentNotes=visibleNotes();
 currentNotes.forEach(function(n,i){
+var movedIds=['qa_mrurg6d6_o37fo7','qa_mrurgcdl_mn9idq','qa_mrurggfy_fsztxm','qa_mrurhlf6_43b339','qa_mruri6qa_ih1okp','qa_mruriaxa_y9o5vg','qa_mrurilqe_rzdy0i','qa_mrurj37o_hwveuj'];
+if(!n.expectedSignoutLayout&&movedIds.indexOf(n.id)>-1){n.y+=182;n.expectedSignoutLayout=true;}
 var b=document.createElement('button');b.className='qa-marker';b.type='button';b.dataset.id=n.id;b.dataset.type=n.type||'其他';b.dataset.number=String(i+1);b.setAttribute('aria-label','标注 '+(i+1)+'，'+(n.type||'其他')+'：'+(n.text||''));b.title='';b.style.left=n.x+'px';b.style.top=n.y+'px';b.style.zIndex=String(resolveMarkerLayer(n));
 var num=document.createElement('span');num.className='qa-marker-num';num.textContent=String(i+1);b.appendChild(num);
 b.addEventListener('mouseenter',function(e){showMarkerTooltip(b,e)});

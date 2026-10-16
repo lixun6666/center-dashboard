@@ -2772,6 +2772,24 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 .fw-dialog-header p{font-size:12px;color:#7a8695;margin:4px 0 0}
 .fw-dialog-close{width:28px;height:28px;border:1px solid #e4e8ed;border-radius:3px;background:#fafbfc;font-size:20px;color:#8893a2;cursor:pointer}
 .fw-dialog-body{padding:18px 22px}
+/* Flow cards reuse the GOFO card-list grid/content/progress structure. */
+.fw-overview-dialog[open]{display:flex;flex-direction:column;overflow:hidden}
+.fw-overview-dialog .fw-dialog-body{overflow-y:auto;min-height:0}
+.fw-overview-dialog .fw-dialog-header,.fw-overview-dialog .fw-dialog-footer{flex-shrink:0}
+.fw-flow-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.fw-flow-card{background:#fff;border:1px solid #e6eaf0;border-radius:8px;overflow:hidden}
+.fw-flow-card-content{padding:16px}
+.fw-flow-card-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.fw-flow-card-title{margin:0;font-size:20px;font-weight:650;color:#303b4b;overflow-wrap:anywhere}
+.fw-flow-card-quantity strong{font-size:24px;font-weight:650;color:#303b4b}
+.fw-flow-card-quantity small{font-size:12px;font-weight:400;margin-left:4px;color:#7c8796}
+.fw-flow-card-pressure{display:inline-block;flex-shrink:0;width:14px;height:14px;border-radius:50%}
+.fw-flow-card-pressure.ok{background:#52c41a;box-shadow:0 0 0 4px #f0f9e8}
+.fw-flow-card-pressure.amber{background:#fa8c16;box-shadow:0 0 0 4px #fff4e8}
+.fw-flow-card-pressure.red{background:#f5222d;box-shadow:0 0 0 4px #fff0f0}
+.fw-flow-card-empty{padding:36px 16px;text-align:center;color:#8993a1;font-size:14px}
+@media(max-width:700px){.fw-flow-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:460px){.fw-flow-card-grid{grid-template-columns:minmax(0,1fr)}}
 .fw-result-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e7ebf0;border-radius:4px;background:#fafbfc;font-size:13px}
 .fw-result-banner.red{border-color:#f5d7d2;background:#fff8f6}
 .fw-result-banner.amber{border-color:#f1e1ba;background:#fffbf2}
@@ -2938,52 +2956,85 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 </style>
 
 <style id="gofo-v385-backlog-origin-customer">
-#drawerBody[data-drawer-type="backlog"] .backlog-customer-section{margin-top:12px;}
-#drawerBody[data-drawer-type="backlog"] .backlog-customer-section .drawer-section-head{margin-top:0;}
-#drawerBody[data-drawer-type="backlog"] .backlog-customer-demo{font-size:10.5px;color:#909399;font-weight:400;}
-#drawerBody[data-drawer-type="backlog"] .backlog-customer-grid{grid-template-columns:repeat(5,minmax(0,1fr));}
-@media(max-width:1050px){#drawerBody[data-drawer-type="backlog"] .backlog-customer-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-customer-section{margin-top:12px;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-customer-section .drawer-section-head{margin-top:0;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-customer-demo{font-size:10.5px;color:#909399;font-weight:400;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-customer-grid{grid-template-columns:repeat(5,minmax(0,1fr));}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-customer-ranking{margin:0 0 10px;font-size:11px;color:#909399;}
+.backlog-customer-more-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-style:dashed;background:#fafbfd;min-height:70px;padding:9px 10px;border-radius:2px;transform:none;box-shadow:none;}
+.backlog-customer-more-card .more-title{font-size:13px;font-weight:600;color:var(--accent);}
+.backlog-customer-more-card .more-count{font-size:11px;color:#909399;}
+#backlogCustomersMask{z-index:1275!important;}
+#backlogCustomersBody .backlog-customer-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+.backlog-dimension-hitbox{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;padding:0;cursor:pointer;z-index:0;transform:none!important;}
+.backlog-dimension-hitbox:focus-visible{outline:2px solid #fc4c02;outline-offset:-3px;}
+.backlog-dimension-filterable .name,.backlog-dimension-filterable .value{position:relative;z-index:1;pointer-events:none;}
+.backlog-dimension-filterable .backlog-dimension-count{pointer-events:auto;}
+.backlog-dimension-card.is-selected{border-color:transparent!important;background:var(--accent-soft)!important;box-shadow:none!important;}
+.backlog-dimension-card.is-selected .name{color:#fc4c02;}
+.backlog-customer-grid .backlog-dimension-card{color:#000!important;}
+.backlog-customer-grid .backlog-dimension-card.is-selected{color:#fc4c02!important;}
+.backlog-customer-grid .backlog-dimension-card :is(.name,.value,b,small,.more-title,.more-count){color:inherit!important;}
+.backlog-filtered-section{margin-top:16px;padding-top:14px;border-top:1px solid #e7ebf0;}
+.backlog-filtered-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.backlog-filtered-heading .sec-title{margin:0;}
+.backlog-filter-summary{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#606266;margin:0 0 12px;}
+.backlog-filter-reset{padding:4px 8px;border:1px solid #dfe4eb;border-radius:2px;background:#fff;font-family:inherit;font-size:11px;color:#606266;cursor:pointer;}
+.backlog-flow-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.backlog-flow-card{min-width:0;padding:12px;border:1px solid #e5eaf0;border-radius:2px;background:#fff;}
+.backlog-flow-card.is-all{border-color:var(--accent-line);background:var(--accent-soft);}
+.backlog-flow-card .name{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px;font-size:12px;font-weight:600;color:#606266;}
+.backlog-flow-card .name>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.backlog-flow-card .value{display:flex;align-items:baseline;gap:5px;margin-top:10px;font-size:11px;color:#909399;}
+.backlog-flow-card .value .count-link{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;}
+.backlog-flow-card-empty{grid-column:1/-1;padding:28px 12px;text-align:center;color:#909399;font-size:12px;border:1px solid #e7ebf0;border-radius:2px;}
+@media(max-width:1050px){#backlogCustomersBody .backlog-customer-grid,.backlog-flow-card-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:1050px){#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-customer-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 </style>
 
 <style id="gofo-v386-backlog-flow-heading">
-#backlogFlowBody[data-drawer-type="backlog"] .backlog-flow-toolbar{
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-flow-toolbar{
   display:flex;align-items:center;justify-content:flex-end;gap:8px;
   margin:0 0 10px;padding:0;border:0;background:transparent;
 }
-#backlogFlowBody[data-drawer-type="backlog"] .backlog-flow-toolbar .backlog-flow-back{
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-flow-toolbar .backlog-flow-back{
   margin-left:0;
 }
 </style>
 
 <style id="gofo-v387-backlog-interactions">
-#drawerBody[data-drawer-type="backlog"] .backlog-dimension-static{cursor:default;}
-#drawerBody[data-drawer-type="backlog"] .backlog-dimension-static:hover{transform:none;box-shadow:none;}
-#drawerBody[data-drawer-type="backlog"] .backlog-numeric-link,
-#backlogFlowBody[data-drawer-type="backlog"] .count-link{
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-dimension-static{cursor:default;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-dimension-static:hover{transform:none;box-shadow:none;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-numeric-link,
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .count-link{
   display:inline-flex;align-items:baseline;padding:0;border:0;background:transparent;color:var(--accent);
   font-family:inherit;cursor:pointer;text-decoration:underline!important;text-underline-offset:4px;text-decoration-thickness:1px;
 }
-#drawerBody[data-drawer-type="backlog"] .backlog-numeric-link b{color:inherit;}
-#drawerBody[data-drawer-type="backlog"] .backlog-numeric-link:hover,
-#backlogFlowBody[data-drawer-type="backlog"] .count-link:hover{color:#d84408;transform:none!important;}
-#drawerBody[data-drawer-type="backlog"] .backlog-numeric-link:focus-visible,
-#backlogFlowBody[data-drawer-type="backlog"] .count-link:focus-visible{outline:2px solid #fc4c02;outline-offset:4px;border-radius:2px;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter{position:relative;cursor:default;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter:hover{transform:none!important;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter.on{border-color:#fc4c02!important;background:#fff5ef!important;box-shadow:inset 0 0 0 1px #fc4c02!important;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-hitbox{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer;z-index:0;transform:none!important;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-hitbox:focus-visible{outline:2px solid #fc4c02;outline-offset:-3px;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter .backlog-time-card-head,
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter .backlog-time-card-value{position:relative;pointer-events:none;z-index:1;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter .backlog-numeric-link{pointer-events:auto;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-filter .backlog-time-card-head{display:flex!important;align-items:center;justify-content:space-between;min-height:18px;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-selected{margin-left:auto;font-size:13px;font-weight:700;color:#e64a13;}
-#drawerBody[data-drawer-type="backlog"] .backlog-time-tools{display:flex;align-items:center;gap:10px;}
-#drawerBody[data-drawer-type="backlog"] .backlog-age-reset{border:1px solid #dfe4eb;background:#fff;border-radius:2px;padding:4px 8px;font-family:inherit;font-size:11px;color:#606266;cursor:pointer;}
-#drawerBody[data-drawer-type="backlog"] .backlog-age-reset:disabled{color:#909399;background:#fafafa;cursor:default;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-numeric-link b{color:inherit;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-scope-number{font-size:inherit;font-weight:inherit;line-height:inherit;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-numeric-link:hover,
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .count-link:hover{color:#d84408;transform:none!important;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-numeric-link:focus-visible,
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .count-link:focus-visible{outline:2px solid #fc4c02;outline-offset:4px;border-radius:2px;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter{position:relative;cursor:default;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter:hover{transform:none!important;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-filter-card.on,
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter.on{border-color:transparent!important;background:var(--accent-soft)!important;box-shadow:none!important;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter.on .backlog-time-card-label,
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter.on .backlog-time-card-value{color:var(--accent)!important;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-hitbox{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer;z-index:0;transform:none!important;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-hitbox:focus-visible{outline:2px solid #fc4c02;outline-offset:-3px;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter .backlog-time-card-head,
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter .backlog-time-card-value{position:relative;pointer-events:none;z-index:1;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter .backlog-numeric-link{pointer-events:auto;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-filter .backlog-time-card-head{display:flex!important;align-items:center;justify-content:space-between;min-height:18px;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-selected{margin-left:auto;font-size:13px;font-weight:700;color:#e64a13;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-time-tools{display:flex;align-items:center;gap:10px;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-age-reset{border:1px solid #dfe4eb;background:#fff;border-radius:2px;padding:4px 8px;font-family:inherit;font-size:11px;color:#606266;cursor:pointer;}
+#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-age-reset:disabled{color:#909399;background:#fafafa;cursor:default;}
 .backlog-active-age{font-size:11px;color:#c75020;white-space:nowrap;}
-#backlogFlowBody[data-drawer-type="backlog"] .backlog-flow-toolbar{justify-content:flex-end;}
-#backlogFlowBody[data-drawer-type="backlog"] .backlog-flow-toolbar .backlog-active-age{margin-right:auto;}
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-flow-toolbar{justify-content:flex-end;}
+#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]) .backlog-flow-toolbar .backlog-active-age{margin-right:auto;}
 .backlog-customer-query{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;padding:12px;margin-bottom:12px;background:#fafbfd;border:1px solid #e7ebf0;border-radius:2px;}
 .backlog-account-field{min-width:180px;flex:0 1 320px;}
 .backlog-account-field label{display:block;font-size:12px;font-weight:600;color:#606266;margin-bottom:6px;}
@@ -2992,6 +3043,62 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 .backlog-account-actions .action-btn{height:32px;border-radius:2px;}
 .backlog-zero-results{text-align:center!important;padding:28px 12px!important;color:#909399!important;font-weight:400!important;}
 .backlog-waybill-context{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 10px;color:#606266;font-size:12px;}
+.main-flow-operator-query{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;}
+.main-flow-operator-query[hidden]{display:none!important;}
+.main-flow-operator-query label{font-size:12px;color:#000;white-space:nowrap;}
+.main-flow-operator-query .query-input{width:220px;max-width:100%;height:32px;}
+.main-flow-operator-query .action-btn{height:32px;}
+#mainFlowViewTabs[hidden],#oc15dMainFlowViewTabs[hidden],.main-flow-type-row[hidden]{display:none!important;}
+.main-flow-operator-select.custom-multi-select{position:relative;width:320px;max-width:100%;min-width:0;}
+.main-flow-operator-select .custom-multi-select-trigger{display:flex;align-items:center;height:32px;padding:0 11px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #d9d9d9;border-radius:6px;cursor:pointer;}
+.main-flow-operator-select .custom-multi-select-trigger:hover,.main-flow-operator-select .custom-multi-select-trigger:focus-visible{border-color:#fc4c02;outline:none;box-shadow:0 0 0 2px rgba(252,76,2,.16);}
+.main-flow-operator-select .custom-multi-select-content{flex:1;min-width:0;display:flex;align-items:center;gap:4px;overflow:hidden;height:22px;}
+.main-flow-operator-select .custom-multi-select-placeholder{color:#909399;font-size:12px;}
+.main-flow-operator-select .custom-multi-select-tag,.main-flow-operator-select .custom-multi-select-overflow{display:inline-flex;align-items:center;padding:0 4px;height:20px;background:#f5f5f5;border-radius:2px;font-size:12px;white-space:nowrap;flex-shrink:0;}
+.main-flow-operator-select .custom-multi-select-tag-close{display:inline-flex;align-items:center;justify-content:center;margin-left:2px;width:14px;height:14px;padding:0;border:0;background:transparent;cursor:pointer;color:#606266;}
+.main-flow-operator-select .custom-multi-select-arrow{flex-shrink:0;margin-left:4px;color:#909399;transition:transform .2s;}
+.main-flow-operator-select .custom-multi-select-arrow.is-open{transform:rotate(180deg);}
+.main-flow-operator-select .custom-multi-select-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.08),0 3px 6px -4px rgba(0,0,0,.12);z-index:30;overflow:hidden;}
+.main-flow-operator-select [hidden]{display:none!important;}
+.main-flow-operator-select .custom-multi-select-search{padding:8px;}
+.main-flow-operator-select .custom-multi-select-search-input{width:100%;height:32px;padding:0 11px;box-sizing:border-box;border:1px solid #d9d9d9;border-radius:6px;font:inherit;font-size:12px;}
+.main-flow-operator-select .custom-multi-select-search-input:focus{border-color:#fc4c02;outline:none;}
+.main-flow-operator-select .custom-multi-select-options{max-height:200px;overflow-y:auto;padding:4px 0;}
+.main-flow-operator-select .custom-multi-select-option{position:relative;display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:12px;color:#000;}
+.main-flow-operator-select .custom-multi-select-option:hover{background:#f5f5f5;}
+.main-flow-operator-select .custom-multi-select-option-all{border-bottom:1px solid #f0f0f0;margin-bottom:4px;font-weight:600;}
+.main-flow-operator-select .operator-checkbox{position:absolute;width:16px;height:16px;opacity:0;}
+.main-flow-operator-select .custom-checkbox{width:16px;height:16px;box-sizing:border-box;border:1px solid #d9d9d9;border-radius:2px;position:relative;flex-shrink:0;}
+.main-flow-operator-select .custom-checkbox.is-checked,.main-flow-operator-select .custom-checkbox.is-indeterminate{background:#fc4c02;border-color:#fc4c02;}
+.main-flow-operator-select .custom-checkbox.is-checked:after{content:'';position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
+.main-flow-operator-select .custom-checkbox.is-indeterminate:after{content:'';position:absolute;left:3px;top:6px;width:8px;height:2px;background:#fff;}
+.main-flow-operator-select .operator-checkbox:focus-visible+.custom-checkbox{outline:2px solid #fc4c02;outline-offset:2px;}
+.main-flow-operator-select .operator-select-empty{padding:14px;text-align:center;color:#909399;font-size:12px;}
+.sorted-flow-summary{margin-top:18px;}
+.sorted-flow-summary .drawer-section-head{margin-top:0;padding-bottom:10px;border-bottom:1px solid #ebeef5;}
+.sorted-flow-summary .table-scroll{margin-top:10px;overflow:auto;}
+.sorted-flow-summary .tbl{min-width:950px;}
+.sorted-flow-summary .tbl th,.sorted-flow-summary .tbl td{white-space:nowrap;text-align:center;}
+.sorted-flow-summary .tbl td .count-link,.sorted-flow-summary .tbl td .bag-count-link{color:#fc4c02;}
+.sorted-flow-summary .tbl tbody tr:nth-child(even){background:#fafafa;}
+#drawerBody[data-drawer-type="sorted"] .destination-overview .destination-stats>.stat:last-child{background:#fff8ec;border-color:#f3dfba;}
+#drawerBody[data-drawer-type="sorted"] .destination-overview .destination-stats>.stat:last-child .l,
+#drawerBody[data-drawer-type="sorted"] .destination-overview .destination-stats>.stat:last-child .bag-count-link{color:#e0921a;}
+.backlog-customer-business-tabs{margin-bottom:10px;}
+:is(#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]),#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]),#backlogCustomersBody)
+  :is(.backlog-filter-card,.backlog-time-card,.backlog-dimension-card,.backlog-flow-card){
+  --backlog-card-text:#000;
+  color:var(--backlog-card-text)!important;
+}
+:is(#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]),#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]),#backlogCustomersBody)
+  :is(.backlog-filter-card.on,.backlog-time-card.on,.backlog-dimension-card.is-selected){
+  --backlog-card-text:#fc4c02;
+}
+:is(#drawerBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]),#backlogFlowBody:is([data-drawer-type="backlog"],[data-drawer-type="pending"]),#backlogCustomersBody)
+  :is(.backlog-filter-card,.backlog-time-card,.backlog-dimension-card,.backlog-flow-card)
+  :is(.l,.v,.name,.value,.backlog-time-card-head,.backlog-time-card-label,.backlog-time-card-value,.backlog-time-selected,.backlog-flow-type-pill,.more-title,.more-count,button,b,small,span){
+  color:var(--backlog-card-text)!important;
+}
 </style>
 </head>
 <body class=""><div style="all: unset !important;"></div>
@@ -3228,11 +3335,16 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
 <span aria-selected="true" class="on" data-main-flow-view="table" role="tab" tabindex="0">表格</span>
 <span aria-selected="false" data-main-flow-view="chart" role="tab" tabindex="0">图表</span>
 </div>
+<button type="button" class="section-export-btn" id="mainFlowExportBtn" aria-label="导出已分拣目的流向数据">导出</button>
 <button aria-hidden="true" class="ghost-btn" id="mainFlowExpandBtn" style="display:none;" tabindex="-1" type="button">展开明细</button>
 </div></div>
       <div class="main-flow-summary" id="mainFlowSummary" style="display:none;"></div>
     </div>
 
+    <form class="main-flow-operator-query" id="mainFlowOperatorForm" hidden aria-label="操作人查询">
+      <label id="mainFlowOperatorLabel">操作人</label><div class="main-flow-operator-select custom-multi-select" id="mainFlowOperatorSelect"></div>
+      <button type="button" class="action-btn secondary" id="mainFlowOperatorReset">重置</button><button type="submit" class="action-btn primary">查询</button>
+    </form>
     <div class="main-flow-breadcrumb" id="mainFlowBreadcrumb"><span>目的流向</span><span class="sep">›</span><span>按组织维度</span><span class="sep">›</span><b>服务渠道维度</b><span class="sep">›</span><span>小时</span></div>
 
     <div class="main-flow-table-wrap" id="mainFlowTableWrap" style="overflow-x:auto;">
@@ -3594,6 +3706,16 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
   </div>
 </div>
 
+<div class="drawer-mask backlog-child-mask" id="backlogCustomersMask" aria-hidden="true">
+  <div class="drawer drawer-wide" role="dialog" aria-modal="true" aria-labelledby="backlogCustomersTitle">
+    <div class="drawer-hd">
+      <span class="ttl" id="backlogCustomersTitle">全部客户</span>
+      <button type="button" class="drawer-x" id="backlogCustomersClose" title="关闭" aria-label="关闭全部客户弹框">×</button>
+    </div>
+    <div class="drawer-bd" id="backlogCustomersBody"></div>
+  </div>
+</div>
+
 <!-- ===== 应分拣 / 待分拣目的流向（当前层级独立关闭） ===== -->
 <div class="drawer-mask backlog-child-mask" id="backlogFlowMask" aria-hidden="true">
   <div class="drawer drawer-wide" role="dialog" aria-modal="true" aria-labelledby="backlogFlowTitle">
@@ -3683,6 +3805,10 @@ main.gofo-content{gap:10px !important;padding:14px 16px 16px !important;}
           <div class="main-flow-summary" id="oc15dMainFlowSummary" style="display:none;"></div>
         </div>
 
+        <form class="main-flow-operator-query" id="oc15dMainFlowOperatorForm" hidden aria-label="操作人查询">
+          <label id="oc15dMainFlowOperatorLabel">操作人</label><div class="main-flow-operator-select custom-multi-select" id="oc15dMainFlowOperatorSelect"></div>
+          <button type="button" class="action-btn secondary" id="oc15dMainFlowOperatorReset">重置</button><button type="submit" class="action-btn primary">查询</button>
+        </form>
         <div class="main-flow-breadcrumb" id="oc15dMainFlowBreadcrumb"></div>
         <div class="main-flow-table-wrap" id="oc15dMainFlowTableWrap" style="overflow-x:auto;">
           <table class="tbl" id="oc15dMainFlowTable">
@@ -3737,14 +3863,19 @@ const backlogFlowMask = document.getElementById('backlogFlowMask');
 const backlogFlowBody = document.getElementById('backlogFlowBody');
 const backlogFlowTitle = document.getElementById('backlogFlowTitle');
 const backlogFlowClose = document.getElementById('backlogFlowClose');
+const backlogCustomersMask = document.getElementById('backlogCustomersMask');
+const backlogCustomersBody = document.getElementById('backlogCustomersBody');
+const backlogCustomersClose = document.getElementById('backlogCustomersClose');
+let backlogCustomersOpener = null;
+let backlogFlowOpener = null;
 const lightbox = document.getElementById('lightbox');
 const lightboxBody = document.getElementById('lightboxBody');
 const lightboxClose = document.getElementById('lightboxClose');
 
 const drawerTitles = {
   backlog:   '查看明细-应分拣',
-  pending:   '待分拣 · 下钻分析',
-  sorted:    '已分拣 · 下钻分析',
+  pending:   '查看明细-待分拣',
+  sorted:    '查看明细-已分拣',
   eta:       '预计到车 · 分拣数据',
   unload:    '卸车区 - 已到未卸',
   history:   '历史留仓 · 明细',
@@ -3769,10 +3900,15 @@ function getDrawerExportName(type, extra) {
 }
 
 function openDrawer(type, extra) {
-  if (type === 'backlog') {
+  if(type==='sorted')sortedCustomerExpanded=false;
+  if (type === 'backlog' || type === 'pending') {
+    backlogOverviewContext = type;
+    backlogCustomerBusinessType = extra?.customerBusinessType==='origin'?'origin':'all';
     extra = {...(extra || {}), timeBucket:(extra && extra.timeBucket) || 'all'};
     backlogOverviewSelection = {scope:extra.scope || 'all',timeBucket:extra.timeBucket};
+    backlogDestinationFilters = {...backlogDefaultDestinationFilters,...(extra.destinationFilters || {})};
   }
+  closeBacklogCustomers(false);
   if (backlogFlowMask) { backlogFlowMask.classList.remove('on'); backlogFlowMask.setAttribute('aria-hidden', 'true'); }
   if (lightbox) lightbox.classList.remove('on');
   drawerTitle.textContent = drawerTitles[type] || '明细';
@@ -3794,26 +3930,28 @@ function openDrawer(type, extra) {
 }
 function openBacklogFlowDrawer(context, extra) {
   if (!backlogFlowMask || !backlogFlowBody) return;
+  if(!backlogFlowMask.classList.contains('on'))backlogFlowOpener=document.activeElement;
   const drawerContext = context === 'pending' ? 'pending' : 'backlog';
-  if (drawerContext === 'backlog') {
+  if (drawerContext === 'backlog' || drawerContext === 'pending') {
     extra = {...(extra || {}),timeBucket:(extra && extra.timeBucket) || 'all'};
-    backlogChildSelection = {...extra};
+    backlogChildSelection = {...extra,context:drawerContext};
   }
   if (backlogFlowTitle) backlogFlowTitle.textContent = `${drawerContext === 'pending' ? '待分拣' : '应分拣'} · 目的流向汇总`;
-  backlogFlowBody.innerHTML = buildDrawer(drawerContext, { ...(extra || {}), stage:'destination' });
+  backlogFlowBody.innerHTML = buildDrawer(drawerContext, { ...(extra || {}), stage:extra?.stage || 'destination' });
   backlogFlowBody.setAttribute('data-drawer-type', drawerContext);
-  if (drawerContext === 'backlog' && backlogFlowTitle) {
+  if (backlogFlowTitle) {
     const heading = backlogFlowBody.querySelector('[data-backlog-detail-title]');
-    backlogFlowTitle.textContent = heading ? heading.dataset.backlogDetailTitle : '应分拣 - 全部';
+    backlogFlowTitle.textContent = heading ? heading.dataset.backlogDetailTitle : (drawerContext === 'pending' ? '待分拣 - 全部' : '应分拣 - 全部');
   }
   backlogFlowMask.classList.add('on');
   backlogFlowMask.setAttribute('aria-hidden', 'false');
+  backlogFlowBody.scrollTop=0;backlogFlowClose.focus();
 }
 document.addEventListener('submit',event=>{
   if(event.target.id!=='backlogCustomerAccountForm')return;
   event.preventDefault();
   const query=event.target.querySelector('[name="account"]').value;
-  openBacklogFlowDrawer('backlog',{...backlogChildSelection,customerAccountQuery:query});
+  openBacklogFlowDrawer(backlogChildSelection.context,{...backlogChildSelection,customerAccountQuery:query});
   backlogFlowBody.querySelector('#backlogCustomerAccountInput')?.focus();
 });
 function closeBacklogFlowDrawer() {
@@ -3821,10 +3959,12 @@ function closeBacklogFlowDrawer() {
   backlogFlowMask.classList.remove('on');
   backlogFlowMask.setAttribute('aria-hidden', 'true');
   backlogFlowBody.removeAttribute('data-drawer-type');
+  if(backlogFlowOpener?.isConnected)backlogFlowOpener.focus({preventScroll:true});
 }
 function closeDrawer() {
   if (lightbox) lightbox.classList.remove('on');
   closeBacklogFlowDrawer();
+  closeBacklogCustomers(false);
   drawerMask.classList.remove('on');
   drawerBody.removeAttribute('data-drawer-type');
 }
@@ -3832,6 +3972,19 @@ drawerClose.addEventListener('click', closeDrawer);
 drawerMask.addEventListener('click', (e) => { if (e.target === drawerMask) closeDrawer(); });
 if (backlogFlowClose) backlogFlowClose.addEventListener('click', closeBacklogFlowDrawer);
 if (backlogFlowMask) backlogFlowMask.addEventListener('click', (e) => { if (e.target === backlogFlowMask) closeBacklogFlowDrawer(); });
+backlogCustomersClose.addEventListener('click',()=>closeBacklogCustomers());
+backlogCustomersMask.addEventListener('click',event=>{if(event.target===backlogCustomersMask)closeBacklogCustomers();});
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Tab' || lightbox.classList.contains('on'))return;
+  const modal=backlogCustomersMask.classList.contains('on')?backlogCustomersMask:backlogFlowMask.classList.contains('on')?backlogFlowMask:null;
+  if(!modal)return;
+  const controls=[...modal.querySelectorAll('button,input,select,[tabindex="0"]')].filter(control=>!control.disabled && control.getClientRects().length);
+  if(!controls.length)return;
+  const first=controls[0],last=controls[controls.length-1],active=document.activeElement;
+  if(!modal.contains(active) || (event.shiftKey && active===first) || (!event.shiftKey && active===last)){
+    event.preventDefault();(event.shiftKey?last:first).focus();
+  }
+});
 
 function openLightbox(name, count, scope) {
   lightboxBody.removeAttribute('data-backlog-origin-customer');
@@ -4160,22 +4313,22 @@ document.addEventListener('keydown', (e) => {
   const fullscreenTable = document.querySelector('.query-table-card.is-fullscreen');
   if (fullscreenTable) { fullscreenTable.classList.remove('is-fullscreen'); return; }
   if (lightbox.classList.contains('on')) { closeLightbox(); return; }
+  if (backlogCustomersMask.classList.contains('on')) { closeBacklogCustomers(); return; }
   if (backlogFlowMask && backlogFlowMask.classList.contains('on')) { closeBacklogFlowDrawer(); return; }
   if (drawerMask.classList.contains('on')) closeDrawer();
 });
 
 
 
-// Backlog-only prototype fixture. Customer allocations are examples, not live data.
+// Independent pending/backlog prototype fixtures. Customer allocations are examples, not live data.
 // Allocate today/history separately so customer and destination totals reconcile.
 const backlogCustomerSnapshots = new Map();
+const backlogCustomerDefinitions = Array.from({length:12},(_,index)=>{
+  const letter=String.fromCharCode(65+index);
+  return {key:'customer-'+letter.toLowerCase(),label:'客户'+letter,account:'CUST-'+letter+'001'};
+});
 function buildBacklogCustomerData(scopeData, scope) {
-  const customers = [
-    {key:'customer-a',label:'\u5ba2\u6237A'},
-    {key:'customer-b',label:'\u5ba2\u6237B'},
-    {key:'customer-c',label:'\u5ba2\u6237C'},
-    {key:'other',label:'\u5176\u4ed6\u5ba2\u6237'}
-  ];
+  const customers = backlogCustomerDefinitions;
   const typeOrder = ['hub','station','road','channel'];
   const weights = [[40,30,20,10],[32,38,18,12],[28,24,36,12],[36,22,24,18]];
   const toNumber = value => Number(String(value || 0).replace(/,/g,'')) || 0;
@@ -4190,7 +4343,9 @@ function buildBacklogCustomerData(scopeData, scope) {
   };
   const makeRows = key => typeOrder.flatMap((type,typeIndex)=>(scopeData[key].destination[type]||[]).flatMap(([name,value],rowIndex)=>{
     const counts = partition(toNumber(value),weights[(typeIndex+rowIndex)%weights.length]);
-    return customers.map((customer,index)=>({customerKey:customer.key,customer:customer.label,type,name,count:counts[index]}));
+    // Split the former tail allocation into individual example customers.
+    const tailCounts=partition(counts[3],[9,8,7,6,5,4,3,2,1]);
+    return customers.map((customer,index)=>({customerKey:customer.key,customer:customer.label,type,name,count:index<3?counts[index]:tailCounts[index-3]}));
   }));
   const today=makeRows('today'),history=makeRows('history');
   let rows=scope==='today'?today:scope==='history'?history:null;
@@ -4211,12 +4366,16 @@ function buildBacklogCustomerData(scopeData, scope) {
   return result;
 }
 
-// Joint fixture for backlog-only age/source/customer filtering. This remains
+// Joint fixtures for age/source/customer filtering in both unsorted metrics. This remains
 // prototype data: integer margins preserve the existing today/history totals.
 const backlogAgeLabels = {'all':'\u5168\u90e8\u65f6\u957f','<24H':'\u5c0f\u4e8e24H','24-48H':'24-48H','48-72H':'48-72H','>72H':'\u5927\u4e8e72H'};
-const backlogCustomerAccounts = {'customer-a':'CUST-A001','customer-b':'CUST-B001','customer-c':'CUST-C001','other':''};
+const backlogCustomerAccounts = Object.fromEntries(backlogCustomerDefinitions.map(customer=>[customer.key,customer.account]));
 const backlogLinkedFixtureCache = new Map();
+const backlogDefaultDestinationFilters = {source:'all',sort:'all',customer:'all'};
+let backlogDestinationFilters = {...backlogDefaultDestinationFilters};
 let backlogOverviewSelection = {scope:'all',timeBucket:'all'};
+let backlogOverviewContext = 'backlog';
+let backlogCustomerBusinessType = 'all';
 let backlogChildSelection = null;
 const backlogNumber = value => Number(String(value ?? 0).replace(/,/g,'')) || 0;
 const backlogEscape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -4238,7 +4397,7 @@ function backlogAllocateMargin(rows, entries, field) {
   });
   return output;
 }
-function buildBacklogLinkedData(scopeData, scope, timeBucket) {
+function buildBacklogLinkedData(scopeData, scope, timeBucket, context='backlog', customerBusinessType='all') {
   const signature=JSON.stringify(scopeData);
   let fixture=backlogLinkedFixtureCache.get(signature);
   if(!fixture){
@@ -4258,24 +4417,87 @@ function buildBacklogLinkedData(scopeData, scope, timeBucket) {
   const source=Object.fromEntries(Object.keys(base.source).map(key=>[key,fmt(key==='all'?total:sum(rows.filter(row=>row.sourceKey===key)))]));
   const sort=Object.fromEntries(Object.keys(base.sort).map(key=>[key,fmt(key==='all'?total:sum(rows.filter(row=>row.type===key)))]));
   const destination=Object.fromEntries(Object.entries(base.destination).map(([type,values])=>[type,values.map(([name])=>[name,fmt(sum(rows.filter(row=>row.type===type&&row.name===name)))]) ]));
-  const counts=Object.fromEntries(Object.keys(fixture.labels).map(key=>[key,key==='all'?total:sum(rows.filter(row=>row.customerKey===key))]));
-  const customerData={rows,counts,labels:fixture.labels,scope,timeBucket,label:base.label};
-  backlogCustomerSnapshots.set(scope+'|'+timeBucket,customerData);
+  const customerRows=rows.filter(row=>customerBusinessType==='all'||row.sourceKey!=='transit');
+  const counts=Object.fromEntries(Object.keys(fixture.labels).map(key=>[key,sum(key==='all'?customerRows:customerRows.filter(row=>row.customerKey===key))]));
+  const customerData={rows:customerRows,counts,labels:fixture.labels,scope,timeBucket,context,customerBusinessType,label:base.label};
+  backlogCustomerSnapshots.set(context+'|'+scope+'|'+timeBucket+'|'+customerBusinessType,customerData);
   return {rows,data:{...base,count:fmt(total),source,sort,destination},customerData};
 }
-function exportBacklogCustomerData(scope, customerKey='all', timeBucket='all', accountQuery=null) {
-  const snapshot=backlogCustomerSnapshots.get(scope+'|'+timeBucket);
+function buildBacklogDestinationCards(rows, options={}){
+  const fmt=value=>Number(value || 0).toLocaleString('en-US');
+  const typeLabels={hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
+  const ordered=[...rows].sort((a,b)=>b.count-a.count || a.name.localeCompare(b.name) || a.type.localeCompare(b.type));
+  const total=ordered.reduce((sum,row)=>sum+row.count,0);
+  const customerAttributes=options.customerLabel!==undefined
+    ? ` data-backlog-origin-customer="${backlogEscape(options.customerLabel)}" data-backlog-origin-account="${backlogEscape(options.account || '')}"` : '';
+  const countButton=(count,name,row)=>`<button type="button" class="count-link" data-waybill-name="${backlogEscape(name)}" data-waybill-count="${fmt(count)}" data-waybill-scope="${backlogEscape(options.recordScope || '应分拣')}" data-backlog-time="${backlogEscape(options.timeBucket || 'all')}"${customerAttributes}${row && customerAttributes?` data-backlog-origin-type="${row.type}" data-backlog-origin-destination="${backlogEscape(row.name)}"`:''}>${fmt(count)}</button>`;
+  const card=(name,count,row)=>`<div class="backlog-flow-card${row?'':' is-all'}"><div class="name"><span title="${backlogEscape(name)}">${backlogEscape(name)}</span>${row?`<span class="backlog-flow-type-pill ${row.type}">${typeLabels[row.type]}</span>`:''}</div><div class="value">${countButton(count,(options.label || '应分拣')+' · '+name,row)}<small>票</small></div></div>`;
+  return `<div class="backlog-flow-card-grid">${card('合计',total)}${ordered.map(row=>card(row.name,row.count,row)).join('')}${ordered.length?'':'<div class="backlog-flow-card-empty">当前筛选条件下暂无目的流向数据</div>'}</div>`;
+}
+function buildBacklogFilteredDestinations(snapshot){
+  const filters=backlogDestinationFilters;
+  const grouped=new Map();
+  snapshot.rows.filter(row=>(filters.source==='all'||row.sourceKey===filters.source)
+    &&(filters.sort==='all'||row.type===filters.sort)
+    &&(filters.customer==='all'||row.customerKey===filters.customer)).forEach(row=>{
+      const key=JSON.stringify([row.type,row.name]);
+      if(!grouped.has(key))grouped.set(key,{type:row.type,name:row.name,count:0});
+      grouped.get(key).count+=row.count;
+    });
+  const sourceLabels={transit:'中转',pickup:'揽收',customs:'清关',self:'客户自送'};
+  const sortLabels={hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
+  const labels=[];
+  if(filters.source!=='all')labels.push('货物来源：'+sourceLabels[filters.source]);
+  if(filters.sort!=='all')labels.push('分拣维度：'+sortLabels[filters.sort]);
+  if(filters.customer!=='all')labels.push('客户：'+snapshot.labels[filters.customer]);
+  const label=labels.join(' · ') || '全部目的流向';
+  const recordScope=snapshot.label+' · '+(snapshot.customerBusinessType==='origin'?'始发业务':'全部业务')+(snapshot.timeBucket!=='all'?' · '+backlogAgeLabels[snapshot.timeBucket]:'')+' · '+label;
+  const options={label,recordScope,timeBucket:snapshot.timeBucket};
+  if(filters.customer!=='all')Object.assign(options,{customerLabel:snapshot.labels[filters.customer],account:backlogCustomerAccounts[filters.customer]});
+  return `<div class="backlog-filter-summary" aria-live="polite"><span>${backlogEscape(label)}</span></div>${buildBacklogDestinationCards([...grouped.values()].filter(row=>row.count>0),options)}`;
+}
+function buildBacklogFilteredSection(snapshot){
+  return `<section class="backlog-filtered-section" aria-label="目的流向筛选结果"><div class="backlog-filtered-heading"><h3 class="sec-title">目的流向</h3><button type="button" class="backlog-filter-reset" data-backlog-destination-reset>重置筛选</button></div><div data-backlog-filtered-destinations data-backlog-context="${snapshot.context}" data-backlog-customer-business="${snapshot.customerBusinessType}" data-backlog-scope="${snapshot.scope}" data-backlog-time="${backlogEscape(snapshot.timeBucket)}">${buildBacklogFilteredDestinations(snapshot)}</div></section>`;
+}
+function renderBacklogDestinationFiltering(){
+  [drawerBody,backlogFlowBody,backlogCustomersBody].forEach(host=>{
+    host.querySelectorAll('[data-backlog-dimension-filter]').forEach(button=>{
+      const selected=backlogDestinationFilters[button.dataset.backlogDimensionGroup]===button.dataset.backlogDimensionKey;
+      button.setAttribute('aria-pressed',String(selected));
+      button.closest('.backlog-dimension-card').classList.toggle('is-selected',selected);
+    });
+    host.querySelectorAll('[data-backlog-filtered-destinations]').forEach(target=>{
+      const snapshot=backlogCustomerSnapshots.get((target.dataset.backlogContext || 'backlog')+'|'+target.dataset.backlogScope+'|'+target.dataset.backlogTime+'|'+(target.dataset.backlogCustomerBusiness || 'all'));
+      if(snapshot)target.innerHTML=buildBacklogFilteredDestinations(snapshot);
+    });
+  });
+}
+function openBacklogCustomers(extra,opener){
+  backlogCustomersOpener=opener;
+  const context=extra.context || backlogOverviewContext;
+  backlogCustomersBody.setAttribute('data-drawer-type',context);
+  backlogCustomersBody.innerHTML=buildUnsortedDrawer(context,{...extra,stage:'customers'});
+  backlogCustomersMask.classList.add('on');backlogCustomersMask.setAttribute('aria-hidden','false');
+  backlogCustomersBody.scrollTop=0;backlogCustomersClose.focus();
+}
+function closeBacklogCustomers(restoreFocus=true){
+  const wasOpen=backlogCustomersMask.classList.contains('on');
+  backlogCustomersMask.classList.remove('on');backlogCustomersMask.setAttribute('aria-hidden','true');
+  if(wasOpen && restoreFocus && backlogCustomersOpener?.isConnected)backlogCustomersOpener.focus({preventScroll:true});
+}
+function exportBacklogCustomerData(scope, customerKey='all', timeBucket='all', accountQuery=null, context='backlog', customerBusinessType='all') {
+  const snapshot=backlogCustomerSnapshots.get(context+'|'+scope+'|'+timeBucket+'|'+customerBusinessType);
   if(!snapshot)return;
   const types={hub:'HUB',station:'\u7ad9\u70b9',road:'\u8def\u533a',channel:'\u670d\u52a1\u6e20\u9053'};
   const query=accountQuery===null?null:backlogAccountKey(accountQuery);
   const rows=snapshot.rows.filter(row=>row.count>0 && (query===null?(customerKey==='all'||row.customerKey===customerKey):(!query||backlogAccountKey(row.account)===query)));
   const grouped=new Map();
-  rows.forEach(row=>{const key=JSON.stringify([row.customerKey,row.type,row.name,row.timeBucket]);if(!grouped.has(key))grouped.set(key,{...row,count:0});grouped.get(key).count+=row.count;});
-  const data=[['\u7edf\u8ba1\u8303\u56f4','\u59cb\u53d1\u5ba2\u6237','\u5ba2\u6237\u5e10\u53f7','\u6ede\u7559\u65f6\u957f','\u6d41\u5411\u7c7b\u578b','\u76ee\u7684\u6d41\u5411','\u5e94\u5206\u62e3\uff08\u7968\uff09','\u6570\u636e\u7c7b\u578b'],...[...grouped.values()].map(row=>[snapshot.label,row.customer,row.account||'--',backlogAgeLabels[row.timeBucket],types[row.type],row.name,row.count,'\u539f\u578b\u793a\u4f8b'])];
+  rows.forEach(row=>{const businessType=row.sourceKey==='transit'?'中转':'始发';const key=JSON.stringify([row.customerKey,row.type,row.name,row.timeBucket,businessType]);if(!grouped.has(key))grouped.set(key,{...row,businessType,count:0});grouped.get(key).count+=row.count;});
+  const data=[['统计范围','业务类型','客户','客户账号','滞留时长','流向类型','目的流向',context==='pending'?'待分拣（票）':'应分拣（票）','数据类型'],...[...grouped.values()].map(row=>[snapshot.label,row.businessType,row.customer,row.account||'--',backlogAgeLabels[row.timeBucket],types[row.type],row.name,row.count,'原型示例'])];
   const quote=value=>'"'+String(value).replace(/"/g,'""')+'"';
   const blob=new Blob(['\ufeff'+data.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;link.download=snapshot.label+'-\u5ba2\u6237\u7ef4\u5ea6-'+backlogAgeLabels[timeBucket]+'.csv';
+  link.href=url;link.download=snapshot.label+'-客户维度-'+(customerBusinessType==='origin'?'始发':'全部')+'-'+backlogAgeLabels[timeBucket]+'.csv';
   document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function decorateBacklogWaybillView(trigger) {
@@ -4343,7 +4565,7 @@ function buildUnsortedDrawer(type, extra) {
     },
     pending: {
       all: {
-        label:'待分拣', count:'10,000', time:[['<24H','9,700'],['24-48H','240'],['48-72H','50'],['>72H','10']],
+        label:'待分拣', count:'10,000', time:[['<24H','9,881'],['24-48H','100'],['48-72H','17'],['>72H','2']],
         source:{all:'10,000',transit:'9,516',pickup:'260',customs:'160',self:'64'},
         sort:{all:'10,000',hub:'1,500',station:'5,600',road:'2,400',channel:'500'},
         destination:{
@@ -4379,47 +4601,37 @@ function buildUnsortedDrawer(type, extra) {
   };
   const scopeData = scopeDataMap[type];
   const baseData = scopeData[scope] || scopeData.all;
-  const timeBucket = !isPending && Object.hasOwn(backlogAgeLabels, extra?.timeBucket || '') ? extra.timeBucket : 'all';
-  const linkedData = isPending ? null : buildBacklogLinkedData(scopeData,scope,timeBucket);
-  const d = linkedData ? linkedData.data : baseData;
+  const timeBucket = Object.hasOwn(backlogAgeLabels, extra?.timeBucket || '') ? extra.timeBucket : 'all';
+  const customerBusinessType = extra?.customerBusinessType==='origin'?'origin':'all';
+  const customerBusinessLabel = customerBusinessType==='origin'?'始发':'全部';
+  const linkedData = buildBacklogLinkedData(scopeData,scope,timeBucket,type,customerBusinessType);
+  const d = linkedData.data;
   const sourceLabels = {all:'全部',transit:'中转',pickup:'揽收',customs:'清关',self:'客户自送'};
   const sortLabels = {all:'全部',hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
-  const typeLabels = {hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
-  const toNumber = value => Number(String(value || 0).replace(/,/g,'')) || 0;
   const formatNumber = value => Number(value || 0).toLocaleString('en-US');
-  const customerData = linkedData?.customerData || null;
+  const customerData = linkedData.customerData;
   const timeToneMap = ['normal','watch','warning','danger'];
   const backlogTimeDisplayMap = {'<24H':'小于24H','24-48H':'24-48H','48-72H':'48-72H','>72H':'大于72H'};
   const timeCards = baseData.time.map(([name,count], index) => {
-    const value = toNumber(count);
-    if(!isPending){
+    {
       const selected=timeBucket===name;
       return `<div class="backlog-time-card backlog-time-filter ${timeToneMap[index] || 'normal'} ${selected?'on':''}" data-backlog-time-card="${backlogEscape(name)}">
-        <button type="button" class="backlog-time-hitbox" data-backlog-time-filter="${backlogEscape(name)}" data-backlog-scope="${scope}" aria-pressed="${selected}" aria-label="\u7b5b\u9009${backlogTimeDisplayMap[name] || name}" aria-controls="backlogDimensionOverview backlogCustomerSection"></button>
+        <button type="button" class="backlog-time-hitbox" data-backlog-context="${type}" data-backlog-time-filter="${backlogEscape(name)}" data-backlog-scope="${scope}" aria-pressed="${selected}" aria-label="\u7b5b\u9009${backlogTimeDisplayMap[name] || name}" aria-controls="backlogDimensionOverview backlogCustomerSection"></button>
         <span class="backlog-time-card-head"><span class="backlog-time-card-label">${backlogTimeDisplayMap[name] || name}</span>${selected?'<span class="backlog-time-selected" aria-hidden="true">\u2713</span>':''}</span>
-        <span class="backlog-time-card-value"><button type="button" class="count-link backlog-numeric-link" data-backlog-time="${backlogEscape(name)}" data-waybill-name="\u6ede\u7559\u65f6\u957f\uff1a${backlogEscape(name)}" data-waybill-count="${count}" data-waybill-scope="${d.label}" aria-label="\u67e5\u770b${backlogTimeDisplayMap[name]}\u8fd0\u5355\uff0c${count}\u7968"><b>${count}</b></button><small>\u7968</small></span>
+        <span class="backlog-time-card-value"><button type="button" class="backlog-time-count backlog-numeric-link" data-backlog-context="${type}" data-backlog-time-number="${backlogEscape(name)}" data-backlog-scope="${scope}" data-backlog-scope-label="${backlogEscape(baseData.label)}" aria-label="查看${baseData.label}${backlogTimeDisplayMap[name]}的目的流向，共${count}票" aria-haspopup="dialog" aria-controls="backlogFlowMask"><b>${count}</b></button><small>\u7968</small></span>
       </div>`;
     }
-    return `<button type="button" class="backlog-time-card count-link ${timeToneMap[index] || 'normal'}" data-waybill-name="时间分布：${name}" data-waybill-count="${count}" data-waybill-scope="${d.label}" aria-label="查看${d.label}${name}运单，共${count}票">
-      <span class="backlog-time-card-head"><span class="backlog-time-card-label">${backlogTimeDisplayMap[name] || name}</span></span>
-      <span class="backlog-time-card-value"><b>${count}</b><small>票</small></span>
-    </button>`;
   }).join('');
-  const buildDimensionCard = (group,key,label,count) => !isPending ? `
-    <div class="backlog-dimension-card backlog-dimension-static ${key==='all'?'is-all':''}">
+  const buildDimensionCard = (group,key,label,count,rank=0) => `
+    <div class="backlog-dimension-card backlog-dimension-static backlog-dimension-filterable ${key==='all'?'is-all':''} ${backlogDestinationFilters[group]===key?'is-selected':''}"${rank?` data-backlog-customer-rank="${rank}"`:''}>
+      <button type="button" class="backlog-dimension-hitbox" data-backlog-dimension-filter data-backlog-dimension-context="${type}" data-backlog-customer-business="${customerBusinessType}" data-backlog-dimension-group="${group}" data-backlog-dimension-key="${key}" data-backlog-dimension-scope="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-pressed="${backlogDestinationFilters[group]===key}" aria-label="筛选${label}的目的流向${group==='customer'?`，共${count}票`:''}"></button>
       <span class="name"><span>${label}</span></span>
-      <span class="value"><button type="button" class="backlog-dimension-count backlog-numeric-link" data-backlog-dimension-trigger data-backlog-dimension-context="${type}" data-backlog-dimension-group="${group}" data-backlog-dimension-key="${key}" data-backlog-dimension-scope="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-label="\u67e5\u770b${label}\u76ee\u7684\u6d41\u5411\uff0c${count}\u7968"><b>${count}</b></button><small>\u7968</small></span>
-    </div>` : `
-    <button type="button" class="backlog-dimension-card ${key === 'all' ? 'is-all' : ''}" data-backlog-dimension-context="${type}" data-backlog-dimension-group="${group}" data-backlog-dimension-key="${key}" data-backlog-dimension-scope="${scope}">
-      <span class="name"><span>${label}</span><span class="arrow">›</span></span>
-      <span class="value"><b>${count}</b><small>票</small></span>
-    </button>`;
+      <span class="value">${group==='customer'?`<b>${count}</b>`:`<button type="button" class="backlog-dimension-count backlog-numeric-link" data-backlog-dimension-filter data-backlog-dimension-context="${type}" data-backlog-dimension-group="${group}" data-backlog-dimension-key="${key}" data-backlog-dimension-scope="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-pressed="${backlogDestinationFilters[group]===key}" aria-label="筛选${label}的目的流向，共${count}票"><b>${count}</b></button>`}<small>\u7968</small></span>
+    </div>`;
 
   if (stage === 'destination') {
-    const isCustomer = !isPending && dimensionGroup === 'customer';
-    const selectedMap = isCustomer ? customerData.counts : dimensionGroup === 'source' ? d.source : d.sort;
+    const isCustomer = dimensionGroup === 'customer';
     const selectedLabels = isCustomer ? customerData.labels : dimensionGroup === 'source' ? sourceLabels : sortLabels;
-    const selectedCount = toNumber(isCustomer ? (selectedMap[dimensionKey] ?? 0) : (selectedMap[dimensionKey] || d.count));
     let selectedLabel = selectedLabels[dimensionKey] || '\u5168\u90e8';
     const accountWasQueried=isCustomer && Object.hasOwn(extra || {},'customerAccountQuery');
     const accountQuery=isCustomer ? (accountWasQueried?String(extra.customerAccountQuery || '').trim():(backlogCustomerAccounts[dimensionKey] || '')) : '';
@@ -4430,11 +4642,10 @@ function buildUnsortedDrawer(type, extra) {
       selectedLabel=matchedKey?customerData.labels[matchedKey]:'\u5168\u90e8';
     }
     const ageScope=timeBucket==='all'?'':` \u00b7 ${backlogAgeLabels[timeBucket]}`;
-    const recordScope=d.label+(!isPending?ageScope:'');
+    const recordScope=d.label+(isCustomer?' · '+customerBusinessLabel+'业务':'')+ageScope;
     const detailTitle = `${baseLabel} - ${selectedLabel}`;
     const safeDetailTitle = detailTitle.replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
-    const groupLabel = isCustomer ? '始发客户' : dimensionGroup === 'source' ? '货物来源' : '分拣维度';
-    const typeOrder = ['hub','station','road','channel'];
+    const groupLabel = isCustomer ? '客户' : dimensionGroup === 'source' ? '货物来源' : '分拣维度';
     let destinationRows = [];
 
     if (isCustomer) {
@@ -4445,7 +4656,7 @@ function buildUnsortedDrawer(type, extra) {
         grouped.get(key).count+=row.count;
       });
       destinationRows=[...grouped.values()].filter(row=>row.count>0);
-    } else if (!isPending) {
+    } else {
       const grouped=new Map();
       linkedData.rows.filter(row=>dimensionKey==='all' || (dimensionGroup==='source'?row.sourceKey===dimensionKey:row.type===dimensionKey)).forEach(row=>{
         const key=JSON.stringify([row.type,row.name]);
@@ -4453,92 +4664,57 @@ function buildUnsortedDrawer(type, extra) {
         grouped.get(key).count+=row.count;
       });
       destinationRows=[...grouped.values()].filter(row=>row.count>0);
-    } else if (dimensionGroup === 'sort' && dimensionKey !== 'all') {
-      destinationRows = (d.destination[dimensionKey] || []).map(([name,count]) => ({type:dimensionKey,name,count:toNumber(count)}));
-    } else {
-      const baseSortTotal = typeOrder.reduce((sum,key)=>sum+toNumber(d.sort[key]),0) || 1;
-      const allocatedByType = {};
-      let assigned = 0;
-      typeOrder.forEach((key,index) => {
-        const value = index === typeOrder.length - 1
-          ? selectedCount - assigned
-          : Math.floor(selectedCount * toNumber(d.sort[key]) / baseSortTotal);
-        allocatedByType[key] = Math.max(0,value);
-        assigned += allocatedByType[key];
-      });
-      typeOrder.forEach(typeKey => {
-        const baseRows = d.destination[typeKey] || [];
-        const baseTotal = baseRows.reduce((sum,row)=>sum+toNumber(row[1]),0) || 1;
-        let typeAssigned = 0;
-        baseRows.forEach(([name,count],index) => {
-          const value = index === baseRows.length - 1
-            ? allocatedByType[typeKey] - typeAssigned
-            : Math.floor(allocatedByType[typeKey] * toNumber(count) / baseTotal);
-          const safeValue = Math.max(0,value);
-          typeAssigned += safeValue;
-          destinationRows.push({type:typeKey,name,count:safeValue});
-        });
-      });
     }
 
-    const destinationTotal = destinationRows.reduce((sum,row)=>sum+row.count,0);
-    const customerAttributes = isCustomer
-      ? ` data-backlog-origin-customer="${selectedCustomerKeys.length===1?backlogEscape(customerData.labels[selectedCustomerKeys[0]]):''}" data-backlog-origin-account="${backlogEscape(accountQuery)}"`
-      : '';
-    const recordAttributes=isPending?'':` data-backlog-time="${backlogEscape(timeBucket)}"`;
     const accountForm = !isCustomer ? '' : `<form class="backlog-customer-query" id="backlogCustomerAccountForm">
       <div class="backlog-account-field"><label for="backlogCustomerAccountInput">\u5ba2\u6237\u5e10\u53f7</label><input class="query-input" type="search" id="backlogCustomerAccountInput" name="account" value="${backlogEscape(accountQuery)}" placeholder="\u8bf7\u8f93\u5165\u5ba2\u6237\u5e10\u53f7" list="backlogCustomerAccountOptions" autocomplete="off"><datalist id="backlogCustomerAccountOptions">${Object.entries(backlogCustomerAccounts).filter(([,value])=>value).map(([key,value])=>`<option value="${value}">${customerData.labels[key]}</option>`).join('')}</datalist></div>
       <div class="backlog-account-actions"><button type="button" class="action-btn secondary" data-backlog-account-reset>\u91cd\u7f6e</button><button type="submit" class="action-btn primary">\u67e5\u8be2</button></div>
     </form>`;
-    const flowRows = destinationRows.map(row => `<tr>
-      <td>${row.name}</td>
-      <td><button type="button" class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · ${typeLabels[row.type]} · ${row.name}"${customerAttributes}${recordAttributes} data-waybill-count="${formatNumber(row.count)}" data-waybill-scope="${recordScope}"${isCustomer ? ` data-backlog-origin-type="${row.type}" data-backlog-origin-destination="${row.name}"` : ''}>${formatNumber(row.count)}</button></td>
-    </tr>`).join('');
+    const flowCardOptions={label:groupLabel+'：'+selectedLabel,recordScope,timeBucket};
+    if(isCustomer)Object.assign(flowCardOptions,{customerLabel:selectedCustomerKeys.length===1?customerData.labels[selectedCustomerKeys[0]]:'',account:accountQuery});
     return `
-      ${isPending ? `
-      <div class="backlog-flow-path" data-backlog-dimension-page>
-        <span>${baseLabel}</span><span class="sep">›</span><span>${d.label}</span><span class="sep">›</span><span>${groupLabel}</span><span class="sep">›</span><b>${selectedLabel}</b><span class="sep">›</span><b>目的流向汇总</b>
-        <button type="button" class="backlog-flow-back" data-action="backlog-flow-back">← 关闭当前层级</button>
-      </div>
-      <div class="drawer-section-head">
-        <div class="sec-title">目的流向汇总</div>
-        <div class="section-head-actions"><span class="scope-tag">${groupLabel}：${selectedLabel}</span><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · ${groupLabel}-${selectedLabel} · 目的流向汇总">导出</button></div>
-      </div>
-      ` : `${accountForm}<div class="backlog-flow-toolbar" data-backlog-dimension-page data-backlog-detail-title="${safeDetailTitle}">
+      ${accountForm}<div class="backlog-flow-toolbar" data-backlog-dimension-page data-backlog-detail-title="${safeDetailTitle}">
+        ${isCustomer?`<span class="backlog-active-age">业务类型：${customerBusinessLabel}</span>`:''}
         ${timeBucket!=='all'?`<span class="backlog-active-age">\u6ede\u7559\u65f6\u957f\uff1a${backlogAgeLabels[timeBucket]}</span>`:''}
         <button type="button" class="section-export-btn" ${isCustomer?'data-backlog-child-export':'data-action="section-export"'} data-export-name="${recordScope} \u00b7 ${groupLabel}-${selectedLabel} \u00b7 \u76ee\u7684\u6d41\u5411\u6c47\u603b">\u5bfc\u51fa</button>
-      </div>`}
-      <div class="table-scroll"><table class="tbl backlog-flow-table"><thead><tr><th>目的流向</th><th>运单数量</th></tr></thead><tbody><tr class="total"><td>合计</td><td><button type="button" class="count-link" data-waybill-name="${groupLabel}：${selectedLabel} · 目的流向合计"${customerAttributes}${recordAttributes} data-waybill-count="${formatNumber(destinationTotal)}" data-waybill-scope="${recordScope}">${formatNumber(destinationTotal)}</button></td></tr>${flowRows||(!isPending?'<tr><td colspan="2" class="backlog-zero-results">\u5f53\u524d\u7b5b\u9009\u6761\u4ef6\u4e0b\u6682\u65e0\u6570\u636e</td></tr>':'')}</tbody></table></div>
-      <div class="backlog-flow-footnote">点击运单数量进入运单明细。关闭本页后，上一级“${isPending ? baseLabel + ' · 下钻分析' : '查看明细-应分拣'}”仍保留。</div>
+      </div>
+      ${buildBacklogDestinationCards(destinationRows,flowCardOptions)}
+      <div class="backlog-flow-footnote">点击运单数量进入运单明细。关闭本页后，上一级“${'查看明细-'+baseLabel}”仍保留。</div>
     `;
   }
 
-  const customerCards = customerData ? Object.entries(customerData.labels).map(([key,label])=>buildDimensionCard('customer',key,label,formatNumber(customerData.counts[key]))).join('') : '';
+  const rankedCustomers = customerData ? Object.entries(customerData.labels)
+    .filter(([key])=>key!=='all' && customerData.counts[key]>0)
+    .sort(([a],[b])=>customerData.counts[b]-customerData.counts[a] || a.localeCompare(b)) : [];
+  const customerCards = customerData ? buildDimensionCard('customer','all',customerData.labels.all,formatNumber(customerData.counts.all))
+    +(stage==='customers'?rankedCustomers:rankedCustomers.slice(0,8)).map(([key,label],index)=>buildDimensionCard('customer',key,label,formatNumber(customerData.counts[key]),index+1)).join('') : '';
+  if(stage==='customers')return `<div class="backlog-filter-summary"><span>${backlogEscape(customerData.label)}</span><span>业务类型：${customerBusinessLabel}</span><span>滞留时长：${backlogAgeLabels[timeBucket]}</span><span>按${baseLabel}票数从高到低 · 共 ${rankedCustomers.length} 个客户</span><button type="button" class="section-export-btn" data-backlog-context="${type}" data-backlog-customer-business="${customerBusinessType}" data-backlog-customer-export="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-label="导出全部客户目的流向明细">导出</button></div><div class="backlog-dimension-grid backlog-customer-grid">${customerCards}${rankedCustomers.length?'':'<div class="backlog-flow-card-empty">当前业务类型下暂无客户数据</div>'}</div>${buildBacklogFilteredSection(customerData)}`;
   const sourceCards = Object.entries(sourceLabels).map(([key,label]) => buildDimensionCard('source',key,label,d.source[key])).join('');
   const sortCards = Object.entries(sortLabels).map(([key,label]) => buildDimensionCard('sort',key,label,d.sort[key])).join('');
   const definition = isPending
     ? '今日已入库-待分拣与历史留仓-待分拣中，已经实际入库且尚未完成分拣的运单；不包含预计到车。'
     : '历史留仓-待分拣与今日已入库-待分拣中，实际入库时间小于等于散货截单时间的运单；不包含预计到车。';
+  const scopeNumber=key=>`<button type="button" class="backlog-scope-number backlog-numeric-link" data-backlog-context="${type}" data-backlog-scope-number="${key}" data-backlog-scope-label="${backlogEscape(scopeData[key].label)}" aria-label="查看${backlogEscape(scopeData[key].label)}下钻，共${scopeData[key].count}票" aria-haspopup="dialog" aria-controls="backlogFlowMask">${scopeData[key].count}</button>`;
   return `
     <div class="stats-row backlog-stats">
-      <div class="stat backlog-filter-card ${scope === 'all' ? 'on' : ''}" data-backlog-scope="all" data-backlog-context="${type}"><div class="l">${scopeData.all.label}</div><div class="v num" style="color:${isPending ? 'var(--accent)' : 'var(--red)'};">${scopeData.all.count}</div></div>
-      <div class="stat backlog-filter-card ${scope === 'today' ? 'on' : ''}" data-backlog-scope="today" data-backlog-context="${type}"><div class="l">${scopeData.today.label}</div><div class="v num">${scopeData.today.count}</div></div>
-      <div class="stat backlog-filter-card ${scope === 'history' ? 'on' : ''}" data-backlog-scope="history" data-backlog-context="${type}"><div class="l">${scopeData.history.label}</div><div class="v num">${scopeData.history.count}</div></div>
+      <div class="stat backlog-filter-card ${scope === 'all' ? 'on' : ''}" data-backlog-scope="all" data-backlog-context="${type}" role="button" tabindex="0" aria-pressed="${scope==='all'}" aria-controls="backlogDimensionOverview backlogCustomerSection"><div class="l">${scopeData.all.label}</div><div class="v num">${scopeNumber('all')}</div></div>
+      <div class="stat backlog-filter-card ${scope === 'today' ? 'on' : ''}" data-backlog-scope="today" data-backlog-context="${type}" role="button" tabindex="0" aria-pressed="${scope==='today'}" aria-controls="backlogDimensionOverview backlogCustomerSection"><div class="l">${scopeData.today.label}</div><div class="v num">${scopeNumber('today')}</div></div>
+      <div class="stat backlog-filter-card ${scope === 'history' ? 'on' : ''}" data-backlog-scope="history" data-backlog-context="${type}" role="button" tabindex="0" aria-pressed="${scope==='history'}" aria-controls="backlogDimensionOverview backlogCustomerSection"><div class="l">${scopeData.history.label}</div><div class="v num">${scopeNumber('history')}</div></div>
     </div>
     <div class="metric-note"><b>统计口径：</b>${definition}</div>
     <div class="drawer-section-head">
-      <div class="backlog-duration-title"><div class="sec-title">滞留时长分布</div><div class="sec-subtitle">按运单当前滞留时长统计</div></div>${!isPending?`<div class="backlog-time-tools">${timeBucket!=='all'?`<span class="backlog-active-age">${backlogAgeLabels[timeBucket]}</span>`:''}<button type="button" class="backlog-age-reset" data-backlog-time-filter="all" ${timeBucket==='all'?'disabled':''}>\u5168\u90e8\u65f6\u957f</button></div>`:''}
+      <div class="backlog-duration-title"><div class="sec-title">滞留时长分布</div><div class="sec-subtitle">按运单当前滞留时长统计</div></div><div class="backlog-time-tools">${timeBucket!=='all'?`<span class="backlog-active-age">${backlogAgeLabels[timeBucket]}</span>`:''}<button type="button" class="backlog-age-reset" data-backlog-context="${type}" data-backlog-time-filter="all" ${timeBucket==='all'?'disabled':''}>\u5168\u90e8\u65f6\u957f</button></div>
       
     </div>
     <div class="backlog-time-grid">${timeCards}</div>
-    <div class="backlog-time-definition"><span>ⓘ</span><span><b>时长统计口径：</b>当前时间 −【到件时间、签入时间、集包时间】中的最早时间；${isPending?'\u70b9\u51fb\u4efb\u4e00\u5361\u7247\u53ef\u67e5\u770b\u5bf9\u5e94\u8fd0\u5355\u660e\u7ec6\u3002':'\u70b9\u51fb\u65f6\u957f\u5361\u7247\u7b5b\u9009\u4e0b\u65b9\u6c47\u603b\uff0c\u70b9\u51fb\u6570\u5b57\u67e5\u770b\u8fd0\u5355\u660e\u7ec6\u3002'}</span></div>
+    <div class="backlog-time-definition"><span>ⓘ</span><span><b>时长统计口径：</b>当前时间 −【到件时间、签入时间、集包时间】中的最早时间；点击卡片筛选下方维度汇总与客户数据，点击数字查看对应目的流向。</span></div>
     <div class="drawer-section-head">
       <div class="sec-title">目的流向 · 维度汇总</div>
       <div class="section-head-actions"><button type="button" class="section-export-btn" data-action="section-export" data-export-name="${d.label} · 流向维度汇总">导出</button></div>
     </div>
-    <div class="backlog-flow-overview"${!isPending?' id="backlogDimensionOverview"':''}>
+    <div class="backlog-flow-overview" id="backlogDimensionOverview">
       <section class="backlog-dimension-group">
-        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">货物来源</div><div class="backlog-dimension-group-desc">${isPending?'\u6309\u4e1a\u52a1\u6765\u6e90\u6c47\u603b\uff0c\u70b9\u51fb\u5361\u7247\u67e5\u770b\u5bf9\u5e94\u76ee\u7684\u6d41\u5411\u3002':'\u6309\u4e1a\u52a1\u6765\u6e90\u6c47\u603b\uff0c\u70b9\u51fb\u6570\u5b57\u67e5\u770b\u5bf9\u5e94\u76ee\u7684\u6d41\u5411\u3002'}</div></div></div>
+        <div class="backlog-dimension-group-head"><div><div class="backlog-dimension-group-title">货物来源</div><div class="backlog-dimension-group-desc">点击卡片或数字查看对应目的流向。</div></div></div>
         <div class="backlog-dimension-grid">${sourceCards}</div>
       </section>
       <section class="backlog-dimension-group">
@@ -4546,14 +4722,20 @@ function buildUnsortedDrawer(type, extra) {
         <div class="backlog-dimension-grid">${sortCards}</div>
       </section>
     </div>
-    <div class="flow-dimension-note">${isPending?'\u70b9\u51fb\u5361\u7247\u8fdb\u5165\u76ee\u7684\u6d41\u5411\u6c47\u603b\uff0c\u518d\u70b9\u51fb\u8fd0\u5355\u6570\u67e5\u770b\u8fd0\u5355\u660e\u7ec6\u3002':'\u70b9\u51fb\u5e26\u4e0b\u5212\u7ebf\u7684\u6570\u5b57\u67e5\u770b\u5bf9\u5e94\u76ee\u7684\u6d41\u5411\u53ca\u8fd0\u5355\u660e\u7ec6\u3002'}</div>
-    ${!isPending ? `<section class="backlog-customer-section" id="backlogCustomerSection" aria-labelledby="backlogCustomerTitle">
+    <div class="flow-dimension-note">点击卡片或数字查看对应目的流向及运单明细。</div>
+    <section class="backlog-customer-section" id="backlogCustomerSection" aria-labelledby="backlogCustomerTitle">
       <div class="drawer-section-head">
-        <h3 class="sec-title" id="backlogCustomerTitle">目的流向·客户维度·始发</h3>
-        <div class="section-head-actions"><span class="backlog-customer-demo">示例数据</span><button type="button" class="section-export-btn" data-backlog-customer-export="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-label="导出始发客户目的流向明细">导出</button></div>
+        <h3 class="sec-title" id="backlogCustomerTitle">目的流向·客户维度</h3>
+        <div class="section-head-actions"><span class="backlog-customer-demo">示例数据</span><button type="button" class="section-export-btn" data-backlog-context="${type}" data-backlog-customer-business="${customerBusinessType}" data-backlog-customer-export="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-label="导出客户目的流向明细">导出</button></div>
       </div>
-      <div class="backlog-dimension-group"><div class="backlog-dimension-grid backlog-customer-grid">${customerCards}</div></div>
-    </section>` : ''}
+      <div class="backlog-dimension-group">
+        <div class="main-flow-tabs backlog-customer-business-tabs" id="backlogCustomerBusinessTabs" role="tablist" aria-label="客户维度业务类型">
+          ${[['all','全部'],['origin','始发']].map(([key,label])=>`<button type="button" class="main-flow-tab ${customerBusinessType===key?'on':''}" data-backlog-customer-business-tab="${key}" role="tab" aria-selected="${customerBusinessType===key}" tabindex="${customerBusinessType===key?'0':'-1'}" aria-controls="backlogCustomerGrid">${label}</button>`).join('')}
+        </div>
+        <div class="backlog-customer-ranking" data-backlog-customer-ranking>按${baseLabel}票数从高到低 · ${rankedCustomers.length>8?'TOP8':'全部客户'} · 共 ${rankedCustomers.length} 个客户</div>
+        <div class="backlog-dimension-grid backlog-customer-grid" id="backlogCustomerGrid">${customerCards}${rankedCustomers.length>8?`<button type="button" class="backlog-dimension-card backlog-customer-more-card" data-backlog-customers-more data-backlog-context="${type}" data-backlog-customer-business="${customerBusinessType}" data-backlog-scope="${scope}" data-backlog-time="${backlogEscape(timeBucket)}" aria-haspopup="dialog" aria-controls="backlogCustomersMask"><span class="more-title">查看更多 ›</span><span class="more-count">共 ${rankedCustomers.length} 个客户</span></button>`:''}${rankedCustomers.length?'':'<div class="backlog-flow-card-empty">当前业务类型下暂无客户数据</div>'}</div>
+      </div>
+    </section>
   `;
 }
 
@@ -5187,6 +5369,21 @@ function setHistoryStageExpanded(card, expanded) {
 }
 
 document.addEventListener('keydown', (e) => {
+  const customerBusinessTab=e.target.closest('[data-backlog-customer-business-tab]');
+  if(customerBusinessTab && ['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+    e.preventDefault();
+    const tabs=[...drawerBody.querySelectorAll('[data-backlog-customer-business-tab]')];
+    const index=tabs.indexOf(customerBusinessTab);
+    const target=e.key==='Home'?tabs[0]:e.key==='End'?tabs.at(-1):tabs[(index+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];
+    target?.click();
+    [...drawerBody.querySelectorAll('[data-backlog-customer-business-tab]')].find(tab=>tab.dataset.backlogCustomerBusinessTab===target?.dataset.backlogCustomerBusinessTab)?.focus({preventScroll:true});
+    return;
+  }
+  const backlogScopeCard=e.target.closest('.backlog-filter-card[data-backlog-context]');
+  if(backlogScopeCard && (e.key==='Enter' || e.key===' ')){
+    if(e.target.closest('[data-backlog-scope-number]'))return;
+    e.preventDefault();backlogScopeCard.click();return;
+  }
   const historyStageCard = e.target.closest('[data-history-stage-toggle]');
   if (historyStageCard && (e.key === 'Enter' || e.key === ' ')) {
     if (e.target.closest('.count-link,.bag-link,.waybill-link')) return;
@@ -5207,9 +5404,10 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('click', (e) => {
 
+  if(e.target.closest('[data-sorted-flow-export]')){exportSortedFlowSummary();return;}
   const customerExport=e.target.closest('[data-backlog-customer-export]');
   if(customerExport){
-    exportBacklogCustomerData(customerExport.dataset.backlogCustomerExport,'all',customerExport.dataset.backlogTime || 'all');
+    exportBacklogCustomerData(customerExport.dataset.backlogCustomerExport,'all',customerExport.dataset.backlogTime || 'all',null,customerExport.dataset.backlogContext || backlogOverviewContext,customerExport.dataset.backlogCustomerBusiness || 'all');
     return;
   }
   const customerCount=e.target.closest('[data-backlog-origin-customer]');
@@ -5264,39 +5462,91 @@ document.addEventListener('click', (e) => {
     return;
   }
 
+  const customerBusinessTab=e.target.closest('[data-backlog-customer-business-tab]');
+  if(customerBusinessTab && drawerBody.contains(customerBusinessTab)){
+    const businessType=customerBusinessTab.dataset.backlogCustomerBusinessTab;
+    if(businessType===backlogCustomerBusinessType)return;
+    const scroll=drawerBody.scrollTop;
+    openDrawer(backlogOverviewContext,{...backlogOverviewSelection,customerBusinessType:businessType,destinationFilters:{...backlogDestinationFilters,customer:'all'}});
+    drawerBody.scrollTop=scroll;
+    [...drawerBody.querySelectorAll('[data-backlog-customer-business-tab]')].find(tab=>tab.dataset.backlogCustomerBusinessTab===businessType)?.focus({preventScroll:true});
+    return;
+  }
+  const ageNumber=e.target.closest('[data-backlog-time-number]');
+  if(ageNumber && drawerBody.contains(ageNumber)){
+    openBacklogFlowDrawer(backlogOverviewContext,{scope:ageNumber.dataset.backlogScope,timeBucket:ageNumber.dataset.backlogTimeNumber,dimensionGroup:'source',dimensionKey:'all'});
+    backlogFlowTitle.textContent=ageNumber.dataset.backlogScopeLabel+' · '+backlogAgeLabels[ageNumber.dataset.backlogTimeNumber]+' · 目的流向';
+    backlogFlowOpener=ageNumber;
+    return;
+  }
   const ageFilter=e.target.closest('[data-backlog-time-filter]');
   if(ageFilter && drawerBody.contains(ageFilter)){
     const selected=ageFilter.dataset.backlogTimeFilter;
     const next=selected==='all'||selected===backlogOverviewSelection.timeBucket?'all':selected;
     const scroll=drawerBody.scrollTop;
-    openDrawer('backlog',{scope:backlogOverviewSelection.scope,timeBucket:next});
+    openDrawer(backlogOverviewContext,{scope:backlogOverviewSelection.scope,timeBucket:next,customerBusinessType:backlogCustomerBusinessType,destinationFilters:{...backlogDestinationFilters}});
     drawerBody.scrollTop=scroll;
     const newButton=[...drawerBody.querySelectorAll('[data-backlog-time-filter]')].find(button=>button.dataset.backlogTimeFilter===selected);
     newButton?.focus({preventScroll:true});
     return;
   }
+  const customerMore=e.target.closest('[data-backlog-customers-more]');
+  if(customerMore){
+    openBacklogCustomers({context:customerMore.dataset.backlogContext,scope:customerMore.dataset.backlogScope,timeBucket:customerMore.dataset.backlogTime,customerBusinessType:customerMore.dataset.backlogCustomerBusiness},customerMore);
+    return;
+  }
+  const scopeNumber=e.target.closest('[data-backlog-scope-number]');
+  if(scopeNumber){
+    openBacklogFlowDrawer(backlogOverviewContext,{scope:scopeNumber.dataset.backlogScopeNumber,timeBucket:'all',dimensionGroup:'source',dimensionKey:'all'});
+    backlogFlowTitle.textContent=scopeNumber.dataset.backlogScopeLabel+' · 目的流向';
+    backlogFlowOpener=scopeNumber;
+    return;
+  }
+  const dimensionFilter=e.target.closest('[data-backlog-dimension-filter]');
+  if(dimensionFilter){
+    const group=dimensionFilter.dataset.backlogDimensionGroup,key=dimensionFilter.dataset.backlogDimensionKey;
+    backlogDestinationFilters[group]=backlogDestinationFilters[group]===key?'all':key;
+    if(drawerBody.contains(dimensionFilter)){
+      openBacklogFlowDrawer(backlogOverviewContext,{scope:dimensionFilter.dataset.backlogDimensionScope || backlogOverviewSelection.scope,timeBucket:dimensionFilter.dataset.backlogTime || backlogOverviewSelection.timeBucket,customerBusinessType:group==='customer'?(dimensionFilter.dataset.backlogCustomerBusiness || 'all'):'all',dimensionGroup:group,dimensionKey:backlogDestinationFilters[group]});
+      backlogFlowOpener=dimensionFilter;
+    }
+    renderBacklogDestinationFiltering();
+    return;
+  }
+  if(e.target.closest('[data-backlog-destination-reset]')){
+    backlogDestinationFilters={...backlogDefaultDestinationFilters};
+    renderBacklogDestinationFiltering();
+    return;
+  }
   if(e.target.closest('[data-backlog-account-reset]')){
-    openBacklogFlowDrawer('backlog',{...backlogChildSelection,dimensionKey:'all',customerAccountQuery:''});
+    openBacklogFlowDrawer(backlogChildSelection.context,{...backlogChildSelection,dimensionKey:'all',customerAccountQuery:''});
     backlogFlowBody.querySelector('#backlogCustomerAccountInput')?.focus();return;
   }
   if(e.target.closest('[data-backlog-child-export]')){
     const selected=backlogChildSelection;
-    exportBacklogCustomerData(selected.scope || 'all',selected.dimensionKey || 'all',selected.timeBucket || 'all',Object.hasOwn(selected,'customerAccountQuery')?selected.customerAccountQuery:null);
+    exportBacklogCustomerData(selected.scope || 'all',selected.dimensionKey || 'all',selected.timeBucket || 'all',Object.hasOwn(selected,'customerAccountQuery')?selected.customerAccountQuery:null,selected.context,selected.customerBusinessType || 'all');
     return;
   }
   const filterCard = e.target.closest('.backlog-filter-card');
   if (filterCard) {
     const drawerContext = filterCard.getAttribute('data-backlog-context') || 'backlog';
+    const selectedScope=filterCard.getAttribute('data-backlog-scope') || 'all';
+    const scroll=drawerBody.scrollTop;
     openDrawer(drawerContext, {
-      scope: filterCard.getAttribute('data-backlog-scope'),
-      ...(drawerContext==='backlog'?{timeBucket:backlogOverviewSelection.timeBucket}:{}),
+      scope: selectedScope,
+      timeBucket:backlogOverviewSelection.timeBucket,customerBusinessType:backlogCustomerBusinessType,destinationFilters:{...backlogDestinationFilters},
       stage: 'overview'
     });
+    if(drawerContext==='backlog' || drawerContext==='pending'){
+      drawerBody.scrollTop=scroll;
+      [...drawerBody.querySelectorAll('.backlog-filter-card')].find(card=>card.dataset.backlogScope===selectedScope)?.focus({preventScroll:true});
+    }
     return;
   }
 
   const backlogDimensionContainer = e.target.closest('.backlog-dimension-card');
   if (backlogDimensionContainer) {
+    if(backlogDimensionContainer.matches('[data-sorted-customer],[data-sorted-customer-more]'))return;
     const backlogDimensionCard=backlogDimensionContainer.classList.contains('backlog-dimension-static')?e.target.closest('[data-backlog-dimension-trigger]'):backlogDimensionContainer;
     if(!backlogDimensionCard)return;
     openBacklogFlowDrawer(
@@ -6032,7 +6282,7 @@ if (toggleHoldBtn) {
 
 /* ============== Main purpose-flow interactions ============== */
 const mainFlowHours = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
-const mainFlowState = { perspective:'type', type:'all', level:'summary', parentStation:'', timeMode:'hourly', viewMode:'table' };
+const mainFlowState = { perspective:'type', type:'all', level:'summary', parentStation:'', timeMode:'hourly', viewMode:'table', operatorIds:[] };
 const mainFlowFormat = value => Number(value || 0).toLocaleString('en-US');
 const mainFlowSplit = (total, ratios=[0.045,0.08,0.098,0.116,0.109,0.141,0.136,0.118,0.104]) => {
   const values = ratios.map(ratio => Math.floor(total * ratio));
@@ -6130,8 +6380,78 @@ function mainFlowGroupByOperator(sources, periodKey, periodIndices=null) {
   return operators.filter(row => row.tickets || row.bags).sort((a,b) => b.tickets-a.tickets || a.operatorId.localeCompare(b.operatorId));
 }
 function mainFlowOperatorRows() {
-  const types = mainFlowState.type==='all' ? ['hub','station','road','channel'] : [mainFlowState.type];
-  return mainFlowGroupByOperator(types.flatMap(type => mainFlowData[type] || []),'hours');
+  return mainFlowFilterOperators(mainFlowGroupByOperator(['hub','station','road','channel'].flatMap(type => mainFlowData[type] || []),'hours'),mainFlowState.operatorIds);
+}
+function mainFlowFilterOperators(rows, operatorIds) {
+  const ids=new Set(Array.isArray(operatorIds)?operatorIds:[]);
+  return ids.size?rows.filter(row=>ids.has(row.operatorId)):rows;
+}
+const mainFlowOperatorControls=new Map();
+function setupMainFlowOperatorQuery(prefix, state, render) {
+  if(mainFlowOperatorControls.has(prefix))return;
+  const form=document.getElementById(prefix+'OperatorForm');
+  const root=document.getElementById(prefix+'OperatorSelect');
+  const reset=document.getElementById(prefix+'OperatorReset');
+  if(!form || !root || !reset)return;
+  let selected=new Set(state.operatorIds || []),appliedKey=JSON.stringify(state.operatorIds || []);
+  root.innerHTML=`<div class="custom-multi-select-trigger" id="${prefix}OperatorTrigger" role="button" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-controls="${prefix}OperatorDropdown" aria-labelledby="${prefix}OperatorLabel"><div class="custom-multi-select-content" id="${prefix}OperatorTags"></div><span class="custom-multi-select-arrow" aria-hidden="true">⌄</span></div>
+    <div class="custom-multi-select-dropdown" id="${prefix}OperatorDropdown" hidden role="dialog" aria-label="选择操作人">
+      <div class="custom-multi-select-search"><input type="search" class="custom-multi-select-search-input" id="${prefix}OperatorSearch" placeholder="搜索操作人姓名或账号" aria-label="搜索操作人姓名或账号" autocomplete="off"></div>
+      <label class="custom-multi-select-option custom-multi-select-option-all"><input type="checkbox" class="operator-checkbox" data-operator-all aria-label="选择全部操作人"><span class="custom-checkbox" aria-hidden="true"></span><span>全部</span></label>
+      <div class="custom-multi-select-options">${mainFlowOperatorFixtures.map(person=>`<label class="custom-multi-select-option" data-operator-option="${person.id}"><input type="checkbox" class="operator-checkbox" data-operator-id="${person.id}" aria-label="${person.name} ${person.id}"><span class="custom-checkbox" aria-hidden="true"></span><span>${person.name}（${person.id}）</span></label>`).join('')}<div class="operator-select-empty" hidden>暂无匹配操作人</div></div>
+    </div>`;
+  const trigger=document.getElementById(prefix+'OperatorTrigger'),dropdown=document.getElementById(prefix+'OperatorDropdown');
+  const content=document.getElementById(prefix+'OperatorTags'),search=document.getElementById(prefix+'OperatorSearch');
+  const all=root.querySelector('[data-operator-all]'),arrow=root.querySelector('.custom-multi-select-arrow');
+  const inputs=[...root.querySelectorAll('[data-operator-id]')],options=[...root.querySelectorAll('[data-operator-option]')];
+  const empty=root.querySelector('.operator-select-empty');
+  function fitTags(){
+    const tags=[...content.querySelectorAll('.custom-multi-select-tag')],overflow=content.querySelector('.custom-multi-select-overflow');
+    if(!overflow || !content.clientWidth)return;
+    tags.forEach(tag=>tag.hidden=false);overflow.hidden=true;
+    const widths=tags.map(tag=>tag.getBoundingClientRect().width);
+    if(widths.reduce((sum,width)=>sum+width+4,0)-4<=content.clientWidth)return;
+    let used=0,visible=0;
+    for(const width of widths){if(used+width+4>content.clientWidth-40)break;used+=width+4;visible++;}
+    tags.forEach((tag,index)=>tag.hidden=index>=visible);
+    overflow.textContent='+'+(tags.length-visible);overflow.hidden=false;
+  }
+  function renderOptions(){
+    const key=search.value.trim().toLocaleLowerCase();
+    let matches=0;
+    options.forEach(option=>{const person=mainFlowOperatorFixtures.find(item=>item.id===option.dataset.operatorOption);const on=!key||[person.id,person.name].some(value=>value.toLocaleLowerCase().includes(key));option.hidden=!on;if(on)matches++;});
+    empty.hidden=matches>0;
+  }
+  function renderSelection(){
+    const people=mainFlowOperatorFixtures.filter(person=>selected.has(person.id));
+    all.checked=people.length===mainFlowOperatorFixtures.length;all.indeterminate=people.length>0&&!all.checked;
+    all.nextElementSibling.classList.toggle('is-checked',all.checked);all.nextElementSibling.classList.toggle('is-indeterminate',all.indeterminate);
+    inputs.forEach(input=>{input.checked=selected.has(input.dataset.operatorId);input.nextElementSibling.classList.toggle('is-checked',input.checked);});
+    content.innerHTML=people.length?people.map(person=>`<span class="custom-multi-select-tag"><span>${person.name}</span><button type="button" class="custom-multi-select-tag-close" data-operator-remove="${person.id}" aria-label="移除${person.name}">×</button></span>`).join('')+'<span class="custom-multi-select-overflow" hidden></span>':'<span class="custom-multi-select-placeholder">全部操作人</span>';
+    fitTags();
+  }
+  function close(){dropdown.hidden=true;trigger.setAttribute('aria-expanded','false');arrow.classList.remove('is-open');search.value='';renderOptions();}
+  function sync(){const key=JSON.stringify(state.operatorIds || []);if(key!==appliedKey){selected=new Set(state.operatorIds || []);appliedKey=key;renderSelection();}fitTags();}
+  function open(){sync();dropdown.hidden=false;trigger.setAttribute('aria-expanded','true');arrow.classList.add('is-open');search.focus();}
+  trigger.addEventListener('click',event=>{if(event.target.closest('[data-operator-remove]'))return;dropdown.hidden?open():close();});
+  trigger.addEventListener('keydown',event=>{if(event.target!==trigger)return;if(['Enter',' ','ArrowDown'].includes(event.key)){event.preventDefault();dropdown.hidden?open():close();}});
+  root.addEventListener('keydown',event=>{if(event.key==='Escape'&&!dropdown.hidden){event.preventDefault();event.stopPropagation();close();trigger.focus();}});
+  root.addEventListener('change',event=>{
+    const input=event.target;
+    if(input===all){selected=all.checked?new Set(mainFlowOperatorFixtures.map(person=>person.id)):new Set();}
+    else if(input.dataset.operatorId){input.checked?selected.add(input.dataset.operatorId):selected.delete(input.dataset.operatorId);}
+    else return;
+    renderSelection();
+  });
+  root.addEventListener('click',event=>{const remove=event.target.closest('[data-operator-remove]');if(!remove)return;event.preventDefault();event.stopPropagation();selected.delete(remove.dataset.operatorRemove);renderSelection();trigger.focus();});
+  search.addEventListener('input',renderOptions);
+  document.addEventListener('click',event=>{if(!root.contains(event.target))close();});
+  form.addEventListener('submit',event=>{event.preventDefault();state.operatorIds=mainFlowOperatorFixtures.filter(person=>selected.has(person.id)).map(person=>person.id);appliedKey=JSON.stringify(state.operatorIds);close();render();});
+  reset.addEventListener('click',()=>{selected.clear();state.operatorIds=[];appliedKey='[]';renderSelection();close();render();trigger.focus();});
+  mainFlowOperatorControls.set(prefix,{sync,close,getSelection:()=>[...selected]});
+  renderSelection();renderOptions();
+  if(typeof ResizeObserver==='function')new ResizeObserver(fitTags).observe(content);
+  else window.addEventListener?.('resize',fitTags);
 }
 
 function mainFlowSumRows(rows) {
@@ -6256,6 +6576,7 @@ function mainFlowOrgSummaryRows() {
 }
 
 function mainFlowLabel() {
+  if(mainFlowState.perspective==='operator')return '操作人';
   return mainFlowState.perspective !== 'org'
     ? (mainFlowTypeLabels[mainFlowState.type] || '全部')
     : (mainFlowOrgLabels[mainFlowState.type] || '全部');
@@ -6309,6 +6630,7 @@ function mainFlowStaticName(row) {
 }
 
 function mainFlowScopeText(name, suffix='') {
+  if(mainFlowState.perspective==='operator')return `已分拣 · 按操作人维度：${name}${suffix}`;
   const perspective = mainFlowPerspectiveLabel(mainFlowState.perspective);
   const hierarchy = mainFlowState.level === 'channel' && mainFlowState.parentStation
     ? `${mainFlowLabel()} > ${mainFlowState.parentStation} > 服务渠道`
@@ -6359,6 +6681,9 @@ function renderMainFlowChart(rows) {
 }
 
 function renderMainFlowTabs() {
+  const operator=mainFlowState.perspective==='operator';
+  document.getElementById('mainFlowTypeLabel').closest('.main-flow-type-row').hidden=operator;
+  if(operator){document.getElementById('mainFlowTabs').innerHTML='';return;}
   const defs=mainFlowState.perspective==='org'?mainFlowOrgTabs:mainFlowTypeTabs;
   document.getElementById('mainFlowTypeLabel').textContent=mainFlowState.perspective==='org'?'组织维度':'分拣类型';
   document.getElementById('mainFlowTabs').innerHTML=defs.map(item=>`<button type="button" class="main-flow-tab ${item.key===mainFlowState.type?'on':''}" data-main-flow-type="${item.key}" role="tab" aria-selected="${item.key===mainFlowState.type?'true':'false'}">${item.label}</button>`).join('');
@@ -6366,6 +6691,12 @@ function renderMainFlowTabs() {
 
 function renderMainFlow() {
   renderMainFlowTabs();
+  const operator=mainFlowState.perspective==='operator';
+  const viewMode=operator?'table':mainFlowState.viewMode;
+  document.getElementById('mainFlowOperatorForm').hidden=!operator;
+  document.getElementById('mainFlowViewTabs').hidden=operator;
+  mainFlowOperatorControls.get('mainFlow')?.sync();
+  if(!operator)mainFlowOperatorControls.get('mainFlow')?.close();
   const rows=mainFlowRows();
   const isOrgAll=mainFlowState.perspective==='org'&&mainFlowState.type==='all';
   const uniqueTotal=isOrgAll?mainFlowAllUniqueTotal():null;
@@ -6385,13 +6716,13 @@ function renderMainFlow() {
     tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
   });
   document.querySelectorAll('#mainFlowViewTabs [data-main-flow-view]').forEach(tab=>{
-    const on=tab.dataset.mainFlowView===mainFlowState.viewMode;
+    const on=tab.dataset.mainFlowView===viewMode;
     tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
   });
 
   const perspectiveLabel=mainFlowPerspectiveLabel(mainFlowState.perspective);
   document.getElementById('mainFlowSummary').innerHTML='';
-  document.getElementById('mainFlowBreadcrumb').innerHTML=mainFlowState.level==='channel'
+  document.getElementById('mainFlowBreadcrumb').innerHTML=operator?`<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><span>${modeLabel}</span>`:mainFlowState.level==='channel'
     ? `<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><span>${mainFlowLabel()}</span><span class="sep">›</span><b>${mainFlowState.parentStation}</b><span class="sep">›</span><b>渠道分布</b><button type="button" class="main-flow-back" id="mainFlowBackBtn">返回上一级</button>`
     : `<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><b>${mainFlowLabel()}</b><span class="sep">›</span><span>${modeLabel}</span>`;
 
@@ -6424,13 +6755,13 @@ function renderMainFlow() {
 
   const tableWrap=document.getElementById('mainFlowTableWrap');
   const chartWrap=document.getElementById('mainFlowChartWrap');
-  tableWrap.classList.toggle('off',mainFlowState.viewMode!=='table');
-  chartWrap.classList.toggle('on',mainFlowState.viewMode==='chart');
-  if(mainFlowState.viewMode==='chart') renderMainFlowChart(rows);
+  tableWrap.classList.toggle('off',viewMode!=='table');
+  chartWrap.classList.toggle('on',viewMode==='chart');
+  if(viewMode==='chart') renderMainFlowChart(rows);
 
   let note='';
   if(mainFlowState.perspective==='operator') {
-    note='操作人数据为示例，合计沿用当前分拣范围。';
+    note='操作人数据为示例，合计按当前分拣范围及操作人查询条件统计。';
   } else if(mainFlowState.perspective==='type') {
     if(mainFlowState.type==='all') note='四种分拣类型互斥，“全部”按分拣类型汇总，每票只统计一次；名称不下钻，票数和袋数可查看明细。';
     if(mainFlowState.type==='hub') note='仅统计分拣类型为 HUB 的运单，并按目的中心汇总；名称不下钻，票数和袋数可查看明细。';
@@ -6447,11 +6778,109 @@ function renderMainFlow() {
 }
 
 function activateMainFlowTab(tab) {
+  if(mainFlowState.perspective==='operator')return;
   mainFlowState.type=tab.dataset.mainFlowType;
   mainFlowState.level='summary';
   mainFlowState.parentStation='';
   renderMainFlow();
 }
+function downloadSortingCsv(header, rows, fileName){
+  const quote=value=>'"'+String(value ?? '').replace(/"/g,'""')+'"';
+  const blob=new Blob(['\ufeff'+[header,...rows].map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download=fileName;document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function mainFlowExportData(){
+  const rows=mainFlowRows(),station=mainFlowState.perspective==='org'&&mainFlowState.type==='station';
+  const total=mainFlowState.perspective==='org'&&mainFlowState.type==='all'?mainFlowAllUniqueTotal():mainFlowSumRows(rows);
+  const header=[mainFlowColumnName(),...(station?['站点分拣票','路区分拣票']:[]),'合计票','合计袋',...mainFlowHours];
+  const cells=row=>[row.name,...(station?[row.stationTickets || 0,row.roadTickets || 0]:[]),row.tickets,row.bags,...mainFlowDisplayHours(row.hours)];
+  const totalRow={...total,name:mainFlowState.perspective==='org'&&mainFlowState.type==='all'?'全量去重合计':'合计',stationTickets:rows.reduce((sum,row)=>sum+(row.stationTickets||0),0),roadTickets:rows.reduce((sum,row)=>sum+(row.roadTickets||0),0)};
+  return {header,rows:[cells(totalRow),...rows.map(cells)]};
+}
+function exportMainFlowCsv(){
+  const data=mainFlowExportData();
+  const selection=mainFlowState.perspective==='operator'?(mainFlowState.operatorIds?.join('-') || '全部操作人'):mainFlowLabel();
+  downloadSortingCsv(data.header,data.rows,'已分拣-目的流向-'+mainFlowPerspectiveLabel(mainFlowState.perspective)+'-'+selection+'-'+(mainFlowState.timeMode==='cumulative'?'累计':'小时')+'.csv');
+}
+function sortedFlowSummaryData(){
+  const rows=[['hub','HUB'],['road','路区'],['station','站点'],['channel','服务渠道']].map(([key,name])=>({name,...mainFlowSumRows(mainFlowData[key] || [])}));
+  return {total:{name:'合计',...mainFlowSumRows(rows)},rows};
+}
+// Customer/destination examples partition the existing sorted volume exactly.
+let sortedCustomerExpanded=false;
+let sortedCustomerSelection='all';
+function sortedCustomerSnapshot(){
+  const destination=Object.fromEntries(['hub','station','road','channel'].map(type=>[type,mainFlowData[type].map(row=>[row.name,row.tickets])]));
+  const empty=Object.fromEntries(Object.entries(destination).map(([type,rows])=>[type,rows.map(([name])=>[name,0])]));
+  return buildBacklogCustomerData({today:{destination,label:'已分拣'},history:{destination:empty,label:'已分拣'},all:{destination,label:'已分拣'}},'all');
+}
+function buildSortedCustomerSection(){
+  const data=sortedCustomerSnapshot();
+  const ranked=backlogCustomerDefinitions.slice().sort((a,b)=>data.counts[b.key]-data.counts[a.key]);
+  const card=(key,label)=>`<button type="button" class="backlog-dimension-card ${key==='all'?'is-all':''}" data-sorted-customer="${key}" aria-haspopup="dialog" aria-controls="backlogFlowMask"><span class="name">${label}</span><span class="value"><b>${mainFlowFormat(data.counts[key])}</b><small>票</small></span></button>`;
+  return `<section class="backlog-customer-section" id="sortedCustomerSection" aria-labelledby="sortedCustomerTitle"><div class="drawer-section-head"><h3 class="sec-title" id="sortedCustomerTitle">目的流向·客户维度</h3><div class="section-head-actions"><span class="backlog-customer-demo">示例数据</span><button type="button" class="section-export-btn" data-sorted-customer-export="all">导出</button></div></div><div class="backlog-customer-ranking">按已分拣票数从高到低 · ${sortedCustomerExpanded?'全部客户':'TOP8'} · 共 ${ranked.length} 个客户</div><div class="backlog-dimension-grid backlog-customer-grid">${card('all','全部')}${(sortedCustomerExpanded?ranked:ranked.slice(0,8)).map(customer=>card(customer.key,customer.label)).join('')}${sortedCustomerExpanded?'':`<button type="button" class="backlog-dimension-card backlog-customer-more-card" data-sorted-customer-more><span class="more-title">查看更多 ›</span><span class="more-count">共 ${ranked.length} 个客户</span></button>`}</div></section>`;
+}
+function sortedCustomerRows(key){return sortedCustomerSnapshot().rows.filter(row=>row.count>0&&(key==='all'||row.customerKey===key));}
+function renderSortedCustomerDetail(key,accountQuery){
+  sortedCustomerSelection=key;
+  const customer=backlogCustomerDefinitions.find(item=>item.key===key);
+  const label=key==='unmatched'?'无匹配客户':customer?.label || '全部客户';
+  const query=accountQuery===undefined?(customer?.account || ''):accountQuery;
+  const rows=sortedCustomerRows(key);
+  const grouped=new Map();
+  rows.forEach(row=>{const id=JSON.stringify([row.type,row.name]);if(!grouped.has(id))grouped.set(id,{type:row.type,name:row.name,count:0});grouped.get(id).count+=row.count;});
+  const scope='已分拣 · '+getSortingDateTimeScope()+' · '+label;
+  // Reuse destination cards and existing customer-scoped waybill drilldown.
+  const cards=buildBacklogDestinationCards([...grouped.values()],{label:'已分拣 · '+label,recordScope:scope,customerLabel:customer?.label || '',account:customer?.account || ''}).replace(/ data-backlog-time="[^"]*"/g,'');
+  backlogFlowTitle.textContent='已分拣 · '+label+' · 目的流向';
+  backlogFlowBody.setAttribute('data-drawer-type','sorted-customer');
+  backlogFlowBody.innerHTML=`<form class="backlog-customer-query" id="sortedCustomerAccountForm"><div class="backlog-account-field"><label for="sortedCustomerAccountInput">客户账号</label><input class="query-input" type="search" id="sortedCustomerAccountInput" name="account" value="${backlogEscape(query)}" placeholder="请输入客户账号" list="sortedCustomerAccounts" autocomplete="off"><datalist id="sortedCustomerAccounts">${backlogCustomerDefinitions.map(item=>`<option value="${item.account}">${item.label}</option>`).join('')}</datalist></div><div class="backlog-account-actions"><button type="button" class="action-btn secondary" data-sorted-customer-reset>重置</button><button type="submit" class="action-btn primary">查询</button></div></form><div class="backlog-flow-toolbar"><span>${backlogEscape(label)} · 已分拣 ${mainFlowFormat(rows.reduce((sum,row)=>sum+row.count,0))} 票</span><button type="button" class="section-export-btn" data-sorted-customer-export="${backlogEscape(key)}">导出</button></div>${cards}`;
+}
+function exportSortedCustomer(key){
+  const types={hub:'HUB',station:'站点',road:'路区',channel:'服务渠道'};
+  downloadSortingCsv(['统计范围','客户','客户账号','流向类型','目的流向','已分拣（票）','数据类型'],sortedCustomerRows(key).map(row=>[getSortingDateTimeScope(),row.customer,backlogCustomerAccounts[row.customerKey],types[row.type],row.name,row.count,'原型示例']),'已分拣-目的流向-客户维度-'+(key==='all'?'全部客户':key)+'.csv');
+}
+document.addEventListener('click',event=>{
+  const customer=event.target.closest('[data-sorted-customer]');
+  if(customer){
+    backlogFlowOpener=customer;
+    renderSortedCustomerDetail(customer.dataset.sortedCustomer);
+    backlogFlowMask.classList.add('on');backlogFlowMask.setAttribute('aria-hidden','false');
+    backlogFlowBody.scrollTop=0;backlogFlowClose.focus();
+  }else if(event.target.closest('[data-sorted-customer-more]')){
+    sortedCustomerExpanded=true;
+    drawerBody.querySelector('#sortedCustomerSection').outerHTML=buildSortedCustomerSection();
+  }else if(event.target.closest('[data-sorted-customer-reset]')){
+    renderSortedCustomerDetail('all','');backlogFlowBody.querySelector('input').focus();
+  }else{
+    const exportButton=event.target.closest('[data-sorted-customer-export]');
+    if(exportButton)exportSortedCustomer(exportButton.dataset.sortedCustomerExport);
+  }
+});
+document.addEventListener('submit',event=>{
+  if(event.target.id!=='sortedCustomerAccountForm')return;
+  event.preventDefault();
+  const query=event.target.elements.account.value.trim();
+  const match=backlogCustomerDefinitions.find(item=>backlogAccountKey(item.account)===backlogAccountKey(query));
+  renderSortedCustomerDetail(query?(match?.key || 'unmatched'):'all',query);
+  backlogFlowBody.querySelector('input').focus();
+});
+
+function buildSortedFlowSummary(){
+  const data=sortedFlowSummaryData();
+  const scope='已分拣 · '+getSortingDateTimeScope();
+  const count=(row,value,hour)=>`<button type="button" class="count-link" data-waybill-name="已分拣 · ${row.name}${hour?' · '+hour:''}" data-waybill-count="${value}" data-waybill-scope="${backlogEscape(scope)}">${mainFlowFormat(value)}</button>`;
+  const tableRows=[data.total,...data.rows].map(row=>`<tr${row===data.total?' class="total"':''}><td>${row.name}</td><td><button type="button" class="bag-count-link" data-bag-name="已分拣 · ${row.name}" data-bag-count="${row.bags}" data-bag-scope="${backlogEscape(scope)}">${mainFlowFormat(row.bags)}</button></td><td>${count(row,row.tickets)}</td>${row.hours.map((value,index)=>`<td>${count(row,value,mainFlowHours[index])}</td>`).join('')}</tr>`).join('');
+  return `<section class="sorted-flow-summary" aria-label="已分拣目的流向"><div class="drawer-section-head"><h3 class="sec-title">已分拣 · 目的流向</h3><button type="button" class="section-export-btn" data-sorted-flow-export aria-label="导出已分拣分拣类型小时汇总">导出</button></div><div class="table-scroll"><table class="tbl"><thead><tr><th>分拣类型</th><th>合计袋数</th><th>合计票数</th>${mainFlowHours.map(hour=>`<th>${hour}</th>`).join('')}</tr></thead><tbody>${tableRows}</tbody></table></div></section>`;
+}
+function exportSortedFlowSummary(){
+  const data=sortedFlowSummaryData();
+  downloadSortingCsv(['分拣类型','合计袋数','合计票数',...mainFlowHours],[data.total,...data.rows].map(row=>[row.name,row.bags,row.tickets,...row.hours]),'已分拣-目的流向-分拣类型小时汇总.csv');
+}
+setupMainFlowOperatorQuery('mainFlow',mainFlowState,renderMainFlow);
+document.getElementById('mainFlowExportBtn').addEventListener('click',exportMainFlowCsv);
 
 document.getElementById('mainFlowPerspectiveTabs').addEventListener('click',event=>{
   const tab=event.target.closest('[data-main-flow-perspective]');
@@ -6469,6 +6898,7 @@ document.getElementById('mainFlowTimeTabs').addEventListener('click',event=>{
   mainFlowState.timeMode=tab.dataset.mainFlowTime; renderMainFlow();
 });
 document.getElementById('mainFlowViewTabs').addEventListener('click',event=>{
+  if(mainFlowState.perspective==='operator')return;
   const tab=event.target.closest('[data-main-flow-view]'); if(!tab)return;
   mainFlowState.viewMode=tab.dataset.mainFlowView; renderMainFlow();
 });
@@ -7500,7 +7930,7 @@ function applyOc15dDateRange() {
 }
 const oc15dHubTotals = [451900,482300,468500,462800,477106,475310,381960,411598,493084,496836,506767,514526,508345,461014,458230];
 const oc15dManualTotals = [39700,45800,41600,42100,40508,38366,44843,37793,42756,47460,67345,67888,72365,49398,49650];
-const ocMainFlowState = { perspective:'type', type:'all', timeMode:'daily', viewMode:'table' };
+const ocMainFlowState = { perspective:'type', type:'all', timeMode:'daily', viewMode:'table', operatorIds:[] };
 const ocMainFlowTypeLabels = { all:'全部', hub:'HUB分拣', station:'站点分拣', road:'路区分拣', channel:'服务渠道分拣' };
 const ocMainFlowOrgLabels = { all:'全部', hub:'HUB维度', station:'站点维度', channel:'服务渠道维度' };
 const ocMainFlowTypeTabs = [
@@ -7582,9 +8012,8 @@ function ocMFOrgSummaryRows() {
   ];
 }
 function ocMFOperatorRows(visibleRange=true) {
-  const types=ocMainFlowState.type==='all'?['hub','station','road','channel']:[ocMainFlowState.type];
-  const sources=types.flatMap(type=>ocMFSourceRows(type));
-  return mainFlowGroupByOperator(visibleRange?sources.map(ocMFApplyVisibleRange):sources,'dates',visibleRange?oc15dVisibleIndices:null);
+  const sources=['hub','station','road','channel'].flatMap(type=>ocMFSourceRows(type));
+  return mainFlowFilterOperators(mainFlowGroupByOperator(visibleRange?sources.map(ocMFApplyVisibleRange):sources,'dates',visibleRange?oc15dVisibleIndices:null),ocMainFlowState.operatorIds);
 }
 function ocMFRawRows() {
   if (ocMainFlowState.perspective === 'operator') return ocMFOperatorRows(false);
@@ -7616,6 +8045,7 @@ function ocMFDisplayDates(values) {
   return values;
 }
 function ocMFLabel() {
+  if(ocMainFlowState.perspective==='operator')return '操作人';
   return ocMainFlowState.perspective !== 'org'
     ? (ocMainFlowTypeLabels[ocMainFlowState.type] || '全部')
     : (ocMainFlowOrgLabels[ocMainFlowState.type] || '全部');
@@ -7630,6 +8060,9 @@ function ocMFColumnName() {
   return '服务渠道';
 }
 function renderOcMainFlowTabs() {
+  const operator=ocMainFlowState.perspective==='operator';
+  document.getElementById('oc15dMainFlowTypeLabel').closest('.main-flow-type-row').hidden=operator;
+  if(operator){document.getElementById('oc15dMainFlowTabs').innerHTML='';return;}
   const defs=ocMainFlowState.perspective==='org'?ocMainFlowOrgTabs:ocMainFlowTypeTabs;
   if (!defs.some(item=>item.key===ocMainFlowState.type)) ocMainFlowState.type='all';
   document.getElementById('oc15dMainFlowTypeLabel').textContent=ocMainFlowState.perspective==='org'?'组织维度':'分拣类型';
@@ -7667,6 +8100,12 @@ function renderOcMainFlowChart(rows) {
 }
 function renderOcMainFlow() {
   renderOcMainFlowTabs();
+  const operator=ocMainFlowState.perspective==='operator';
+  const viewMode=operator?'table':ocMainFlowState.viewMode;
+  document.getElementById('oc15dMainFlowOperatorForm').hidden=!operator;
+  document.getElementById('oc15dMainFlowViewTabs').hidden=operator;
+  mainFlowOperatorControls.get('oc15dMainFlow')?.sync();
+  if(!operator)mainFlowOperatorControls.get('oc15dMainFlow')?.close();
   const rows=ocMFRows();
   const visibleDays=oc15dVisibleDays();
   const totalDates=visibleDays.map((_,index)=>rows.reduce((sum,row)=>sum+(row.dates?.[index]||0),0));
@@ -7683,11 +8122,11 @@ function renderOcMainFlow() {
     tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
   });
   document.querySelectorAll('#oc15dMainFlowViewTabs [data-oc-main-flow-view]').forEach(tab=>{
-    const on=tab.dataset.ocMainFlowView===ocMainFlowState.viewMode;
+    const on=tab.dataset.ocMainFlowView===viewMode;
     tab.classList.toggle('on',on); tab.setAttribute('aria-selected',on?'true':'false');
   });
   const perspectiveLabel=mainFlowPerspectiveLabel(ocMainFlowState.perspective);
-  document.getElementById('oc15dMainFlowBreadcrumb').innerHTML=`<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span><span class="sep">›</span><b>${ocMFLabel()}</b><span class="sep">›</span><span>${modeLabel}</span><span class="sep">›</span><span>${oc15dSelectedRangeLabel()}</span>`;
+  document.getElementById('oc15dMainFlowBreadcrumb').innerHTML=`<span>目的流向</span><span class="sep">›</span><span>${perspectiveLabel}</span>${operator?'':`<span class="sep">›</span><b>${ocMFLabel()}</b>`}<span class="sep">›</span><span>${modeLabel}</span><span class="sep">›</span><span>${oc15dSelectedRangeLabel()}</span>`;
 
   const dateHeaders=visibleDays.map(day=>`<th>${day}</th>`).join('');
   const isStationDimension=ocMainFlowState.perspective==='org'&&ocMainFlowState.type==='station';
@@ -7708,18 +8147,18 @@ function renderOcMainFlow() {
       const cells=row.dates.map(count=>`<td><span class="num">${ocMFFormat(count)}</span></td>`).join('');
       return `<tr><td><span class="main-flow-name-static">${row.name}</span></td><td><span class="num">${ocMFFormat(row.tickets)}</span></td><td><span class="num">${ocMFFormat(row.bags)}</span></td>${cells}</tr>`;
     }).join('');
-    document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml}`;
+    document.getElementById('oc15dMainFlowTableBody').innerHTML=`<tr class="total"><td>合计</td><td><span class="num">${ocMFFormat(totalTickets)}</span></td><td><span class="num">${ocMFFormat(totalBags)}</span></td>${totalCells}</tr>${rowHtml || `<tr><td colspan="${3+visibleDays.length}" class="main-flow-empty">暂无数据</td></tr>`}`;
   }
 
   const tableWrap=document.getElementById('oc15dMainFlowTableWrap');
   const chartWrap=document.getElementById('oc15dMainFlowChartWrap');
-  tableWrap.classList.toggle('off',ocMainFlowState.viewMode!=='table');
-  chartWrap.classList.toggle('on',ocMainFlowState.viewMode==='chart');
-  if (ocMainFlowState.viewMode==='chart') requestAnimationFrame(()=>{renderOcMainFlowChart(rows);oc15dMainFlowChart?.resize();});
+  tableWrap.classList.toggle('off',viewMode!=='table');
+  chartWrap.classList.toggle('on',viewMode==='chart');
+  if (viewMode==='chart') requestAnimationFrame(()=>{renderOcMainFlowChart(rows);oc15dMainFlowChart?.resize();});
 
   let note='';
   if (ocMainFlowState.perspective==='operator') {
-    note='操作人数据为示例，合计沿用当前分拣范围。';
+    note='操作人数据为示例，合计按当前分拣范围及操作人查询条件统计。';
   } else if (ocMainFlowState.perspective==='type') {
     if (ocMainFlowState.type==='all') note='四种分拣类型互斥，“全部”按分拣类型汇总，每票只统计一次。';
     if (ocMainFlowState.type==='hub') note='仅统计分拣类型为 HUB 的运单，并按目的中心汇总。';
@@ -7756,6 +8195,7 @@ function exportOc15dMainFlowCsv() {
   if(typeof showPrototypeToast==='function')showPrototypeToast(`已导出：${fileName}`);
 }
 
+setupMainFlowOperatorQuery('oc15dMainFlow',ocMainFlowState,renderOcMainFlow);
 function initOperationsCockpit15dCharts() {
   if (!window.echarts) return;
   if (!oc15dChartsReady) {
@@ -7781,9 +8221,9 @@ document.getElementById('operationsCockpit15dQuery')?.addEventListener('click',(
 document.querySelectorAll('[data-oc15d-granularity]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-oc15d-granularity]').forEach(item=>item.classList.toggle('on',item===button));if(typeof showPrototypeToast==='function')showPrototypeToast(`统计粒度已切换为：${button.textContent.trim()}`);}));
 document.querySelectorAll('#oc15dStartDate,#oc15dEndDate').forEach(input=>input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();document.getElementById('operationsCockpit15dQuery')?.click();}}));
 document.getElementById('oc15dMainFlowPerspectiveTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-perspective]');if(!tab)return;ocMainFlowState.perspective=tab.dataset.ocMainFlowPerspective;ocMainFlowState.type='all';renderOcMainFlow();});
-document.getElementById('oc15dMainFlowTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-type]');if(!tab)return;ocMainFlowState.type=tab.dataset.ocMainFlowType;renderOcMainFlow();});
+document.getElementById('oc15dMainFlowTabs')?.addEventListener('click',event=>{if(ocMainFlowState.perspective==='operator')return;const tab=event.target.closest('[data-oc-main-flow-type]');if(!tab)return;ocMainFlowState.type=tab.dataset.ocMainFlowType;renderOcMainFlow();});
 document.getElementById('oc15dMainFlowTimeTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-time]');if(!tab)return;ocMainFlowState.timeMode='daily';renderOcMainFlow();});
-document.getElementById('oc15dMainFlowViewTabs')?.addEventListener('click',event=>{const tab=event.target.closest('[data-oc-main-flow-view]');if(!tab)return;ocMainFlowState.viewMode=tab.dataset.ocMainFlowView;renderOcMainFlow();});
+document.getElementById('oc15dMainFlowViewTabs')?.addEventListener('click',event=>{if(ocMainFlowState.perspective==='operator')return;const tab=event.target.closest('[data-oc-main-flow-view]');if(!tab)return;ocMainFlowState.viewMode=tab.dataset.ocMainFlowView;renderOcMainFlow();});
 document.getElementById('oc15dMainFlowExportBtn')?.addEventListener('click',exportOc15dMainFlowCsv);
 document.getElementById('oc15dMainFlowCard')?.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[role="tab"]')){event.preventDefault();event.target.click();}});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('operationsCockpit15dOverlay')?.classList.contains('on'))closeOperationsCockpit15d();});
@@ -8504,6 +8944,7 @@ function destinationPendingValue(row){
 }
 function buildSortedDestinationView(){
   const st=sortedDestinationState,current=st.view==='current';
+  if(st.lane==='all')st.lane='trunk';
   const currentHub=destinationCurrentHub(),hub=current?currentHub:st.hub;
   const rows=destinationRows(),total=destinationTotals(rows),filtered=destinationFilteredRows(rows),laneTotal=destinationTotals(filtered);
   const overviewTotal=destinationTotals(destinationRows({...st,view:'current'}));
@@ -8529,7 +8970,7 @@ function buildSortedDestinationView(){
     </div>
     <div class="destination-sheet">
       <div class="destination-table-scroll"><table class="destination-table destination-table-metrics${current?'':' destination-table-upstream'}" aria-label="${laneName}目的组织·分拣明细"><colgroup>${current?'':'<col class="fw-col-upstream">'}<col class="fw-col-org"><col class="fw-col-ticket"><col class="fw-col-ticket"><col class="fw-col-other"><col class="fw-col-other"><col class="fw-col-other"><col class="fw-col-other"><col class="fw-col-other"><col class="fw-col-signout"></colgroup><thead><tr>${current?'':'<th scope="col" class="destination-upstream-hub">上级 Hub</th>'}<th scope="col" class="destination-org-cell">目的组织</th><th>本小时分拣</th><th>操作日已分拣</th><th>操作日已签出</th><th class="forecast">货量预测<br>（不在本期）</th><th>预计到车</th><th class="required">应分拣</th><th>应签出</th><th class="pending-signout">待签出</th></tr></thead><tbody>${content}</tbody></table></div>
-      <div class="destination-pager"><div class="destination-lane-tabs" role="tablist" aria-label="分拣明细类型">${(window.sortingFlowWarnings?window.sortingFlowWarnings.laneDefs():[['all','全部'],['trunk','干线'],['branch','支线']]).map(([key,label])=>`<button type="button" role="tab" aria-selected="${st.lane===key}" class="${st.lane===key?'on':''}" data-destination-lane="${key}">${label}<span>${window.sortingFlowWarnings?window.sortingFlowWarnings.laneCount(rows,key,current,currentHub):rows.filter(r=>(key==='all'||r.lane===key)&&(current||st.destination==='all'||r.name===destinationHubCode(currentHub))).length}</span></button>`).join('')}</div><div class="destination-pager-controls"><select id="destinationPageSize" aria-label="每页条数">${[5,10,20].map(n=>`<option value="${n}" ${n===st.pageSize?'selected':''}>${n} 条/页</option>`).join('')}</select><button type="button" data-destination-page="${st.page-1}" aria-label="上一页" ${st.page<=1?'disabled':''}>‹</button><span class="num" id="destinationPageStatus">${st.page} / ${pages}</span><button type="button" data-destination-page="${st.page+1}" aria-label="下一页" ${st.page>=pages?'disabled':''}>›</button></div></div>
+      <div class="destination-pager"><div class="destination-lane-tabs" role="tablist" aria-label="分拣明细类型">${(window.sortingFlowWarnings?window.sortingFlowWarnings.laneDefs():[['trunk','干线'],['branch','支线']]).filter(([key])=>key!=='all').map(([key,label])=>`<button type="button" role="tab" aria-selected="${st.lane===key}" class="${st.lane===key?'on':''}" data-destination-lane="${key}">${label}<span>${window.sortingFlowWarnings?window.sortingFlowWarnings.laneCount(rows,key,current,currentHub):rows.filter(r=>r.lane===key&&(current||st.destination==='all'||r.name===destinationHubCode(currentHub))).length}</span></button>`).join('')}</div><div class="destination-pager-controls"><select id="destinationPageSize" aria-label="每页条数">${[5,10,20].map(n=>`<option value="${n}" ${n===st.pageSize?'selected':''}>${n} 条/页</option>`).join('')}</select><button type="button" data-destination-page="${st.page-1}" aria-label="上一页" ${st.page<=1?'disabled':''}>‹</button><span class="num" id="destinationPageStatus">${st.page} / ${pages}</span><button type="button" data-destination-page="${st.page+1}" aria-label="下一页" ${st.page>=pages?'disabled':''}>›</button></div></div>
     </div>
     </section>
   </div>`;
@@ -8538,7 +8979,7 @@ function buildSortedDestinationDrawer(){
   const template=document.createElement('template');
   template.innerHTML=buildSortedDestinationView();
   const stats=template.content.querySelector('.destination-stats');
-  return stats ? '<div class="destination-drilldown destination-overview">'+stats.outerHTML+'</div>' : '';
+  return stats ? '<div class="destination-drilldown destination-overview">'+stats.outerHTML+buildSortedFlowSummary()+buildSortedCustomerSection()+'</div>' : '';
 }
 function renderSortedDestinationDrawer(detailsOnly=false){
   const host=document.getElementById('sortingAnalysisPanel-destination');
@@ -9331,7 +9772,7 @@ document.querySelectorAll('.yesterday-15d-link').forEach(link=>link.addEventList
     host.dataset.pressureState=status.tone;
     host.setAttribute('aria-label',p.title);
     if(ctx.history)return;
-    host.innerHTML=`<button type="button" class="abn-item fw-attention-pressure ${status.tone}" data-fw-overview="${status.filter}" aria-controls="sortingAnalysisPanel-destination" aria-label="${esc(accessibleLabel)}" title="${esc(accessibleLabel)}">
+    host.innerHTML=`<button type="button" class="abn-item fw-attention-pressure ${status.tone}" data-fw-overview="${status.filter}" aria-haspopup="dialog" aria-controls="flowWarningOverviewDialog" aria-label="${esc(accessibleLabel)}" title="${esc(accessibleLabel)}">
         <span class="dot" aria-hidden="true"></span>
         <span class="txt">
           <span class="fw-attention-header">
@@ -9343,6 +9784,27 @@ document.querySelectorAll('.yesterday-15d-link').forEach(link=>link.addEventList
       </button>`;
   }
   const dialog=document.createElement('dialog');dialog.id='flowWarningDialog';dialog.className='fw-dialog';dialog.setAttribute('aria-labelledby','flowWarningDialogTitle');document.body.appendChild(dialog);
+  const overviewDialog=document.createElement('dialog');
+  overviewDialog.id='flowWarningOverviewDialog';overviewDialog.className='fw-dialog fw-overview-dialog';
+  overviewDialog.setAttribute('aria-labelledby','flowWarningOverviewTitle');document.body.appendChild(overviewDialog);
+  let overviewOpener=null;
+  function showOverview(opener){
+    const ctx=context();
+    if(ctx.history)return;
+    overviewOpener=opener;
+    const cards=ctx.risks.map(result=>{
+      const pressure=result.tone==='red'?'压力较高':result.tone==='amber'?'压力偏紧':'压力正常';
+      return `<article class="fw-flow-card" aria-label="${esc(result.name)}"><div class="fw-flow-card-content"><div class="fw-flow-card-header"><h3 class="fw-flow-card-title">${esc(result.name)}</h3><span class="fw-flow-card-pressure ${result.tone}" role="img" aria-label="分拣压力：${pressure}" title="${pressure}"></span></div><div class="fw-flow-card-quantity"><strong>${fmt(result.quantity)}<small>票</small></strong></div></div></article>`;
+    }).join('');
+    overviewDialog.innerHTML=`<header class="fw-dialog-header"><div><h2 id="flowWarningOverviewTitle">分拣预警</h2><p>${esc(ctx.sourceHub)} · ${ctx.risks.length} 个预警流向</p></div><button type="button" class="fw-dialog-close" data-fw-overview-close aria-label="关闭">×</button></header><div class="fw-dialog-body">${cards?`<div class="fw-flow-card-grid">${cards}</div>`:`<div class="fw-flow-card-empty">${ctx.unknown.length?'当前暂无已确认的预警流向，部分流向待评估':'暂无流向预警'}</div>`}</div><footer class="fw-dialog-footer"><button type="button" class="fw-primary" data-fw-overview-close>关闭</button></footer>`;
+    overviewDialog.showModal();overviewDialog.querySelector('[data-fw-overview-close]').focus();
+  }
+  function closeOverview(){overviewDialog.close();if(overviewOpener?.isConnected)overviewOpener.focus({preventScroll:true});}
+  overviewDialog.addEventListener('click',event=>{
+    if(event.target.closest('[data-fw-overview-close]'))closeOverview();
+    else if(event.target===overviewDialog){const rect=overviewDialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeOverview();}
+  });
+  overviewDialog.addEventListener('cancel',event=>{event.preventDefault();closeOverview();});
   function metric(label,value,unit='',extra=''){return `<div class="fw-metric"><span>${label}</span><strong>${value}<small>${unit}</small></strong>${extra?`<div class="fw-metric-extra">${extra}</div>`:''}</div>`;}
   function detailMarkup(result){
     const remainingMinutes=Math.max(0,Math.floor((result.cutoff-result.asOf)/60000));
@@ -9368,7 +9830,7 @@ document.querySelectorAll('.yesterday-15d-link').forEach(link=>link.addEventList
   host.addEventListener('click',event=>{
     const locate=event.target.closest('[data-fw-locate]'),overview=event.target.closest('[data-fw-overview]');
     if(locate)goToWarnings(locate.dataset.fwLocate);
-    else if(overview)goToWarnings('',overview.dataset.fwOverview);
+    else if(overview)showOverview(overview);
   });
   root.addEventListener('click',event=>{
     const filter=event.target.closest('[data-fw-filter]'),detail=event.target.closest('[data-fw-detail]');
